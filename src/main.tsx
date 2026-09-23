@@ -3,6 +3,9 @@ import {createRoot, hydrateRoot} from 'react-dom/client';
 import App, {preloadRoute} from './App.tsx';
 import './index.css';
 
+// The first-visit intro animation plays once on load; later page changes use page transitions
+window.setTimeout(() => document.documentElement.classList.remove('intro'), 3600);
+
 const container = document.getElementById('root')!;
 const app = (
   <StrictMode>

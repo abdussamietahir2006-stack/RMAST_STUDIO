@@ -3,7 +3,7 @@ import { useNavigation } from '../context/NavigationContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { useInquiry } from '../context/InquiryContext';
 import { realEstatePackages } from '../data/pricingData';
-import { packageOptions } from '../data/inquiryOptions';
+import { packageOptions, serviceOptions } from '../data/inquiryOptions';
 import { servicesData } from '../data/servicesData';
 import { WorkflowInteractive } from '../components/real-estate/WorkflowInteractive';
 import {
@@ -174,6 +174,8 @@ export const RealEstatePage: React.FC = () => {
                     onClick={() =>
                       openInquiry({
                         serviceId: service.id,
+                        options: serviceOptions(service),
+                        selectedOptionId: serviceOptions(service)[0]?.id,
                         title: service.title,
                         division: 'real-estate',
                         priceUSD: service.startingPriceUSD,

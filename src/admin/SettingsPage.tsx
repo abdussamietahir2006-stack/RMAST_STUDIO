@@ -98,7 +98,7 @@ export const SettingsPage: React.FC<{ onSignedOut: () => void }> = ({ onSignedOu
         <Card>
           <CardHeader
             title="Sessions"
-            subtitle="Sessions expire after 12 hours. Use this if you signed in on a device you no longer trust."
+            subtitle="You sign in each time you open the dashboard, and sessions end after 4 hours. Use this if you signed in on a device you no longer trust."
           />
           <div className="px-5 pb-5">
             <Button variant="danger" onClick={signOutEverywhere} loading={signingOut}>

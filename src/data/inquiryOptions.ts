@@ -1,5 +1,5 @@
 // Builds the tier choices shown inside the inquiry popup, from the same pricing data the pages use.
-import type { InquiryOption, PricingPackage } from '../types/index.js';
+import type { InquiryOption, PricingPackage, ServiceDetail } from '../types/index.js';
 import { aiVideoSinglePricing, videoMonthlyBundles } from './pricingData.js';
 
 // Individual AI videos: Starter / Standard / Professional (per video)
@@ -56,5 +56,33 @@ export function packageOptions(packages: PricingPackage[]): InquiryOption[] {
     description: p.bestFor,
     features: p.included,
     badge: p.highlight ? 'Most chosen' : undefined
+  }));
+}
+
+// A single service: AI Content services offer the per-video tiers; real estate services offer
+// their published Starter / Growth / Premium tiers when they have them.
+export function serviceOptions(service: ServiceDetail): InquiryOption[] {
+  if (service.division === 'ai-content') {
+    return aiVideoSinglePricing.map((t) => ({
+      id: t.tier,
+      label: t.tier,
+      title: `${service.title} · ${t.tier}`,
+      priceUSD: t.priceUSD,
+      billingFrequency: '/ video',
+      description: t.description,
+      features: [t.description, ...service.keyFeatures.slice(0, 3)],
+      badge: t.tier === 'Professional' ? 'Signature' : undefined
+    }));
+  }
+  const unit = service.billingType === 'monthly' ? '/ month' : 'one-time';
+  return (service.tiers ?? []).map((t) => ({
+    id: t.name,
+    label: t.name,
+    title: `${service.title} · ${t.name}`,
+    priceUSD: t.priceUSD,
+    billingFrequency: unit,
+    description: t.note,
+    features: [t.note, ...service.keyFeatures.slice(0, 3)],
+    badge: t.name === 'Growth' ? 'Popular' : undefined
   }));
 }

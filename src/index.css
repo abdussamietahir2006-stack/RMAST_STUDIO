@@ -432,3 +432,139 @@ html.theme-light:not(.admin-mode) footer {
     scroll-behavior: auto !important;
   }
 }
+
+/* ==========================================================
+   PERFORMANCE: no live background blur on page content.
+   backdrop-filter re-blurs everything behind it on every frame (the fixed photo and
+   playing videos), which caused most scroll stutter. Cards get a slightly denser
+   fill instead. The navbar and popups keep their blur (small, or shown briefly).
+   ========================================================== */
+html:not(.admin-mode) main [class*='backdrop-blur'] {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+html:not(.admin-mode):not(.theme-light) main [class*='backdrop-blur'][class*='bg-[#0'] {
+  background-color: rgba(12, 14, 22, 0.92);
+}
+
+/* ==========================================================
+   TYPOGRAPHY: calmer small text.
+   The small monospace captions and labels were visually noisy; they now use the
+   site's sans font with gentler letter-spacing, and italic quotes use the serif.
+   ========================================================== */
+html:not(.admin-mode) body .font-mono {
+  font-family: var(--font-sans);
+  font-feature-settings: 'tnum' 0;
+}
+html:not(.admin-mode) body .font-mono.uppercase {
+  font-weight: 600;
+  letter-spacing: 0.14em;
+}
+html:not(.admin-mode) body .font-mono.italic {
+  font-family: var(--font-editorial);
+  font-size: 1.12em;
+  letter-spacing: 0.01em;
+  font-weight: 500;
+}
+html:not(.admin-mode) body code {
+  font-family: var(--font-mono);
+}
+html:not(.admin-mode) main .text-\[10px\] {
+  font-size: 11px;
+}
+
+/* Warmer, softer neutrals for small text in dark mode (replaces cold greys) */
+html:not(.admin-mode):not(.theme-light) :is(.text-\[\#71717A\], .text-\[\#8E92A0\], .text-\[\#52525B\], .text-\[\#3F3F46\]) {
+  color: #8f897d;
+}
+html:not(.admin-mode):not(.theme-light) :is(.text-\[\#A1A1AA\], .text-\[\#8E8D88\]) {
+  color: #b3ada1;
+}
+html:not(.admin-mode):not(.theme-light) :is(.text-\[\#D4D4D8\], .text-\[\#E4E4E7\], .text-\[\#D1D5DB\]) {
+  color: #ddd7cc;
+}
+
+/* ==========================================================
+   FIRST-VISIT INTRO: the first screen assembles itself on load.
+   Only while <html> has the "intro" class (removed by main.tsx after it plays),
+   so later page changes use the normal page transition instead.
+   ========================================================== */
+@keyframes intro-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 32px, 0);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+@keyframes intro-drop {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -100%, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes intro-line {
+  from {
+    clip-path: inset(0 0 100% 0);
+    transform: translate3d(0, 0.35em, 0);
+  }
+  to {
+    clip-path: inset(0 0 -10% 0);
+    transform: none;
+  }
+}
+html.intro header {
+  animation: intro-drop 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+/* Headline lines wipe up into place */
+html.intro main section:first-of-type h1 {
+  animation: intro-line 1.1s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both;
+}
+/* Text that follows the headline (when the headline sits inside a wrapper, as on the home page) */
+html.intro main section:first-of-type h1 ~ * {
+  animation: intro-rise 1s cubic-bezier(0.22, 1, 0.36, 1) 0.45s both;
+}
+/* Building blocks of the first section, in order */
+html.intro main section:first-of-type > :not(h1):not(:has(h1)),
+html.intro main section:first-of-type [class*='max-w'] > :not(h1):not(:has(h1)),
+html.intro main section:first-of-type .grid > :not(:has(h1)) {
+  animation: intro-rise 1s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+}
+html.intro main section:first-of-type > :nth-child(2):not(h1),
+html.intro main section:first-of-type [class*='max-w'] > :nth-child(2):not(h1) { animation-delay: 0.3s; }
+html.intro main section:first-of-type > :nth-child(3):not(h1),
+html.intro main section:first-of-type [class*='max-w'] > :nth-child(3):not(h1) { animation-delay: 0.5s; }
+html.intro main section:first-of-type > :nth-child(n + 4):not(h1),
+html.intro main section:first-of-type [class*='max-w'] > :nth-child(n + 4):not(h1) { animation-delay: 0.65s; }
+/* Side-by-side blocks (hero video, pathway cards) arrive one after another */
+html.intro main section:first-of-type .grid > :nth-child(2):not(:has(h1)) { animation-delay: 0.55s; }
+html.intro main section:first-of-type .grid > :nth-child(3) { animation-delay: 0.7s; }
+
+/* Home hero: headline gold light sweep, drifting ambient glow, pathway cards cascade */
+@keyframes gold-sweep {
+  from { background-position: 150% 0; }
+  to { background-position: -50% 0; }
+}
+html.intro main section[class*='min-h-[92vh]'] h1 span {
+  background: linear-gradient(100deg, #faf8f5 35%, #e9cf97 50%, #faf8f5 65%) 150% 0 / 250% 100% no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: gold-sweep 2.4s cubic-bezier(0.45, 0, 0.2, 1) 1s both;
+}
+@keyframes glow-drift {
+  0%, 100% { transform: translate3d(-50%, -50%, 0) scale(1); opacity: 0.9; }
+  50% { transform: translate3d(-42%, -56%, 0) scale(1.15); opacity: 0.6; }
+}
+main section:first-of-type > .blur-3xl {
+  animation: glow-drift 14s ease-in-out infinite;
+  will-change: transform;
+}

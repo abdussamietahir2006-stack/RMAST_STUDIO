@@ -20,7 +20,7 @@ const KEY_LEN = 64;
 const SCRYPT_MAXMEM = 256 * 1024 * 1024;
 
 export const MIN_PASSWORD_LENGTH = 12;
-const SESSION_TTL_MS = 12 * 60 * 60 * 1000;
+const SESSION_TTL_MS = 4 * 60 * 60 * 1000;
 
 // ---------------------------------------------------------------------------
 // Passwords
@@ -85,13 +85,10 @@ function readCookie(req: Request, name: string): string | undefined {
 }
 
 function setSessionCookie(res: Response, token: string, maxAgeSeconds: number) {
-  const attrs = [
-    `${cookieName()}=${token}`,
-    'Path=/',
-    'HttpOnly',
-    'SameSite=Strict',
-    `Max-Age=${maxAgeSeconds}`
-  ];
+  // No Max-Age on sign-in: a browser-session cookie, gone when the browser closes.
+  // Max-Age=0 is only used to clear it on sign-out.
+  const attrs = [`${cookieName()}=${token}`, 'Path=/', 'HttpOnly', 'SameSite=Strict'];
+  if (maxAgeSeconds <= 0) attrs.push('Max-Age=0');
   if (isProd()) attrs.push('Secure');
   res.append('Set-Cookie', attrs.join('; '));
 }

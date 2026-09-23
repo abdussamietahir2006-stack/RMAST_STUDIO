@@ -3,6 +3,7 @@ import { useNavigation, useQueryParam } from '../context/NavigationContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { useInquiry } from '../context/InquiryContext';
 import { servicesData } from '../data/servicesData';
+import { serviceOptions } from '../data/inquiryOptions';
 import { Check, ArrowRight, Building2, Film, Layers, Users, ShieldCheck, Sparkles } from 'lucide-react';
 
 export const ServicesPage: React.FC = () => {
@@ -261,6 +262,8 @@ export const ServicesPage: React.FC = () => {
                       onClick={() =>
                         openInquiry({
                           serviceId: service.id,
+                          options: serviceOptions(service),
+                          selectedOptionId: serviceOptions(service)[0]?.id,
                           title: service.title,
                           division: service.division,
                           priceUSD: service.startingPriceUSD,

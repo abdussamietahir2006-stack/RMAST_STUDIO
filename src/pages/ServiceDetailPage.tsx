@@ -3,6 +3,7 @@ import { useNavigation } from '../context/NavigationContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { useInquiry } from '../context/InquiryContext';
 import { servicesData } from '../data/servicesData';
+import { serviceOptions } from '../data/inquiryOptions';
 import { NotFoundPage } from './NotFoundPage';
 import { ServiceMedia } from '../components/media/ServiceMedia';
 import {
@@ -99,6 +100,8 @@ export const ServiceDetailPage: React.FC<ServiceDetailPageProps> = ({ slug, divi
                 onClick={() =>
                   openInquiry({
                     serviceId: service.id,
+                    options: serviceOptions(service),
+                    selectedOptionId: serviceOptions(service)[0]?.id,
                     title: service.title,
                     division: service.division,
                     priceUSD: service.startingPriceUSD,

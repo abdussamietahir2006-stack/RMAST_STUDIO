@@ -43,11 +43,13 @@ export const AdminApp: React.FC = () => {
     return () => document.documentElement.classList.remove('admin-mode');
   }, []);
 
+  // Every time the dashboard link is opened (or refreshed), any earlier session is ended and the
+  // login page is shown. Moving between dashboard pages after signing in keeps the session.
   useEffect(() => {
     adminApi
-      .me()
-      .then((res) => setUser(res.user))
-      .catch(() => setUser(null));
+      .logout()
+      .catch(() => undefined)
+      .finally(() => setUser(null));
   }, []);
 
   const onUnauthorized = useCallback((err: unknown) => {

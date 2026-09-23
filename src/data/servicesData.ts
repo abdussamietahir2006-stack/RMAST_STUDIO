@@ -88,6 +88,11 @@ export const servicesData: ServiceDetail[] = [
     startingPriceUSD: 3500,
     billingType: 'one-time',
     scopeNotes: 'Starter package starts at $3,500 / AED 12,850. Growth ($7,500 / AED 27,550) and Premium ($15,000+ / AED 55,100+) tiers expand custom modules and AI qualification.',
+    tiers: [
+      { name: 'Starter', priceUSD: 3500, note: 'Core pipeline, lead & deal management' },
+      { name: 'Growth', priceUSD: 7500, note: 'Custom modules and multi-stage pipelines' },
+      { name: 'Premium', priceUSD: 15000, note: 'AI qualification and bespoke architecture' }
+    ],
     relatedServiceSlugs: ['ai-automation', 'ai-assistants', 'admin-support'],
     image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1600&q=80'
   },
@@ -116,6 +121,11 @@ export const servicesData: ServiceDetail[] = [
     startingPriceUSD: 1500,
     billingType: 'one-time',
     scopeNotes: 'Starter includes 1–2 key workflows. Growth includes 3–6 workflows ($3,500 / AED 12,850). Premium covers multi-system agentic automation ($7,500+ / AED 27,550+).',
+    tiers: [
+      { name: 'Starter', priceUSD: 1500, note: '1–2 key workflows' },
+      { name: 'Growth', priceUSD: 3500, note: '3–6 workflows' },
+      { name: 'Premium', priceUSD: 7500, note: 'Multi-system agentic automation' }
+    ],
     relatedServiceSlugs: ['ai-assistants', 'crm-development', 'web-development'],
     image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1600&q=80'
   },
@@ -145,6 +155,11 @@ export const servicesData: ServiceDetail[] = [
     startingPriceUSD: 500,
     billingType: 'one-time',
     scopeNotes: 'Starter starts at $500 / AED 1,850. Growth ($1,000 / AED 3,675) adds multichannel + CRM sync. Premium ($2,500+ / AED 9,200+) provides custom actions and deep API integration.',
+    tiers: [
+      { name: 'Starter', priceUSD: 500, note: 'Website assistant with lead capture' },
+      { name: 'Growth', priceUSD: 1000, note: 'Multichannel + CRM sync' },
+      { name: 'Premium', priceUSD: 2500, note: 'Custom actions and deep API integration' }
+    ],
     relatedServiceSlugs: ['ai-automation', 'crm-development', 'web-development'],
     image: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1600&q=80'
   },
@@ -173,6 +188,11 @@ export const servicesData: ServiceDetail[] = [
     startingPriceUSD: 500,
     billingType: 'monthly',
     scopeNotes: 'Starter ($500/mo) includes 2 platforms & 8 posts. Growth ($1,000/mo) includes 3 platforms, 12 posts & 4 videos. Premium ($1,500/mo) includes 4 platforms, 16-20 posts & 8 videos.',
+    tiers: [
+      { name: 'Starter', priceUSD: 500, note: '2 platforms · 8 posts / month' },
+      { name: 'Growth', priceUSD: 1000, note: '3 platforms · 12 posts · 4 videos / month' },
+      { name: 'Premium', priceUSD: 1500, note: '4 platforms · 16–20 posts · 8 videos / month' }
+    ],
     relatedServiceSlugs: ['real-estate', 'web-development'],
     image: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&w=1600&q=80'
   },
@@ -200,6 +220,11 @@ export const servicesData: ServiceDetail[] = [
     startingPriceUSD: 300,
     billingType: 'monthly',
     scopeNotes: 'Starter: up to 20 hours ($300/mo / AED 1,100). Growth: up to 40 hours ($600/mo / AED 2,200). Premium: up to 80 hours ($1,000/mo / AED 3,675).',
+    tiers: [
+      { name: 'Starter', priceUSD: 300, note: 'Up to 20 hours / month' },
+      { name: 'Growth', priceUSD: 600, note: 'Up to 40 hours / month' },
+      { name: 'Premium', priceUSD: 1000, note: 'Up to 80 hours / month' }
+    ],
     relatedServiceSlugs: ['admin-support', 'crm-development'],
     image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1600&q=80'
   },

@@ -8,7 +8,7 @@ import {
 } from '../data/pricingData';
 import { servicesData } from '../data/servicesData';
 import { ServiceMedia } from '../components/media/ServiceMedia';
-import { videoBundleOptions, videoTierOptions } from '../data/inquiryOptions';
+import { serviceOptions, videoBundleOptions, videoTierOptions } from '../data/inquiryOptions';
 import {
   ArrowRight,
   Check
@@ -170,6 +170,8 @@ export const AiContentPage: React.FC = () => {
                     onClick={() =>
                       openInquiry({
                         serviceId: service.id,
+                        options: serviceOptions(service),
+                        selectedOptionId: serviceOptions(service)[0]?.id,
                         title: service.title,
                         division: 'ai-content',
                         priceUSD: service.startingPriceUSD,
