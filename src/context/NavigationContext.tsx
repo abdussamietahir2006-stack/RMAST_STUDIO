@@ -8,11 +8,19 @@ interface NavigationContextType {
 
 const NavigationContext = createContext<NavigationContextType | undefined>(undefined);
 
-export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const NavigationProvider: React.FC<{ children: React.ReactNode; initialPath?: string }> = ({
+  children,
+  initialPath
+}) => {
   const [currentPath, setCurrentPath] = useState<string>(() =>
-    typeof window !== 'undefined' ? window.location.pathname || '/' : '/'
+    initialPath ?? (typeof window !== 'undefined' ? window.location.pathname || '/' : '/')
   );
-  const [search, setSearch] = useState<string>(() => (typeof window !== 'undefined' ? window.location.search : ''));
+  // Starts empty so the first render matches the prerendered HTML; the real query is read right after
+  const [search, setSearch] = useState<string>('');
+
+  useEffect(() => {
+    setSearch(window.location.search);
+  }, []);
 
   useEffect(() => {
     const handlePopState = () => {

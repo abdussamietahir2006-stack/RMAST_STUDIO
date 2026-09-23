@@ -5,10 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite --port=3000 --host=0.0.0.0",
-    "build": "vite build && esbuild server.ts --bundle --platform=node --format=esm --packages=external --define:process.env.NODE_ENV=\\\"production\\\" --outfile=server.js",
+    "build:site": "vite build && vite build --ssr src/entry-server.tsx --outDir dist-ssr && tsx scripts/prerender.ts",
+    "build": "npm run build:site && esbuild server.ts --bundle --platform=node --format=esm --packages=external --define:process.env.NODE_ENV=\\\"production\\\" --outfile=server.js",
     "start": "node server.js",
     "preview": "npm run build && npm start",
-    "clean": "node -e \"for (const p of ['dist', 'server.js']) require('fs').rmSync(p, { recursive: true, force: true })\"",
+    "clean": "node -e \"for (const p of ['dist', 'dist-ssr', 'server.js']) require('fs').rmSync(p, { recursive: true, force: true })\"",
     "lint": "tsc --noEmit",
     "admin:create": "tsx scripts/create-admin.ts"
   },

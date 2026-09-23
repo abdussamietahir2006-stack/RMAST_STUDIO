@@ -2,6 +2,7 @@
 // On Vercel this file is not used; see api/index.ts and vercel.json.
 import './src/server/loadEnv.js';
 import express from 'express';
+import fs from 'node:fs';
 import path from 'node:path';
 import { createApp } from './src/server/app.js';
 import { isDbConfigured } from './src/server/db.js';
@@ -34,10 +35,22 @@ async function main() {
         }
       })
     );
-    // SPA fallback: the client router renders the matching page (or its 404 page)
-    app.get('*', (_req, res) => {
+    // Prerendered pages with clean URLs (mirrors vercel.json): /pricing -> pricing.html,
+    // /admin/* -> admin.html, anything else -> 404.html with a real 404 status
+    app.get('*', (req, res) => {
       res.setHeader('Cache-Control', 'no-cache');
-      res.sendFile(path.join(distDir, 'index.html'));
+      const clean = req.path.replace(/\/+$/, '') || '/';
+      if (clean === '/admin' || clean.startsWith('/admin/')) {
+        res.sendFile(path.join(distDir, 'admin.html'));
+        return;
+      }
+      const file = clean === '/' ? 'index.html' : `${clean.slice(1)}.html`;
+      const resolved = path.resolve(distDir, file);
+      if (resolved.startsWith(distDir + path.sep) && fs.existsSync(resolved)) {
+        res.sendFile(resolved);
+        return;
+      }
+      res.status(404).sendFile(path.join(distDir, '404.html'));
     });
   } else {
     const { createServer } = await import('vite');

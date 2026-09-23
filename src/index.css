@@ -3,8 +3,6 @@
 @theme {
   --font-serif: 'Playfair Display', 'Cormorant Garamond', Georgia, serif;
   --font-editorial: 'Cormorant Garamond', Georgia, serif;
-  --font-display: 'Syne', sans-serif;
-  --font-cinzel: 'Cinzel', serif;
   --font-sans: 'Plus Jakarta Sans', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
   
@@ -43,9 +41,6 @@ html:not(.admin-mode) h2,
   font-family: var(--font-editorial);
 }
 
-.font-cinzel {
-  font-family: var(--font-cinzel);
-}
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {

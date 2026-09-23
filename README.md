@@ -45,6 +45,22 @@ frame blocking).
 5. Deploy, then create your account by running `npm run admin:create` locally against the same
    `MONGODB_URI`.
 
+## SEO
+
+Every public page is prerendered to static HTML at build time (`npm run build:site`), so search
+engines and link previews get the full content, a unique title and description, a canonical URL,
+Open Graph / Twitter tags and schema.org structured data (Organization, founders, each Service with
+its starting price, breadcrumbs). The build also writes `sitemap.xml`, `robots.txt` and a real
+`404.html`. Page SEO text lives in `src/seo/meta.ts`.
+
+Environment variables (Vercel → Settings → Environment Variables):
+
+- `SITE_URL`: your public address, e.g. `https://rmaststudio.com`. If unset, Vercel's production
+  domain is used. Set it as soon as you use a custom domain.
+- `GOOGLE_SITE_VERIFICATION`: the code from Google Search Console's "HTML tag" method.
+
+Both are read at build time: redeploy after changing them.
+
 ## Where things live
 
 | Path | Purpose |
@@ -54,6 +70,9 @@ frame blocking).
 | `src/config/contact.ts` | Email, WhatsApp, Instagram and LinkedIn used across the site |
 | `src/config/mediaSlots.ts` | Which photos/videos the dashboard can replace |
 | `src/data/` | Services, pricing, projects, process and team content |
+| `src/seo/` | Page titles, descriptions and structured data; head tag rendering |
+| `scripts/prerender.ts` | Writes the prerendered pages, sitemap and robots.txt |
+| `public/` | Favicons, app icons and the social share image |
 | `api/index.ts` | Vercel function entry |
 | `server.ts` | Local dev/production server |
 | `scripts/create-admin.ts` | Create or reset a dashboard account |

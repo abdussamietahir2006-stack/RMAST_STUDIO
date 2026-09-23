@@ -10,11 +10,24 @@ import { PageBackground } from './components/layout/PageBackground';
 import { WhatsAppButton } from './components/common/WhatsAppButton';
 import { StudioAssistant } from './components/common/StudioAssistant';
 import { InquiryModal } from './components/inquiry/InquiryModal';
-import { servicesData } from './data/servicesData';
+import { getRouteMeta } from './seo/meta';
+import { applyHeadTags } from './seo/head';
 
-// Pages are code-split so each route only downloads what it renders
-const named = <K extends string>(loader: () => Promise<Record<K, React.ComponentType<any>>>, name: K) =>
-  lazy(() => loader().then((m) => ({ default: m[name] })));
+// Pages are code-split so each route only downloads what it renders. Each page can also be
+// preloaded: once loaded it renders synchronously, which lets the prerenderer emit complete HTML
+// and lets the browser attach to that HTML without a loading gap.
+type PageComponent = React.ComponentType<any> & { preload: () => Promise<void> };
+
+const named = <K extends string>(loader: () => Promise<Record<K, React.ComponentType<any>>>, name: K): PageComponent => {
+  let Loaded: React.ComponentType<any> | null = null;
+  const Lazy: React.ComponentType<any> = lazy(() => loader().then((m) => ({ default: m[name] })));
+  const Page = ((props: Record<string, unknown>) => (Loaded ? <Loaded {...props} /> : <Lazy {...props} />)) as PageComponent;
+  Page.preload = () =>
+    loader().then((m) => {
+      Loaded = m[name];
+    });
+  return Page;
+};
 
 const HomePage = named(() => import('./pages/HomePage'), 'HomePage');
 const RealEstatePage = named(() => import('./pages/RealEstatePage'), 'RealEstatePage');
@@ -30,49 +43,10 @@ const ContactPage = named(() => import('./pages/ContactPage'), 'ContactPage');
 const AdminApp = named(() => import('./admin/AdminApp'), 'AdminApp');
 const NotFoundPage = named(() => import('./pages/NotFoundPage'), 'NotFoundPage');
 
-const DEFAULT_TITLE = 'RMAST Studio — Premium Digital Systems & AI Content';
-const DEFAULT_DESC =
-  'Digital systems for real estate. Cinematic AI content for brands. Small team. Serious execution.';
-
-const staticMeta: Record<string, { title: string; desc: string }> = {
-  '/': { title: DEFAULT_TITLE, desc: DEFAULT_DESC },
-  '/real-estate': {
-    title: 'Real Estate Digital Systems | RMAST Studio',
-    desc: 'Custom web development, CRM, AI automation, and lead engines for real estate brokerages in USA, UAE, and Canada.'
-  },
-  '/ai-content': {
-    title: 'AI Content Studio & Cinematic Video | RMAST Studio',
-    desc: 'Production without the production. Cinematic AI video for brands, fashion lookbooks, sensory food cinema, and product commercials.'
-  },
-  '/services': {
-    title: 'Studio Services & Architecture | RMAST Studio',
-    desc: 'Full service catalogue covering real estate digital systems and creative AI content production.'
-  },
-  '/pricing': {
-    title: 'Investment Framework & Pricing | RMAST Studio',
-    desc: 'Transparent starting rates for real estate systems, AI video retainers, complete business bundles, and add-on modules.'
-  },
-  '/work': {
-    title: 'Selected Works & Digital Systems | RMAST Studio',
-    desc: 'A curated portfolio of high-performing broker flagships, automated deal engines, and high-fashion AI campaigns.'
-  },
-  '/case-studies': {
-    title: 'Case Studies & Architectural Breakdowns | RMAST Studio',
-    desc: 'Detailed engineering specifications, challenges, and delivered business outcomes across studio projects.'
-  },
-  '/about': {
-    title: 'About RMAST Studio — Small Team. Serious Execution.',
-    desc: 'Founded by Raja Muhammad Abdussamie Tahir & Mashhood. High-standard digital systems and cinematic AI content.'
-  },
-  '/process': {
-    title: 'Methodology & 6-Stage Delivery | RMAST Studio',
-    desc: 'From audit to deployment: Discover, Strategy, Design, Build, Launch, and Optimize.'
-  },
-  '/contact': {
-    title: 'Start a Project Conversation | RMAST Studio',
-    desc: 'Have something worth building? Connect directly with founders Raja Muhammad Abdussamie Tahir and Mashhood.'
-  }
-};
+// Pages that exist outside the service detail routes
+const STATIC_PATHS = new Set([
+  '/', '/real-estate', '/ai-content', '/services', '/pricing', '/work', '/case-studies', '/about', '/process', '/contact'
+]);
 
 type Route =
   | { kind: 'admin' }
@@ -91,56 +65,44 @@ function resolveRoute(rawPath: string): Route {
     return { kind: 'service', slug: serviceMatch[2], division };
   }
 
-  if (path in staticMeta) return { kind: 'static', path };
+  if (STATIC_PATHS.has(path)) return { kind: 'static', path };
   return { kind: 'not-found' };
 }
 
-function setMeta(title: string, desc: string, noindex: boolean) {
-  document.title = title;
-  document.querySelector('meta[name="description"]')?.setAttribute('content', desc);
+const STATIC_PAGES: Record<string, PageComponent> = {
+  '/': HomePage,
+  '/real-estate': RealEstatePage,
+  '/ai-content': AiContentPage,
+  '/services': ServicesPage,
+  '/pricing': PricingPage,
+  '/work': WorkPage,
+  '/case-studies': CaseStudiesPage,
+  '/about': AboutPage,
+  '/process': ProcessPage,
+  '/contact': ContactPage
+};
 
-  let robots = document.querySelector<HTMLMetaElement>('meta[name="robots"]');
-  if (noindex) {
-    if (!robots) {
-      robots = document.createElement('meta');
-      robots.name = 'robots';
-      document.head.appendChild(robots);
-    }
-    robots.content = 'noindex, nofollow';
-  } else {
-    robots?.remove();
-  }
+function pageFor(route: Route): PageComponent {
+  if (route.kind === 'admin') return AdminApp;
+  if (route.kind === 'service') return ServiceDetailPage;
+  if (route.kind === 'static') return STATIC_PAGES[route.path];
+  return NotFoundPage;
 }
+
+// Loads the code for the page at `path` (used before attaching to prerendered HTML)
+export const preloadRoute = (path: string) => pageFor(resolveRoute(path)).preload();
+
+// Loads every public page (used by the build-time prerenderer)
+export const preloadAllPages = () =>
+  Promise.all([...Object.values(STATIC_PAGES), ServiceDetailPage, NotFoundPage].map((p) => p.preload()));
 
 const AppRouter: React.FC = () => {
   const { currentPath } = useNavigation();
   const route = resolveRoute(currentPath);
 
+  // Titles, descriptions, canonical and social tags come from the same data the prerenderer uses
   useEffect(() => {
-    if (route.kind === 'admin') {
-      setMeta('Founder Dashboard | RMAST Studio', DEFAULT_DESC, true);
-      return;
-    }
-
-    if (route.kind === 'static') {
-      const meta = staticMeta[route.path];
-      setMeta(meta.title, meta.desc, false);
-      return;
-    }
-
-    if (route.kind === 'service') {
-      const service = servicesData.find((s) => s.slug === route.slug && s.division === route.division);
-      if (service) {
-        const title =
-          route.division === 'ai-content'
-            ? `${service.title} — Cinematic AI Content | RMAST Studio`
-            : `${service.title} | RMAST Studio`;
-        setMeta(title, service.summary, false);
-        return;
-      }
-    }
-
-    setMeta('Page Not Found | RMAST Studio', DEFAULT_DESC, true);
+    applyHeadTags(getRouteMeta(currentPath, __SITE_URL__), __SITE_URL__);
   }, [currentPath]);
 
   const renderRoute = () => {
@@ -216,11 +178,12 @@ const AppRouter: React.FC = () => {
   );
 };
 
-export default function App() {
+// initialPath lets the build-time prerenderer render any page without a browser
+export default function App({ initialPath }: { initialPath?: string } = {}) {
   return (
     <ThemeProvider>
       <CurrencyProvider>
-        <NavigationProvider>
+        <NavigationProvider initialPath={initialPath}>
           <SiteContentProvider>
             <InquiryProvider>
               <AppRouter />

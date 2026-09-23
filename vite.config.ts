@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { defineConfig, type Plugin } from 'vite';
+import { resolveSiteUrl } from './src/config/siteUrl.ts';
 
 type ApiHandler = (req: IncomingMessage, res: ServerResponse, next: (err?: unknown) => void) => void;
 
@@ -38,6 +39,10 @@ function devApi(): Plugin {
 export default defineConfig(() => {
   return {
     plugins: [react(), tailwindcss(), devApi()],
+    // Public site URL for canonical links and social tags (SITE_URL env, or Vercel's production domain)
+    define: {
+      __SITE_URL__: JSON.stringify(resolveSiteUrl()),
+    },
     resolve: {
       alias: {
         '@': path.resolve(import.meta.dirname, '.'),

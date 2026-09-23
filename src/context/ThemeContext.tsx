@@ -13,17 +13,19 @@ const STORAGE_KEY = 'rmast_studio_theme_v2';
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [theme, setThemeState] = useState<Theme>(() => {
+  // Always start dark so the first render matches the prerendered HTML; a saved choice is applied right after
+  const [theme, setThemeState] = useState<Theme>('dark');
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved === 'light' || saved === 'dark') {
-        return saved;
-      }
+      if (saved === 'light' || saved === 'dark') setThemeState(saved);
     } catch {
-      // Fallback
+      // Storage unavailable: keep the default
     }
-    return 'dark'; // Strict Default: RMAST Signature Dark Architectural Theme
-  });
+    setLoaded(true);
+  }, []);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -37,12 +39,13 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       root.style.colorScheme = 'dark';
     }
 
+    if (!loaded) return;
     try {
       localStorage.setItem(STORAGE_KEY, theme);
     } catch (e) {
       console.error('Failed to save theme in localStorage', e);
     }
-  }, [theme]);
+  }, [theme, loaded]);
 
   const toggleTheme = () => {
     setThemeState((prev) => (prev === 'dark' ? 'light' : 'dark'));
