@@ -140,7 +140,11 @@ function website(site: string) {
     '@type': 'WebSite',
     '@id': `${site}/#website`,
     url: `${site}/`,
+    // Google uses name/alternateName for the site name shown above search results
     name: SITE_NAME,
+    alternateName: ['RMAST', 'RMAST Studio Real Estate & AI Content'],
+    description: DEFAULT_DESCRIPTION,
+    inLanguage: 'en',
     publisher: { '@id': orgId(site) }
   };
 }
