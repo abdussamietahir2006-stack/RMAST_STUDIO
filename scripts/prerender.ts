@@ -11,7 +11,9 @@ import { resolveSiteUrl } from '../src/config/siteUrl.js';
 const DIST = path.resolve('dist');
 const SSR_ENTRY = path.resolve('dist-ssr/entry-server.js');
 const site = resolveSiteUrl();
-const verification = process.env.GOOGLE_SITE_VERIFICATION?.trim();
+// Google Search Console "HTML tag" verification (public by design). The env var overrides it.
+const GOOGLE_VERIFICATION_DEFAULT = '0ZcNu9Em-BJX9_lue0G5aW364IC4UK0VXcqPQtHLrgE';
+const verification = process.env.GOOGLE_SITE_VERIFICATION?.trim() || GOOGLE_VERIFICATION_DEFAULT;
 
 const template = fs.readFileSync(path.join(DIST, 'index.html'), 'utf8');
 const SEO_BLOCK = /<!--seo:start[\s\S]*?<!--seo:end-->/;
