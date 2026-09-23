@@ -12,6 +12,7 @@ import {
   videoMonthlyBundles,
   addOnItems
 } from '../data/pricingData';
+import { packageOptions, videoBundleOptions } from '../data/inquiryOptions';
 import {
   Check,
   Building2,
@@ -199,6 +200,8 @@ export const PricingPage: React.FC = () => {
                       onClick={() =>
                         openInquiry({
                           packageId: pkg.id,
+                          options: packageOptions(realEstatePackages),
+                          selectedOptionId: pkg.id,
                           title: pkg.title,
                           division: 'real-estate',
                           priceUSD: pkg.priceUSD,
@@ -324,6 +327,8 @@ export const PricingPage: React.FC = () => {
                             priceUSD: b.standard.usd,
                             billingFrequency: '/ month',
                             kicker: b.savingsLabel,
+                            options: videoBundleOptions(b.quantity),
+                            selectedOptionId: 'Standard',
                             features: [
                               `${b.quantity} custom videos / month`,
                               'TikTok & Instagram 9:16 + 16:9 widescreen formats',
@@ -386,6 +391,8 @@ export const PricingPage: React.FC = () => {
                         onClick={() =>
                           openInquiry({
                             packageId: pkg.id,
+                            options: packageOptions(aiContentPackages),
+                            selectedOptionId: pkg.id,
                             title: pkg.title,
                             division: 'ai-content',
                             priceUSD: pkg.priceUSD,
@@ -466,6 +473,8 @@ export const PricingPage: React.FC = () => {
                       onClick={() =>
                         openInquiry({
                           packageId: pkg.id,
+                          options: packageOptions(completeBusinessPackages),
+                          selectedOptionId: pkg.id,
                           title: pkg.title,
                           division: 'general',
                           priceUSD: pkg.priceUSD,

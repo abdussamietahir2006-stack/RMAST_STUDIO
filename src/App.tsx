@@ -12,6 +12,9 @@ import { StudioAssistant } from './components/common/StudioAssistant';
 import { InquiryModal } from './components/inquiry/InquiryModal';
 import { getRouteMeta } from './seo/meta';
 import { applyHeadTags } from './seo/head';
+import { MotionProvider } from './components/motion/MotionProvider';
+import { PageTransition } from './components/motion/PageTransition';
+import { useSiteMotion } from './components/motion/useSiteMotion';
 
 // Pages are code-split so each route only downloads what it renders. Each page can also be
 // preloaded: once loaded it renders synchronously, which lets the prerenderer emit complete HTML
@@ -98,6 +101,8 @@ export const preloadAllPages = () =>
 
 const AppRouter: React.FC = () => {
   const { currentPath } = useNavigation();
+  // Scroll reveals and card spotlight on the public site (not the dashboard)
+  useSiteMotion(currentPath.startsWith('/admin') ? '' : currentPath);
   const route = resolveRoute(currentPath);
 
   // Titles, descriptions, canonical and social tags come from the same data the prerenderer uses
@@ -163,7 +168,9 @@ const AppRouter: React.FC = () => {
       <Navbar />
 
       <main className="flex-1 relative z-10">
-        <Suspense fallback={<div className="min-h-screen" aria-busy="true" />}>{renderRoute()}</Suspense>
+        <Suspense fallback={<div className="min-h-screen" aria-busy="true" />}>
+          <PageTransition routeKey={currentPath}>{renderRoute()}</PageTransition>
+        </Suspense>
       </main>
 
       <Footer />
@@ -181,6 +188,7 @@ const AppRouter: React.FC = () => {
 // initialPath lets the build-time prerenderer render any page without a browser
 export default function App({ initialPath }: { initialPath?: string } = {}) {
   return (
+    <MotionProvider>
     <ThemeProvider>
       <CurrencyProvider>
         <NavigationProvider initialPath={initialPath}>
@@ -192,5 +200,6 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
         </NavigationProvider>
       </CurrencyProvider>
     </ThemeProvider>
+    </MotionProvider>
   );
 }

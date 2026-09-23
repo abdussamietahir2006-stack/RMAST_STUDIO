@@ -8,6 +8,7 @@ import {
 } from '../data/pricingData';
 import { servicesData } from '../data/servicesData';
 import { ServiceMedia } from '../components/media/ServiceMedia';
+import { videoBundleOptions, videoTierOptions } from '../data/inquiryOptions';
 import {
   ArrowRight,
   Check
@@ -272,7 +273,9 @@ export const AiContentPage: React.FC = () => {
                         priceUSD: tier.priceUSD,
                         billingFrequency: '/ video',
                         kicker: `${tier.tier} Cinematic Standard`,
-                        features: [tier.description, 'Sound design and color grading included', '4K master export']
+                        features: [tier.description, 'Sound design and color grading included', '4K master export'],
+                        options: videoTierOptions(),
+                        selectedOptionId: tier.tier
                       })
                     }
                     className="w-full py-3 text-xs font-semibold uppercase tracking-[0.16em] border border-[#27272A] hover:border-[#C9A96E] text-[#FAF8F5] transition-colors cursor-pointer"
@@ -352,6 +355,8 @@ export const AiContentPage: React.FC = () => {
                         priceUSD: bundle.standard.usd,
                         billingFrequency: '/ month',
                         kicker: bundle.savingsLabel,
+                        options: videoBundleOptions(bundle.quantity),
+                        selectedOptionId: 'Standard',
                         features: [
                           `${bundle.quantity} High-Definition videos delivered every month`,
                           'Monthly creative direction and storyboard alignment',

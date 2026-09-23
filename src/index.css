@@ -312,3 +312,123 @@ html.theme-light:not(.admin-mode) footer {
   color: #475569 !important;
 }
 
+
+/* ==========================================================
+   MOTION & INTERACTION LAYER
+   Pure CSS on top of existing markup. Utilities still win (components layer),
+   and everything is disabled for visitors who prefer reduced motion.
+   ========================================================== */
+
+/* Scroll reveal: classes are added by useSiteMotion only to elements below the fold */
+.rv {
+  opacity: 0;
+  transform: translate3d(0, 28px, 0);
+  transition:
+    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1) var(--rv-delay, 0ms),
+    transform 0.8s cubic-bezier(0.22, 1, 0.36, 1) var(--rv-delay, 0ms);
+}
+.rv.rv-in {
+  opacity: 1;
+  transform: none;
+}
+
+@layer components {
+  /* Cards: bordered blocks in grids, hover groups, or anything marked .fx-card */
+  :where(html:not(.admin-mode) main) :is(.grid > div[class*='border'], div.group[class*='border'], .fx-card):not(.grid .grid > div) {
+    position: relative;
+    isolation: isolate;
+    transition:
+      translate 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 0.3s ease;
+  }
+  :where(html:not(.admin-mode) main) :is(.grid > div[class*='border'], div.group[class*='border'], .fx-card):not(.grid .grid > div):hover {
+    translate: 0 -4px;
+    border-color: rgba(201, 169, 110, 0.55);
+    box-shadow:
+      0 28px 60px -28px rgba(201, 169, 110, 0.32),
+      0 0 0 1px rgba(201, 169, 110, 0.18);
+  }
+  /* Soft gold spotlight that follows the cursor (position set by useSiteMotion) */
+  :where(html:not(.admin-mode) main) :is(.grid > div[class*='border'], div.group[class*='border'], .fx-card):not(.grid .grid > div)::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    background: radial-gradient(
+      480px circle at var(--mx, 50%) var(--my, 0%),
+      rgba(201, 169, 110, 0.13),
+      transparent 45%
+    );
+    z-index: 1;
+  }
+  :where(html:not(.admin-mode) main) :is(.grid > div[class*='border'], div.group[class*='border'], .fx-card):not(.grid .grid > div):hover::after {
+    opacity: 1;
+  }
+
+  /* Gold buttons: a light sweep on hover */
+  .btn-shine,
+  :where(button, a)[class*='bg-[#C9A96E]'] {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .btn-shine::before,
+  :where(button, a)[class*='bg-[#C9A96E]']::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.45) 50%, transparent 70%);
+    translate: -120% 0;
+    transition: translate 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .btn-shine:hover::before,
+  :where(button, a)[class*='bg-[#C9A96E]']:hover::before {
+    translate: 120% 0;
+  }
+
+  /* Form fields on the site: gold focus glow */
+  :where(html:not(.admin-mode) main) :is(input, textarea, select) {
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.25s ease;
+  }
+  :where(html:not(.admin-mode) main) :is(input, textarea, select):focus {
+    box-shadow: 0 0 0 3px rgba(201, 169, 110, 0.15);
+  }
+}
+
+/* Small entrance used by tooltips and popovers */
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.animate-pop-in {
+  animation: pop-in 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rv {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

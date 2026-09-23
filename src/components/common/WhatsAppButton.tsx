@@ -12,7 +12,7 @@ export const WhatsAppButton: React.FC = () => {
     <div className="fixed bottom-20 right-6 z-40 flex flex-col items-end">
       {/* Rich Founder WhatsApp Tooltip Card */}
       {showTooltip && (
-        <div className="mb-2 bg-[#0E0E12] border border-[#2A2A34] text-[#FAF8F5] p-3 rounded-sm shadow-2xl w-64 animate-in fade-in slide-in-from-bottom-2 duration-200">
+        <div className="mb-2 bg-[#0E0E12] border border-[#2A2A34] text-[#FAF8F5] p-3 rounded-sm shadow-2xl w-64 animate-pop-in">
           <div className="flex items-center justify-between pb-1.5 border-b border-[#1E1E26] text-[10px] font-mono">
             <span className="text-[#25D366] flex items-center gap-1.5 font-semibold">
               <span className="w-1.5 h-1.5 rounded-full bg-[#25D366] animate-pulse"></span>

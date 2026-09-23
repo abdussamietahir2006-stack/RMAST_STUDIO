@@ -82,6 +82,19 @@ export interface Founder {
   linkedin?: string;
 }
 
+// One selectable tier inside the inquiry popup (e.g. Starter / Standard / Professional)
+export interface InquiryOption {
+  id: string;
+  label: string;
+  title: string;
+  priceUSD: number;
+  billingFrequency: string;
+  packageId?: string;
+  description?: string;
+  features?: string[];
+  badge?: string;
+}
+
 export interface InquiryTarget {
   serviceId?: string;
   packageId?: string;
@@ -91,6 +104,9 @@ export interface InquiryTarget {
   billingFrequency?: string;
   kicker?: string;
   features?: string[];
+  // When present, the visitor can switch between these tiers inside the popup
+  options?: InquiryOption[];
+  selectedOptionId?: string;
 }
 
 export type DispatchMethod = 'whatsapp' | 'email' | 'form' | 'contact-form';

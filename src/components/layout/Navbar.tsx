@@ -5,6 +5,7 @@ import { CurrencyToggle } from '../common/CurrencyToggle';
 import { ThemeToggle } from '../common/ThemeToggle';
 import { CONTACT } from '../../config/contact';
 import { servicesData } from '../../data/servicesData';
+import { AnimatePresence, m } from 'motion/react';
 import { Menu, X, ArrowUpRight, ChevronDown, Compass, LayoutGrid, Tag } from 'lucide-react';
 
 type DivisionId = 'real-estate' | 'ai-content';
@@ -295,8 +296,13 @@ export const Navbar: React.FC = () => {
       </header>
 
       {/* Mobile / tablet drawer */}
+      <AnimatePresence>
       {mobileMenuOpen && (
-        <div
+        <m.div
+          initial={{ opacity: 0, y: -12 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -12 }}
+          transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
           className={`fixed inset-0 z-40 backdrop-blur-xl flex flex-col pt-24 px-8 pb-10 justify-between lg:hidden overflow-y-auto ${
             isLight ? 'bg-white/95 text-slate-900' : 'bg-[#0A0C14]/95 text-[#E4E4E7]'
           }`}
@@ -357,8 +363,9 @@ export const Navbar: React.FC = () => {
               <ArrowUpRight className="w-4 h-4" />
             </button>
           </div>
-        </div>
+        </m.div>
       )}
+      </AnimatePresence>
     </>
   );
 };

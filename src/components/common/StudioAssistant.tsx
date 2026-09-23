@@ -3,6 +3,7 @@ import { useNavigation } from '../../context/NavigationContext';
 import { useCurrency } from '../../context/CurrencyContext';
 import { CONTACT } from '../../config/contact';
 import { askAssistant } from '../../lib/api';
+import { AnimatePresence, m } from 'motion/react';
 import { Sparkles, X, Send, ArrowRight, Bot } from 'lucide-react';
 
 interface Message {
@@ -185,11 +186,17 @@ export const StudioAssistant: React.FC = () => {
       </div>
 
       {/* Assistant Window */}
+      <AnimatePresence>
       {isOpen && (
-        <div
+        <m.div
           role="dialog"
           aria-label="RMAST Assistant"
-          className="fixed bottom-20 right-6 z-50 w-[92vw] max-w-md bg-[#0D0D10] border border-[#27272A] shadow-2xl rounded-sm flex flex-col max-h-[75vh] overflow-hidden"
+          initial={{ opacity: 0, y: 24, scale: 0.94 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 16, scale: 0.96 }}
+          transition={{ type: 'spring', stiffness: 320, damping: 28 }}
+          style={{ transformOrigin: 'bottom right' }}
+          className="fixed bottom-20 right-6 z-50 w-[92vw] max-w-md bg-[#0D0D10]/95 backdrop-blur-xl border border-[#2A2A34] shadow-[0_30px_80px_-20px_rgba(0,0,0,0.8),0_0_0_1px_rgba(201,169,110,0.1)] rounded-xl flex flex-col max-h-[75vh] overflow-hidden"
         >
           {/* Header */}
           <div className="p-4 bg-[#121216] border-b border-[#202026] flex items-center justify-between">
@@ -213,33 +220,39 @@ export const StudioAssistant: React.FC = () => {
 
           {/* Chat Messages */}
           <div className="p-4 flex-1 overflow-y-auto space-y-3.5 text-xs text-[#E4E4E7]" aria-live="polite">
-            {messages.map((m) => (
-              <div key={m.id} className={`flex flex-col ${m.sender === 'user' ? 'items-end' : 'items-start'}`}>
+            {messages.map((msg) => (
+              <m.div
+                key={msg.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}
+              >
                 <div
                   className={`p-3 rounded-sm max-w-[85%] whitespace-pre-line leading-relaxed ${
-                    m.sender === 'user'
+                    msg.sender === 'user'
                       ? 'bg-[#C9A96E] text-[#0A0A0C] font-medium'
                       : 'bg-[#18181D] border border-[#26262E] text-[#D4D4D8]'
                   }`}
                 >
-                  {m.text}
+                  {msg.text}
                 </div>
 
-                {m.action && (
+                {msg.action && (
                   <button
                     onClick={() => {
-                      if (m.action) {
-                        navigate(m.action.path);
+                      if (msg.action) {
+                        navigate(msg.action.path);
                         setIsOpen(false);
                       }
                     }}
                     className="mt-2 inline-flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-wider text-[#C9A96E] hover:underline cursor-pointer"
                   >
-                    <span>{m.action.label}</span>
+                    <span>{msg.action.label}</span>
                     <ArrowRight className="w-3 h-3" />
                   </button>
                 )}
-              </div>
+              </m.div>
             ))}
             {isThinking && (
               <div className="flex items-start">
@@ -288,8 +301,9 @@ export const StudioAssistant: React.FC = () => {
               <Send className="w-3.5 h-3.5" />
             </button>
           </form>
-        </div>
+        </m.div>
       )}
+      </AnimatePresence>
     </>
   );
 };

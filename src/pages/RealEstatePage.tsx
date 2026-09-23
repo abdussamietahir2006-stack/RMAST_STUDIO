@@ -3,6 +3,7 @@ import { useNavigation } from '../context/NavigationContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { useInquiry } from '../context/InquiryContext';
 import { realEstatePackages } from '../data/pricingData';
+import { packageOptions } from '../data/inquiryOptions';
 import { servicesData } from '../data/servicesData';
 import { WorkflowInteractive } from '../components/real-estate/WorkflowInteractive';
 import {
@@ -279,6 +280,8 @@ export const RealEstatePage: React.FC = () => {
                   onClick={() =>
                     openInquiry({
                       packageId: pkg.id,
+                      options: packageOptions(realEstatePackages),
+                      selectedOptionId: pkg.id,
                       title: pkg.title,
                       division: 'real-estate',
                       priceUSD: pkg.priceUSD,

@@ -24,9 +24,9 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode; initialPa
 
   useEffect(() => {
     const handlePopState = () => {
+      // Scrolling to the top happens in PageTransition, between the old page leaving and the new one entering
       setCurrentPath(window.location.pathname || '/');
       setSearch(window.location.search);
-      window.scrollTo({ top: 0, behavior: 'instant' });
     };
 
     window.addEventListener('popstate', handlePopState);
@@ -43,9 +43,10 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode; initialPa
     }
 
     window.history.pushState({}, '', url.pathname + url.search + url.hash);
+    // Same page with a different query (e.g. a pricing tab): no transition runs, so scroll here
+    if (url.pathname === currentPath) window.scrollTo({ top: 0, behavior: 'smooth' });
     setCurrentPath(url.pathname);
     setSearch(url.search);
-    window.scrollTo({ top: 0, behavior: 'instant' });
   };
 
   return (
