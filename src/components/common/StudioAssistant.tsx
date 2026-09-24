@@ -24,8 +24,10 @@ interface Message {
 type Reply = Pick<Message, 'text' | 'action' | 'pdf'>;
 
 const PDF_CHIP = 'Download price list (PDF)';
+const PROFILE_CHIP = 'Company profile & portfolio (PDF)';
 
 const quickQuestions = [
+  PROFILE_CHIP,
   PDF_CHIP,
   'What does RMAST do?',
   'What services are available?',
@@ -36,10 +38,14 @@ const quickQuestions = [
   'What AI video services are available?'
 ];
 
-const PDF_SHEETS: { sheet: PriceSheet; label: string }[] = [
-  { sheet: 'all', label: 'All services' },
-  { sheet: 'real-estate', label: 'Real Estate' },
-  { sheet: 'ai-content', label: 'Brands & Content' }
+// The company profile, or one of the price lists
+type PdfKind = PriceSheet | 'profile';
+
+const PDF_OPTIONS: { kind: PdfKind; label: string }[] = [
+  { kind: 'profile', label: 'Company profile' },
+  { kind: 'all', label: 'All prices' },
+  { kind: 'real-estate', label: 'Real Estate prices' },
+  { kind: 'ai-content', label: 'Brands & Content prices' }
 ];
 
 const SHEET_NAMES: Record<PriceSheet, string> = {
@@ -48,8 +54,15 @@ const SHEET_NAMES: Record<PriceSheet, string> = {
   'ai-content': 'Brands & Content'
 };
 
-// --- Price-list requests are answered in the browser (no AI call needed) ---
-const PDF_REQUEST = /\b(pdf|price ?list|rate ?card|brochure|quotation|download)\b/i;
+// --- Document requests are answered in the browser (no AI call needed) ---
+const DOC_WORDS = /\b(pdf|brochure|document|file|download|rate ?card|price ?list|quotation)\b/i;
+const SHARE_WORDS = /\b(share|send|bhej|bhejo|de ?do|chahiye)\b/i;
+const PROFILE_WORDS = /(portfolio|profile|brochure|company|agency|studio|what (do )?(you|your|rmast)|about (you|your|rmast)|overview|everything|full details|all details|details|introduction|baare|bare mein|kya kart)/i;
+const PRICE_WORDS = /(price|pricing|rate|cost|package|budget|quote|quotation|fee|charges)/i;
+
+function isDocumentRequest(text: string): boolean {
+  return DOC_WORDS.test(text) || (SHARE_WORDS.test(text) && /(portfolio|profile|details|price ?list)/i.test(text));
+}
 
 function requestedSheet(q: string): PriceSheet | null {
   const text = q.toLowerCase();
@@ -193,7 +206,7 @@ export const StudioAssistant: React.FC = () => {
   const [listening, setListening] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [speakReplies, setSpeakReplies] = useState(true);
-  const [pdfBusy, setPdfBusy] = useState<PriceSheet | null>(null);
+  const [pdfBusy, setPdfBusy] = useState<PdfKind | null>(null);
   const recognitionRef = useRef<Recognition | null>(null);
   // Hands-free conversation: after each spoken reply the mic opens again, until the visitor stops it
   const conversationRef = useRef(false);
@@ -250,11 +263,16 @@ export const StudioAssistant: React.FC = () => {
     synth.speak(utterance);
   };
 
-  const downloadPdf = async (sheet: PriceSheet) => {
-    setPdfBusy(sheet);
+  const downloadPdf = async (kind: PdfKind) => {
+    setPdfBusy(kind);
     try {
-      const { downloadPriceListPdf } = await import('../../lib/pricePdf');
-      downloadPriceListPdf(sheet, currency);
+      if (kind === 'profile') {
+        const { downloadCompanyProfilePdf } = await import('../../lib/companyProfilePdf');
+        downloadCompanyProfilePdf(currency);
+      } else {
+        const { downloadPriceListPdf } = await import('../../lib/pricePdf');
+        downloadPriceListPdf(kind, currency);
+      }
     } catch {
       setMessages((prev) => [
         ...prev,
@@ -274,13 +292,21 @@ export const StudioAssistant: React.FC = () => {
     setMessages(history);
 
     let reply: Reply;
-    if (text === PDF_CHIP || PDF_REQUEST.test(text)) {
-      const sheet = text === PDF_CHIP ? null : requestedSheet(text);
+    const wantsProfile = text === PROFILE_CHIP || (isDocumentRequest(text) && PROFILE_WORDS.test(text) && !PRICE_WORDS.test(text));
+    const wantsPrices = text === PDF_CHIP || (isDocumentRequest(text) && !wantsProfile);
+    if (wantsProfile) {
+      void downloadPdf('profile');
+      reply = {
+        text: 'Your RMAST Studio company profile is downloading now. It covers who we are, both divisions, every service in detail, our portfolio, how we work, the founders, packages and how to get in touch. Price lists are here too:',
+        pdf: true
+      };
+    } else if (wantsPrices) {
+      const sheet = text === PDF_CHIP || !PRICE_WORDS.test(text) ? null : requestedSheet(text);
       if (sheet) void downloadPdf(sheet);
       reply = {
         text: sheet
-          ? `Your ${SHEET_NAMES[sheet]} price list PDF is downloading now, in ${currency}. You can also download the other price lists here:`
-          : `Here are our price lists in ${currency}. Tap one to download the PDF:`,
+          ? `Your ${SHEET_NAMES[sheet]} price list PDF is downloading now, in ${currency}. You can also download these:`
+          : `Here are our documents (prices in ${currency}). Tap one to download the PDF:`,
         pdf: true
       };
     } else {
@@ -480,15 +506,15 @@ export const StudioAssistant: React.FC = () => {
 
                 {msg.pdf && (
                   <div className="mt-2 flex flex-wrap gap-1.5">
-                    {PDF_SHEETS.map(({ sheet, label }) => (
+                    {PDF_OPTIONS.map(({ kind, label }) => (
                       <button
-                        key={sheet}
-                        onClick={() => downloadPdf(sheet)}
+                        key={kind}
+                        onClick={() => downloadPdf(kind)}
                         disabled={pdfBusy !== null}
                         className="inline-flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-wider px-2.5 py-1.5 border border-[#A68BFF]/40 text-[#A68BFF] hover:bg-[#A68BFF]/10 transition-colors cursor-pointer disabled:opacity-50"
                       >
                         <FileDown className="w-3.5 h-3.5" />
-                        <span>{pdfBusy === sheet ? 'Preparing…' : label}</span>
+                        <span>{pdfBusy === kind ? 'Preparing…' : label}</span>
                       </button>
                     ))}
                   </div>
