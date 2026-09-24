@@ -1,5 +1,5 @@
 import { MongoClient, type Db } from 'mongodb';
-import type { InquiryStatus, LeadCategory, MediaKind, AdminUser } from '../types/index.js';
+import type { InquiryStatus, LeadCategory, MediaKind, AdminUser, SocialPost } from '../types/index.js';
 
 // ---------------------------------------------------------------------------
 // Document shapes
@@ -59,6 +59,12 @@ export interface MediaDoc {
   updatedBy: string;
 }
 
+// A generated Instagram carousel (dates stored as Date, returned to the dashboard as strings)
+export interface SocialPostDoc extends Omit<SocialPost, 'id' | 'createdAt'> {
+  _id: string;
+  createdAt: Date;
+}
+
 // ---------------------------------------------------------------------------
 // Connection (cached across serverless invocations)
 // ---------------------------------------------------------------------------
@@ -109,7 +115,12 @@ async function ensureIndexes(db: Db): Promise<void> {
     db.collection<SessionDoc>('sessions').createIndex({ userId: 1 }),
     db.collection<CounterDoc>('counters').createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 }),
     db.collection<LeadDoc>('leads').createIndex({ createdAt: -1 }),
-    db.collection<LeadDoc>('leads').createIndex({ 'category.division': 1, 'category.group': 1, createdAt: -1 })
+    db.collection<LeadDoc>('leads').createIndex({ 'category.division': 1, 'category.group': 1, createdAt: -1 }),
+    db.collection<SocialPostDoc>('social_posts').createIndex({ createdAt: -1 }),
+    // At most one automatic idea per day, even if the cron and the dashboard ask at the same time
+    db
+      .collection<SocialPostDoc>('social_posts')
+      .createIndex({ day: 1 }, { unique: true, partialFilterExpression: { auto: true }, name: 'one_auto_post_per_day' })
   ]);
 }
 
@@ -118,5 +129,6 @@ export const collections = {
   users: async () => (await getDb()).collection<UserDoc>('users'),
   sessions: async () => (await getDb()).collection<SessionDoc>('sessions'),
   counters: async () => (await getDb()).collection<CounterDoc>('counters'),
-  media: async () => (await getDb()).collection<MediaDoc>('media')
+  media: async () => (await getDb()).collection<MediaDoc>('media'),
+  socialPosts: async () => (await getDb()).collection<SocialPostDoc>('social_posts')
 };

@@ -1,5 +1,5 @@
 import { request } from '../lib/api';
-import { AdminUser, InquiryStatus, LeadStats, MediaAsset, StoredInquiry } from '../types';
+import { AdminUser, InquiryStatus, LeadStats, MediaAsset, SocialPost, SocialPostStatus, StoredInquiry } from '../types';
 
 export { ApiError } from '../lib/api';
 
@@ -25,6 +25,14 @@ export const adminApi = {
   setStatus: (id: string, status: InquiryStatus) =>
     request<void>(`/api/admin/leads/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify({ status }) }),
   deleteLead: (id: string) => request<void>(`/api/admin/leads/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+
+  socialPosts: () => request<{ posts: SocialPost[]; ready: boolean }>('/api/admin/social'),
+  // Creates today's automatic idea if it doesn't exist yet (safe to call repeatedly)
+  socialToday: () => request<SocialPost>('/api/admin/social/today', { method: 'POST' }),
+  socialExtra: () => request<SocialPost>('/api/admin/social/extra', { method: 'POST' }),
+  setSocialStatus: (id: string, status: SocialPostStatus) =>
+    request<void>(`/api/admin/social/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify({ status }) }),
+  deleteSocialPost: (id: string) => request<void>(`/api/admin/social/${encodeURIComponent(id)}`, { method: 'DELETE' }),
 
   media: () => request<{ assets: MediaAsset[]; storageReady: boolean }>('/api/admin/media'),
   removeMedia: (key: string) => request<void>(`/api/admin/media/${encodeURIComponent(key)}`, { method: 'DELETE' }),

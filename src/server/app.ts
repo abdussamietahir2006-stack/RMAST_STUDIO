@@ -1,5 +1,5 @@
 import express, { type ErrorRequestHandler, type Express, type RequestHandler } from 'express';
-import type { InquiryStatus } from '../types/index.js';
+import type { InquiryStatus, SocialPostStatus } from '../types/index.js';
 import { collections, isDbConfigured } from './db.js';
 import {
   ah,
@@ -30,6 +30,7 @@ import { leadStats, listLeads, newLead, parseLead, STATUSES, toDoc } from './lea
 import { emailLead, isMailConfigured } from './mail.js';
 import { generateReply, isAssistantConfigured, parseTurns } from './assistant.js';
 import { handleUploadToken, isBlobConfigured, listMedia, publicMedia, removeMedia, saveMedia } from './media.js';
+import { createExtraPost, ensureTodayPost, isSocialConfigured, listSocialPosts, SOCIAL_STATUSES } from './social.js';
 
 const LOGIN_WINDOW_MS = 15 * 60 * 1000;
 const MAX_FAILED_LOGINS_PER_EMAIL = 5;
@@ -133,6 +134,27 @@ export function createApp(): Express {
     }
     next();
   };
+
+  // Daily social post, triggered by Vercel Cron (see "crons" in vercel.json). Vercel sends
+  // "Authorization: Bearer <CRON_SECRET>"; without that secret configured the route stays closed.
+  app.get(
+    '/api/cron/social-post',
+    noStore,
+    requireDb,
+    ah(async (req, res) => {
+      const secret = process.env.CRON_SECRET?.trim();
+      if (!secret || req.headers.authorization !== `Bearer ${secret}`) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
+      if (!isSocialConfigured()) {
+        res.status(503).json({ error: 'GEMINI_API_KEY is not configured' });
+        return;
+      }
+      const post = await ensureTodayPost();
+      res.json({ id: post.id, day: post.day, title: post.title });
+    })
+  );
 
   const auth = express.Router();
   auth.use(noStore, requireSameOrigin, requireDb);
@@ -285,6 +307,59 @@ export function createApp(): Express {
     '/media/:key',
     ah(async (req, res) => {
       res.status((await removeMedia(String(req.params.key))) ? 204 : 404).end();
+    })
+  );
+
+  // Social media manager: one AI-written carousel per day, plus extra ideas on request
+  const requireSocial: RequestHandler = (_req, res, next) => {
+    if (!isSocialConfigured()) {
+      res.status(503).json({ error: 'Post ideas need GEMINI_API_KEY to be configured.' });
+      return;
+    }
+    next();
+  };
+
+  admin.get(
+    '/social',
+    ah(async (_req, res) => {
+      res.json({ posts: await listSocialPosts(), ready: isSocialConfigured() });
+    })
+  );
+
+  admin.post(
+    '/social/today',
+    requireSocial,
+    ah(async (_req, res) => {
+      res.json(await ensureTodayPost());
+    })
+  );
+
+  admin.post(
+    '/social/extra',
+    requireSocial,
+    ah(async (_req, res) => {
+      res.status(201).json(await createExtraPost());
+    })
+  );
+
+  admin.patch(
+    '/social/:id',
+    ah(async (req, res) => {
+      const status = req.body?.status as SocialPostStatus;
+      if (!SOCIAL_STATUSES.includes(status)) {
+        res.status(400).json({ error: 'Invalid status' });
+        return;
+      }
+      const result = await (await collections.socialPosts()).updateOne({ _id: String(req.params.id) }, { $set: { status } });
+      res.status(result.matchedCount ? 204 : 404).end();
+    })
+  );
+
+  admin.delete(
+    '/social/:id',
+    ah(async (req, res) => {
+      const result = await (await collections.socialPosts()).deleteOne({ _id: String(req.params.id) });
+      res.status(result.deletedCount ? 204 : 404).end();
     })
   );
 

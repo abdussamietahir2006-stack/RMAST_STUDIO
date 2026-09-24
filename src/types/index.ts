@@ -186,3 +186,36 @@ export interface ChatTurn {
   role: 'user' | 'assistant';
   text: string;
 }
+
+// ---------------------------------------------------------------------------
+// Social media manager (dashboard): one AI-written Instagram carousel per day
+// ---------------------------------------------------------------------------
+
+// How a slide is laid out when drawn (see src/admin/social/slideRenderer.ts)
+export type SocialSlideLayout = 'cover' | 'list' | 'points' | 'statement' | 'cta';
+
+export interface SocialSlide {
+  layout: SocialSlideLayout;
+  kicker: string; // small uppercase label above the headline
+  headline: string; // white part of the headline
+  highlight: string; // aurora-gradient part of the headline (second line)
+  body: string; // supporting sentence
+  items: { label: string; value: string }[]; // "list" layout rows
+  points: { title: string; text: string }[]; // "points" layout (numbered)
+}
+
+export type SocialPostStatus = 'new' | 'downloaded' | 'posted' | 'skipped';
+
+export interface SocialPost {
+  id: string;
+  day: string; // YYYY-MM-DD in the studio's time zone
+  createdAt: string;
+  auto: boolean; // the day's automatic idea (false = extra idea requested from the dashboard)
+  status: SocialPostStatus;
+  pillar: string; // content angle used for the idea
+  title: string; // internal name for the idea
+  angle: string; // why this idea is worth posting
+  slides: SocialSlide[]; // always 4: cover, two content slides, call to action
+  caption: string;
+  hashtags: string[];
+}
