@@ -14,6 +14,8 @@ export interface ServiceDetail {
   startingPriceUSD: number;
   billingType: 'one-time' | 'monthly' | 'custom' | 'per-video';
   scopeNotes?: string;
+  // Hourly rate range, for work quoted by the hour
+  hourlyRateUSD?: { min: number; max: number };
   // Published tier prices, offered as choices in the inquiry popup
   tiers?: { name: string; priceUSD: number; note: string }[];
   relatedServiceSlugs?: string[];

@@ -9,7 +9,7 @@ export const Footer: React.FC = () => {
   return (
     <footer className="bg-[#0A0C14]/90 backdrop-blur-md border-t border-[#1E2230] text-[#A1A1AA] pt-20 pb-12 relative overflow-hidden">
       {/* Subtle top ambient glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-[1px] bg-gradient-to-r from-transparent via-[#C9A96E]/40 to-transparent pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-[1px] bg-gradient-to-r from-transparent via-[#A68BFF]/40 to-transparent pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-6 md:px-10">
         {/* Main Grid */}
@@ -20,7 +20,7 @@ export const Footer: React.FC = () => {
               <span className="font-serif text-3xl font-bold tracking-[0.18em] text-[#FAF8F5] block">
                 RMAST
               </span>
-              <p className="text-xs uppercase font-mono tracking-widest text-[#C9A96E]">
+              <p className="text-xs uppercase font-mono tracking-widest text-[#A68BFF]">
                 Digital Systems · AI Content Studio
               </p>
             </div>
@@ -45,7 +45,7 @@ export const Footer: React.FC = () => {
               <li>
                 <button
                   onClick={() => navigate('/services/web-development')}
-                  className="hover:text-[#C9A96E] transition-colors cursor-pointer text-left"
+                  className="hover:text-[#A68BFF] transition-colors cursor-pointer text-left"
                 >
                   Website Development
                 </button>
@@ -53,7 +53,7 @@ export const Footer: React.FC = () => {
               <li>
                 <button
                   onClick={() => navigate('/services/custom-software')}
-                  className="hover:text-[#C9A96E] transition-colors cursor-pointer text-left"
+                  className="hover:text-[#A68BFF] transition-colors cursor-pointer text-left"
                 >
                   Custom Software
                 </button>
@@ -61,7 +61,7 @@ export const Footer: React.FC = () => {
               <li>
                 <button
                   onClick={() => navigate('/services/crm-development')}
-                  className="hover:text-[#C9A96E] transition-colors cursor-pointer text-left"
+                  className="hover:text-[#A68BFF] transition-colors cursor-pointer text-left"
                 >
                   CRM Architecture
                 </button>
@@ -69,7 +69,7 @@ export const Footer: React.FC = () => {
               <li>
                 <button
                   onClick={() => navigate('/services/ai-automation')}
-                  className="hover:text-[#C9A96E] transition-colors cursor-pointer text-left"
+                  className="hover:text-[#A68BFF] transition-colors cursor-pointer text-left"
                 >
                   AI Automation
                 </button>
@@ -77,7 +77,7 @@ export const Footer: React.FC = () => {
               <li>
                 <button
                   onClick={() => navigate('/services/ai-assistants')}
-                  className="hover:text-[#C9A96E] transition-colors cursor-pointer text-left"
+                  className="hover:text-[#A68BFF] transition-colors cursor-pointer text-left"
                 >
                   Conversational AI
                 </button>
@@ -85,7 +85,7 @@ export const Footer: React.FC = () => {
               <li>
                 <button
                   onClick={() => navigate('/services/admin-support')}
-                  className="hover:text-[#C9A96E] transition-colors cursor-pointer text-left"
+                  className="hover:text-[#A68BFF] transition-colors cursor-pointer text-left"
                 >
                   Admin Operations & VA
                 </button>
@@ -102,7 +102,7 @@ export const Footer: React.FC = () => {
               <li>
                 <button
                   onClick={() => navigate('/ai-content/real-estate')}
-                  className="hover:text-[#C9A96E] transition-colors cursor-pointer text-left"
+                  className="hover:text-[#A68BFF] transition-colors cursor-pointer text-left"
                 >
                   Property Cinematic Tours
                 </button>
@@ -110,7 +110,7 @@ export const Footer: React.FC = () => {
               <li>
                 <button
                   onClick={() => navigate('/ai-content/fashion')}
-                  className="hover:text-[#C9A96E] transition-colors cursor-pointer text-left"
+                  className="hover:text-[#A68BFF] transition-colors cursor-pointer text-left"
                 >
                   Fashion & Lookbook Films
                 </button>
@@ -118,7 +118,7 @@ export const Footer: React.FC = () => {
               <li>
                 <button
                   onClick={() => navigate('/ai-content/food')}
-                  className="hover:text-[#C9A96E] transition-colors cursor-pointer text-left"
+                  className="hover:text-[#A68BFF] transition-colors cursor-pointer text-left"
                 >
                   Food & Restaurant Cinema
                 </button>
@@ -126,7 +126,7 @@ export const Footer: React.FC = () => {
               <li>
                 <button
                   onClick={() => navigate('/ai-content/products')}
-                  className="hover:text-[#C9A96E] transition-colors cursor-pointer text-left"
+                  className="hover:text-[#A68BFF] transition-colors cursor-pointer text-left"
                 >
                   Product Commercials
                 </button>
@@ -134,7 +134,7 @@ export const Footer: React.FC = () => {
               <li>
                 <button
                   onClick={() => navigate('/ai-content')}
-                  className="hover:text-[#C9A96E] transition-colors cursor-pointer text-left"
+                  className="hover:text-[#A68BFF] transition-colors cursor-pointer text-left"
                 >
                   Brand Advertising Cuts
                 </button>
@@ -142,7 +142,7 @@ export const Footer: React.FC = () => {
               <li>
                 <button
                   onClick={() => navigate('/pricing')}
-                  className="hover:text-[#C9A96E] transition-colors cursor-pointer text-left"
+                  className="hover:text-[#A68BFF] transition-colors cursor-pointer text-left"
                 >
                   Monthly Content Bundles
                 </button>
@@ -158,9 +158,9 @@ export const Footer: React.FC = () => {
             <div className="space-y-3 text-xs">
               <a
                 href={mailtoLink()}
-                className="flex items-center gap-2 text-[#FAF8F5] hover:text-[#C9A96E] transition-colors break-all"
+                className="flex items-center gap-2 text-[#FAF8F5] hover:text-[#A68BFF] transition-colors break-all"
               >
-                <Mail className="w-3.5 h-3.5 text-[#C9A96E] shrink-0" />
+                <Mail className="w-3.5 h-3.5 text-[#A68BFF] shrink-0" />
                 <span>{CONTACT.email}</span>
               </a>
 
@@ -168,9 +168,9 @@ export const Footer: React.FC = () => {
                 href={whatsappLink()}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-[#FAF8F5] hover:text-[#C9A96E] transition-colors"
+                className="flex items-center gap-2 text-[#FAF8F5] hover:text-[#A68BFF] transition-colors"
               >
-                <MessageSquare className="w-3.5 h-3.5 text-[#C9A96E] shrink-0" />
+                <MessageSquare className="w-3.5 h-3.5 text-[#A68BFF] shrink-0" />
                 <span>{CONTACT.whatsappDisplay}</span>
               </a>
 
@@ -178,9 +178,9 @@ export const Footer: React.FC = () => {
                 href={CONTACT.instagramUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-[#FAF8F5] hover:text-[#C9A96E] transition-colors"
+                className="flex items-center gap-2 text-[#FAF8F5] hover:text-[#A68BFF] transition-colors"
               >
-                <Instagram className="w-3.5 h-3.5 text-[#C9A96E] shrink-0" />
+                <Instagram className="w-3.5 h-3.5 text-[#A68BFF] shrink-0" />
                 <span>@{CONTACT.instagramHandle}</span>
               </a>
 
@@ -222,7 +222,7 @@ export const Footer: React.FC = () => {
             </button>
             <button
               onClick={() => navigate('/contact')}
-              className="hover:text-[#FAF8F5] transition-colors text-[#C9A96E]"
+              className="hover:text-[#FAF8F5] transition-colors text-[#A68BFF]"
             >
               Start Conversation
             </button>

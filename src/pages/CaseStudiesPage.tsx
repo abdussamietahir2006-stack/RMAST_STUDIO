@@ -13,14 +13,14 @@ export const CaseStudiesPage: React.FC = () => {
         {/* Header */}
         <section className="space-y-6 max-w-4xl">
           <div className="flex items-center gap-3">
-            <span className="text-xs font-mono uppercase tracking-[0.25em] text-[#C9A96E]">
+            <span className="text-xs font-mono uppercase tracking-[0.25em] text-[#A68BFF]">
               Technical Breakdowns
             </span>
           </div>
 
           <h1 className="font-serif text-5xl sm:text-7xl lg:text-8xl font-bold text-[#FAF8F5] leading-[1.02] tracking-tight">
             Case Studies: Architecture, <br />
-            <span className="italic font-light text-[#C9A96E]">Execution & Outcomes.</span>
+            <span className="italic font-light text-[#A68BFF]">Execution & Outcomes.</span>
           </h1>
 
           <p className="text-base sm:text-lg text-[#A1A1AA] leading-relaxed font-light">
@@ -39,7 +39,7 @@ export const CaseStudiesPage: React.FC = () => {
               <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 pb-8 border-b border-[#1C1C22]">
                 <div className="space-y-2">
                   <div className="flex items-center gap-3 text-xs font-mono">
-                    <span className="text-[#C9A96E] uppercase tracking-wider">
+                    <span className="text-[#A68BFF] uppercase tracking-wider">
                       {project.division === 'real-estate' ? 'Real Estate Systems' : 'AI Content Studio'}
                     </span>
                     <span className="text-[#3F3F46]">·</span>
@@ -54,7 +54,7 @@ export const CaseStudiesPage: React.FC = () => {
                 </div>
 
                 <div className="text-right">
-                  <span className="px-3 py-1 bg-[#15151C] border border-[#27272F] text-xs font-mono text-[#C9A96E]">
+                  <span className="px-3 py-1 bg-[#15151C] border border-[#27272F] text-xs font-mono text-[#A68BFF]">
                     {project.category}
                   </span>
                 </div>
@@ -85,7 +85,7 @@ export const CaseStudiesPage: React.FC = () => {
 
                 {/* Solutions */}
                 <div className="p-6 bg-[#0A0C14]/80 border border-[#1E2232] space-y-4">
-                  <div className="text-xs font-mono uppercase tracking-widest text-[#C9A96E] flex items-center gap-2">
+                  <div className="text-xs font-mono uppercase tracking-widest text-[#A68BFF] flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-[#10B981]" />
                     <span>Architectural Interventions</span>
                   </div>
@@ -103,7 +103,7 @@ export const CaseStudiesPage: React.FC = () => {
               {/* Deliverables & Outcome Bar */}
               <div className="pt-6 border-t border-[#1C1C22] grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                 <div className="lg:col-span-8 space-y-2">
-                  <div className="text-[10px] font-mono uppercase tracking-widest text-[#C9A96E]">
+                  <div className="text-[10px] font-mono uppercase tracking-widest text-[#A68BFF]">
                     Production Outcome
                   </div>
                   <p className="text-sm text-[#FAF8F5] leading-relaxed">
@@ -114,7 +114,7 @@ export const CaseStudiesPage: React.FC = () => {
                 <div className="lg:col-span-4 flex justify-end">
                   <button
                     onClick={() => navigate('/contact')}
-                    className="w-full sm:w-auto px-6 py-3 bg-[#C9A96E] text-[#0A0A0C] text-xs font-semibold uppercase tracking-wider hover:bg-[#D9B97E] transition-all cursor-pointer"
+                    className="w-full sm:w-auto px-6 py-3 bg-[#A68BFF] text-[#0A0A0C] text-xs font-semibold uppercase tracking-wider hover:bg-[#BBA6FF] transition-all cursor-pointer"
                   >
                     Build Similar System
                   </button>

@@ -1,7 +1,7 @@
-import React, { Suspense, lazy, useEffect } from 'react';
+import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { NavigationProvider, useNavigation } from './context/NavigationContext';
 import { CurrencyProvider } from './context/CurrencyContext';
-import { InquiryProvider } from './context/InquiryContext';
+import { InquiryProvider, useInquiry } from './context/InquiryContext';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { SiteContentProvider } from './context/SiteContentContext';
 import { Navbar } from './components/layout/Navbar';
@@ -9,7 +9,6 @@ import { Footer } from './components/layout/Footer';
 import { PageBackground } from './components/layout/PageBackground';
 import { WhatsAppButton } from './components/common/WhatsAppButton';
 import { StudioAssistant } from './components/common/StudioAssistant';
-import { InquiryModal } from './components/inquiry/InquiryModal';
 import { getRouteMeta } from './seo/meta';
 import { applyHeadTags } from './seo/head';
 import { MotionProvider } from './components/motion/MotionProvider';
@@ -45,6 +44,28 @@ const ProcessPage = named(() => import('./pages/ProcessPage'), 'ProcessPage');
 const ContactPage = named(() => import('./pages/ContactPage'), 'ContactPage');
 const AdminApp = named(() => import('./admin/AdminApp'), 'AdminApp');
 const NotFoundPage = named(() => import('./pages/NotFoundPage'), 'NotFoundPage');
+
+// The inquiry popup is only needed once someone asks for it: it is fetched while the browser is
+// idle after the page loads (so opening it is still instant) and rendered from its first opening.
+const loadInquiryModal = () => import('./components/inquiry/InquiryModal');
+const InquiryModal = lazy(() => loadInquiryModal().then((m) => ({ default: m.InquiryModal })));
+
+const InquiryHost: React.FC = () => {
+  const { isInquiryOpen } = useInquiry();
+  const [wanted, setWanted] = useState(false);
+  if (isInquiryOpen && !wanted) setWanted(true);
+
+  useEffect(() => {
+    const idle = window.requestIdleCallback ?? ((cb: () => void) => window.setTimeout(cb, 2500));
+    idle(() => void loadInquiryModal());
+  }, []);
+
+  return wanted ? (
+    <Suspense fallback={null}>
+      <InquiryModal />
+    </Suspense>
+  ) : null;
+};
 
 // Pages that exist outside the service detail routes
 const STATIC_PATHS = new Set([
@@ -159,8 +180,8 @@ const AppRouter: React.FC = () => {
   return (
     <div
       className={`min-h-screen ${
-        isLight ? 'bg-[#F8FAFC] text-[#0F172A]' : 'bg-[#0A0C13] text-[#E8E6E1]'
-      } flex flex-col justify-between selection:bg-[#C9A96E]/20 selection:text-[#FAF8F5] relative transition-colors duration-500`}
+        isLight ? 'bg-[#F8FAFC] text-[#0F172A]' : 'bg-[#000000] text-[#E8E6E1]'
+      } flex flex-col justify-between selection:bg-[#A68BFF]/20 selection:text-[#FAF8F5] relative transition-colors duration-500`}
     >
       {/* Route-aware studio background image (both themes) */}
       <PageBackground />
@@ -180,7 +201,7 @@ const AppRouter: React.FC = () => {
       <StudioAssistant />
 
       {/* Service / package inquiry modal (WhatsApp, email, or direct form submission) */}
-      <InquiryModal />
+      <InquiryHost />
     </div>
   );
 };

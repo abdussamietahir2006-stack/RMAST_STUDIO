@@ -13,14 +13,14 @@ export const AboutPage: React.FC = () => {
         {/* Editorial Header */}
         <section className="space-y-6 max-w-4xl">
           <div className="flex items-center gap-3">
-            <span className="text-xs font-mono uppercase tracking-[0.25em] text-[#C9A96E]">
+            <span className="text-xs font-mono uppercase tracking-[0.25em] text-[#A68BFF]">
               Studio Origin & Principles
             </span>
           </div>
 
           <h1 className="font-serif text-5xl sm:text-7xl lg:text-8xl font-bold text-[#FAF8F5] leading-[1.02] tracking-tight">
             Small team. <br />
-            <span className="italic font-light text-[#C9A96E]">Serious execution.</span>
+            <span className="italic font-light text-[#A68BFF]">Serious execution.</span>
           </h1>
 
           <p className="text-xl sm:text-2xl font-light text-[#A1A1AA] leading-relaxed">
@@ -31,7 +31,7 @@ export const AboutPage: React.FC = () => {
         {/* Mission & Vision Bento */}
         <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="p-8 md:p-10 bg-[#0E111C]/80 backdrop-blur-md border border-[#232738]/80 space-y-4 shadow-xl">
-            <div className="text-xs font-mono uppercase tracking-widest text-[#C9A96E] flex items-center gap-2">
+            <div className="text-xs font-mono uppercase tracking-widest text-[#A68BFF] flex items-center gap-2">
               <Target className="w-4 h-4" />
               <span>Studio Mission</span>
             </div>
@@ -44,7 +44,7 @@ export const AboutPage: React.FC = () => {
           </div>
 
           <div className="p-8 md:p-10 bg-[#0E111C]/80 backdrop-blur-md border border-[#232738]/80 space-y-4 shadow-xl">
-            <div className="text-xs font-mono uppercase tracking-widest text-[#C9A96E] flex items-center gap-2">
+            <div className="text-xs font-mono uppercase tracking-widest text-[#A68BFF] flex items-center gap-2">
               <Zap className="w-4 h-4" />
               <span>Studio Vision</span>
             </div>
@@ -60,7 +60,7 @@ export const AboutPage: React.FC = () => {
         {/* The Two Founders: Strictly Abdussamie & Mashhood */}
         <section className="space-y-12">
           <div className="space-y-3">
-            <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#C9A96E]">
+            <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#A68BFF]">
               Leadership & Direct Execution
             </span>
             <h2 className="font-serif text-3xl md:text-4xl text-[#FAF8F5] font-semibold">
@@ -101,7 +101,7 @@ export const AboutPage: React.FC = () => {
                         </a>
                       )}
                     </div>
-                    <div className="text-xs font-mono uppercase tracking-wider text-[#C9A96E] mt-0.5">
+                    <div className="text-xs font-mono uppercase tracking-wider text-[#A68BFF] mt-0.5">
                       {founder.role} · {founder.title}
                     </div>
                   </div>
@@ -110,7 +110,7 @@ export const AboutPage: React.FC = () => {
                     {founder.bio}
                   </p>
 
-                  <blockquote className="p-4 bg-[#08080A] border-l-2 border-[#C9A96E] text-xs italic text-[#D4D4D8]">
+                  <blockquote className="p-4 bg-[#08080A] border-l-2 border-[#A68BFF] text-xs italic text-[#D4D4D8]">
                     "{founder.quote}"
                   </blockquote>
                 </div>
@@ -135,7 +135,7 @@ export const AboutPage: React.FC = () => {
         {/* Studio Working Sessions & Executive Meetings Showcase */}
         <section className="space-y-8">
           <div className="space-y-3">
-            <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#C9A96E]">
+            <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#A68BFF]">
               Studio In Session
             </span>
             <h2 className="font-serif text-3xl md:text-4xl text-[#FAF8F5] font-semibold">
@@ -156,7 +156,7 @@ export const AboutPage: React.FC = () => {
                 />
               </div>
               <div className="p-5 space-y-1 bg-[#0A0C14]/90 backdrop-blur-md border-t border-[#1E2232]">
-                <div className="text-[10px] font-mono text-[#C9A96E] uppercase tracking-wider">
+                <div className="text-[10px] font-mono text-[#A68BFF] uppercase tracking-wider">
                   SYSTEMS ENGINEERING
                 </div>
                 <h3 className="font-serif text-base text-[#FAF8F5] font-medium">
@@ -177,7 +177,7 @@ export const AboutPage: React.FC = () => {
                 />
               </div>
               <div className="p-5 space-y-1 bg-[#0A0C14]/90 backdrop-blur-md border-t border-[#1E2232]">
-                <div className="text-[10px] font-mono text-[#C9A96E] uppercase tracking-wider">
+                <div className="text-[10px] font-mono text-[#A68BFF] uppercase tracking-wider">
                   FOUNDER DISCOVERY
                 </div>
                 <h3 className="font-serif text-base text-[#FAF8F5] font-medium">
@@ -198,7 +198,7 @@ export const AboutPage: React.FC = () => {
                 />
               </div>
               <div className="p-5 space-y-1 bg-[#0A0C14]/90 backdrop-blur-md border-t border-[#1E2232]">
-                <div className="text-[10px] font-mono text-[#C9A96E] uppercase tracking-wider">
+                <div className="text-[10px] font-mono text-[#A68BFF] uppercase tracking-wider">
                   AI CONTENT STUDIO
                 </div>
                 <h3 className="font-serif text-base text-[#FAF8F5] font-medium">
@@ -215,7 +215,7 @@ export const AboutPage: React.FC = () => {
         {/* How We Work */}
         <section className="space-y-8 p-8 md:p-12 bg-[#0E111C]/80 backdrop-blur-md border border-[#232738]/80 shadow-xl">
           <div className="space-y-2">
-            <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#C9A96E]">
+            <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#A68BFF]">
               Operating Standard
             </span>
             <h2 className="font-serif text-2xl md:text-3xl text-[#FAF8F5] font-semibold">
@@ -226,7 +226,7 @@ export const AboutPage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pt-4">
             {studioPhilosophy.principles.map((p) => (
               <div key={p.number} className="p-6 bg-[#0A0C14]/80 border border-[#1E2232] space-y-2">
-                <span className="text-xs font-mono text-[#C9A96E] font-bold">
+                <span className="text-xs font-mono text-[#A68BFF] font-bold">
                   {p.number}
                 </span>
                 <h3 className="font-serif text-base text-[#FAF8F5] font-medium">
@@ -243,7 +243,7 @@ export const AboutPage: React.FC = () => {
         {/* Global Operations Footprint */}
         <section className="p-8 md:p-10 bg-[#0E111C]/85 backdrop-blur-md border border-[#232738]/80 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-xl">
           <div className="space-y-2">
-            <div className="text-xs font-mono uppercase tracking-wider text-[#C9A96E]">
+            <div className="text-xs font-mono uppercase tracking-wider text-[#A68BFF]">
               Remote First · Global Execution
             </div>
             <h3 className="font-serif text-2xl text-[#FAF8F5] font-semibold">
@@ -256,7 +256,7 @@ export const AboutPage: React.FC = () => {
 
           <button
             onClick={() => navigate('/contact')}
-            className="px-6 py-3.5 bg-[#C9A96E] text-[#0A0A0C] text-xs font-semibold uppercase tracking-[0.16em] hover:bg-[#D9B97E] transition-all cursor-pointer whitespace-nowrap"
+            className="px-6 py-3.5 bg-[#A68BFF] text-[#0A0A0C] text-xs font-semibold uppercase tracking-[0.16em] hover:bg-[#BBA6FF] transition-all cursor-pointer whitespace-nowrap"
           >
             Start Founder Dialogue
           </button>

@@ -19,7 +19,7 @@ export const CurrencyToggle: React.FC<CurrencyToggleProps> = ({ className = '' }
         onClick={() => setCurrency('USD')}
         className={`px-2.5 py-1 transition-all duration-200 cursor-pointer ${
           currency === 'USD'
-            ? 'bg-[#C9A96E] text-[#0A0A0C] font-semibold'
+            ? 'bg-[#A68BFF] text-[#0A0A0C] font-semibold'
             : 'text-[#9A9892] hover:text-[#FAF8F5]'
         }`}
         aria-pressed={currency === 'USD'}
@@ -31,7 +31,7 @@ export const CurrencyToggle: React.FC<CurrencyToggleProps> = ({ className = '' }
         onClick={() => setCurrency('AED')}
         className={`px-2.5 py-1 transition-all duration-200 cursor-pointer ${
           currency === 'AED'
-            ? 'bg-[#C9A96E] text-[#0A0A0C] font-semibold'
+            ? 'bg-[#A68BFF] text-[#0A0A0C] font-semibold'
             : 'text-[#9A9892] hover:text-[#FAF8F5]'
         }`}
         aria-pressed={currency === 'AED'}

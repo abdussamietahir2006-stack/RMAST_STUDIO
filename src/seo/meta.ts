@@ -30,7 +30,7 @@ const STATIC_PAGES: Record<string, StaticPage> = {
   '/real-estate': {
     title: 'Real Estate Websites, CRM & AI Automation | RMAST Studio',
     description:
-      'Custom websites, CRM systems, AI chatbots and lead automation for real estate brokerages and developers in the USA, UAE and Canada. Packages from $1,250.',
+      'Custom websites, CRM systems, AI chatbots and lead automation for real estate brokerages and developers in the USA, UAE and Canada. Packages from $800.',
     crumb: 'Real Estate'
   },
   '/ai-content': {

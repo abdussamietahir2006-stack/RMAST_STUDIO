@@ -88,7 +88,7 @@ const Field: React.FC<{
     <label htmlFor={id} className="flex items-center justify-between text-[11px] font-mono uppercase tracking-[0.14em] text-[#A1A1AA]">
       <span>
         {label}
-        {required && <span className="text-[#C9A96E]"> *</span>}
+        {required && <span className="text-[#A68BFF]"> *</span>}
       </span>
       <AnimatePresence>
         {error && (
@@ -108,11 +108,11 @@ const Field: React.FC<{
       key={error ? `err-${error}` : 'ok'}
       animate={error ? { x: [0, -6, 6, -4, 4, 0] } : { x: 0 }}
       transition={{ duration: 0.35 }}
-      className={`group/field relative flex items-center rounded-md border bg-[#080A11] transition-all duration-200 focus-within:border-[#C9A96E] focus-within:shadow-[0_0_0_3px_rgba(201,169,110,0.15),0_8px_30px_-12px_rgba(201,169,110,0.35)] ${
+      className={`group/field relative flex items-center rounded-md border bg-[#080A11] transition-all duration-200 focus-within:border-[#A68BFF] focus-within:shadow-[0_0_0_3px_rgba(166,139,255,0.15),0_8px_30px_-12px_rgba(166,139,255,0.35)] ${
         error ? 'border-[#7F1D1D]' : 'border-[#232838] hover:border-[#2E3550]'
       }`}
     >
-      <Icon className="absolute left-3.5 w-4 h-4 text-[#5B6070] transition-colors group-focus-within/field:text-[#C9A96E] pointer-events-none" />
+      <Icon className="absolute left-3.5 w-4 h-4 text-[#5B6070] transition-colors group-focus-within/field:text-[#A68BFF] pointer-events-none" />
       {children}
     </m.div>
   </div>
@@ -133,17 +133,17 @@ const SuccessMark: React.FC = () => (
     className="relative w-20 h-20 mx-auto"
   >
     <m.span
-      className="absolute inset-0 rounded-full bg-[#C9A96E]/20"
+      className="absolute inset-0 rounded-full bg-[#A68BFF]/20"
       initial={{ scale: 1, opacity: 0.6 }}
       animate={{ scale: 1.6, opacity: 0 }}
       transition={{ duration: 1.2, repeat: 2, ease: 'easeOut' }}
     />
     <svg viewBox="0 0 80 80" className="relative w-20 h-20">
-      <circle cx="40" cy="40" r="38" fill="rgba(201,169,110,0.12)" stroke="#C9A96E" strokeWidth="2" />
+      <circle cx="40" cy="40" r="38" fill="rgba(166,139,255,0.12)" stroke="#A68BFF" strokeWidth="2" />
       <m.path
         d="M25 41 L35 51 L56 30"
         fill="none"
-        stroke="#C9A96E"
+        stroke="#A68BFF"
         strokeWidth="4"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -391,11 +391,11 @@ const InquiryDialog: React.FC<{ target: InquiryTarget; onClose: () => void }> = 
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 24, scale: 0.97 }}
         transition={{ duration: 0.45, ease: EASE }}
-        className="relative z-10 w-full max-w-5xl min-h-screen sm:min-h-0 sm:my-8 outline-none grid grid-cols-1 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] overflow-hidden sm:rounded-xl border border-[#262B3D] bg-[#0B0E17] text-[#FAF8F5] shadow-[0_40px_120px_-20px_rgba(0,0,0,0.8),0_0_0_1px_rgba(201,169,110,0.08)]"
+        className="relative z-10 w-full max-w-5xl min-h-screen sm:min-h-0 sm:my-8 outline-none grid grid-cols-1 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] overflow-hidden sm:rounded-xl border border-[#262B3D] bg-[#0B0E17] text-[#FAF8F5] shadow-[0_40px_120px_-20px_rgba(0,0,0,0.8),0_0_0_1px_rgba(166,139,255,0.08)]"
       >
         {/* Animated gold edge */}
         <m.div
-          className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#C9A96E] to-transparent"
+          className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#A68BFF] to-transparent"
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
           transition={{ duration: 0.8, ease: EASE, delay: 0.1 }}
@@ -404,7 +404,7 @@ const InquiryDialog: React.FC<{ target: InquiryTarget; onClose: () => void }> = 
         <button
           onClick={onClose}
           aria-label="Close dialog"
-          className="fixed sm:absolute top-4 right-4 z-20 w-9 h-9 rounded-full backdrop-blur-md flex items-center justify-center text-[#8E92A0] hover:text-[#FAF8F5] bg-[#111522]/80 border border-[#262B3D] hover:border-[#C9A96E]/60 hover:rotate-90 transition-all duration-300 cursor-pointer"
+          className="fixed sm:absolute top-4 right-4 z-20 w-9 h-9 rounded-full backdrop-blur-md flex items-center justify-center text-[#8E92A0] hover:text-[#FAF8F5] bg-[#111522]/80 border border-[#262B3D] hover:border-[#A68BFF]/60 hover:rotate-90 transition-all duration-300 cursor-pointer"
         >
           <X className="w-4 h-4" />
         </button>
@@ -413,7 +413,7 @@ const InquiryDialog: React.FC<{ target: InquiryTarget; onClose: () => void }> = 
         <aside className="relative overflow-hidden p-6 sm:p-8 lg:p-9 border-b lg:border-b-0 lg:border-r border-[#1E2335] bg-[#0A0C14]">
           <div
             aria-hidden="true"
-            className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-[radial-gradient(circle,rgba(201,169,110,0.20)_0%,transparent_65%)] pointer-events-none"
+            className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-[radial-gradient(circle,rgba(166,139,255,0.20)_0%,transparent_65%)] pointer-events-none"
           />
           <div
             aria-hidden="true"
@@ -421,7 +421,7 @@ const InquiryDialog: React.FC<{ target: InquiryTarget; onClose: () => void }> = 
           />
 
           <div className="relative space-y-6">
-            <span className="inline-flex items-center gap-2 text-[10px] font-mono tracking-[0.2em] uppercase text-[#C9A96E] bg-[#C9A96E]/10 border border-[#C9A96E]/30 px-3 py-1 rounded-full">
+            <span className="inline-flex items-center gap-2 text-[10px] font-mono tracking-[0.2em] uppercase text-[#A68BFF] bg-[#A68BFF]/10 border border-[#A68BFF]/30 px-3 py-1 rounded-full">
               <DivisionIcon className="w-3 h-3" />
               {divisionLabel}
             </span>
@@ -450,7 +450,7 @@ const InquiryDialog: React.FC<{ target: InquiryTarget; onClose: () => void }> = 
                     animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                     exit={{ opacity: 0, y: -14, filter: 'blur(4px)' }}
                     transition={{ duration: 0.3, ease: EASE }}
-                    className="font-serif text-3xl sm:text-4xl font-bold text-[#C9A96E]"
+                    className="font-serif text-3xl sm:text-4xl font-bold text-[#A68BFF]"
                   >
                     {activeTarget.priceUSD ? format(activeTarget.priceUSD) : 'Custom'}
                   </m.span>
@@ -476,13 +476,13 @@ const InquiryDialog: React.FC<{ target: InquiryTarget; onClose: () => void }> = 
                         aria-checked={active}
                         onClick={() => setSelectedId(opt.id)}
                         className={`relative text-left rounded-lg border px-3 py-2.5 lg:px-4 lg:py-3 transition-colors duration-200 cursor-pointer ${
-                          active ? 'border-[#C9A96E]' : 'border-[#232838] hover:border-[#3A4058]'
+                          active ? 'border-[#A68BFF]' : 'border-[#232838] hover:border-[#3A4058]'
                         }`}
                       >
                         {active && (
                           <m.span
                             layoutId="tier-highlight"
-                            className="absolute inset-0 rounded-lg bg-gradient-to-br from-[#C9A96E]/20 to-[#C9A96E]/5"
+                            className="absolute inset-0 rounded-lg bg-gradient-to-br from-[#A68BFF]/20 to-[#A68BFF]/5"
                             transition={{ type: 'spring', stiffness: 380, damping: 32 }}
                           />
                         )}
@@ -490,7 +490,7 @@ const InquiryDialog: React.FC<{ target: InquiryTarget; onClose: () => void }> = 
                           <span className="flex items-center gap-2">
                             <span
                               className={`hidden lg:flex w-4 h-4 rounded-full border items-center justify-center transition-colors ${
-                                active ? 'border-[#C9A96E] bg-[#C9A96E]' : 'border-[#3A4058]'
+                                active ? 'border-[#A68BFF] bg-[#A68BFF]' : 'border-[#3A4058]'
                               }`}
                             >
                               {active && <Check className="w-2.5 h-2.5 text-[#0A0A0C]" strokeWidth={3} />}
@@ -499,12 +499,12 @@ const InquiryDialog: React.FC<{ target: InquiryTarget; onClose: () => void }> = 
                               {opt.label}
                             </span>
                             {opt.badge && (
-                              <span className="hidden sm:inline text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded bg-[#C9A96E]/15 text-[#C9A96E]">
+                              <span className="hidden sm:inline text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded bg-[#A68BFF]/15 text-[#A68BFF]">
                                 {opt.badge}
                               </span>
                             )}
                           </span>
-                          <span className={`text-[11px] sm:text-xs font-mono ${active ? 'text-[#C9A96E]' : 'text-[#8E92A0]'}`}>
+                          <span className={`text-[11px] sm:text-xs font-mono ${active ? 'text-[#A68BFF]' : 'text-[#8E92A0]'}`}>
                             {format(opt.priceUSD)}
                           </span>
                         </span>
@@ -534,8 +534,8 @@ const InquiryDialog: React.FC<{ target: InquiryTarget; onClose: () => void }> = 
                         variants={{ hidden: { opacity: 0, x: -8 }, show: { opacity: 1, x: 0 } }}
                         className="flex items-start gap-2.5 text-[13px] text-[#C7C9D1] leading-snug"
                       >
-                        <span className="mt-0.5 w-4 h-4 shrink-0 rounded-full bg-[#C9A96E]/15 flex items-center justify-center">
-                          <Check className="w-2.5 h-2.5 text-[#C9A96E]" strokeWidth={3} />
+                        <span className="mt-0.5 w-4 h-4 shrink-0 rounded-full bg-[#A68BFF]/15 flex items-center justify-center">
+                          <Check className="w-2.5 h-2.5 text-[#A68BFF]" strokeWidth={3} />
                         </span>
                         {f}
                       </m.li>
@@ -547,13 +547,13 @@ const InquiryDialog: React.FC<{ target: InquiryTarget; onClose: () => void }> = 
 
             <ul className="hidden lg:grid gap-2.5 pt-5 border-t border-[#1E2335] text-xs text-[#8E92A0]">
               <li className="flex items-center gap-2.5">
-                <Clock className="w-3.5 h-3.5 text-[#C9A96E]" /> Founder reply within 24 hours
+                <Clock className="w-3.5 h-3.5 text-[#A68BFF]" /> Founder reply within 24 hours
               </li>
               <li className="flex items-center gap-2.5">
-                <ShieldCheck className="w-3.5 h-3.5 text-[#C9A96E]" /> No-obligation scoping call
+                <ShieldCheck className="w-3.5 h-3.5 text-[#A68BFF]" /> No-obligation scoping call
               </li>
               <li className="flex items-center gap-2.5">
-                <Globe2 className="w-3.5 h-3.5 text-[#C9A96E]" /> USA · UAE · Canada · Worldwide
+                <Globe2 className="w-3.5 h-3.5 text-[#A68BFF]" /> USA · UAE · Canada · Worldwide
               </li>
             </ul>
           </div>
@@ -568,9 +568,9 @@ const InquiryDialog: React.FC<{ target: InquiryTarget; onClose: () => void }> = 
                 <span
                   className={`w-6 h-6 rounded-full flex items-center justify-center border transition-colors duration-300 ${
                     i < stepIndex
-                      ? 'bg-[#C9A96E] border-[#C9A96E] text-[#0A0A0C]'
+                      ? 'bg-[#A68BFF] border-[#A68BFF] text-[#0A0A0C]'
                       : i === stepIndex
-                      ? 'border-[#C9A96E] text-[#C9A96E]'
+                      ? 'border-[#A68BFF] text-[#A68BFF]'
                       : 'border-[#2A3044] text-[#5B6070]'
                   }`}
                   aria-current={i === stepIndex ? 'step' : undefined}
@@ -581,7 +581,7 @@ const InquiryDialog: React.FC<{ target: InquiryTarget; onClose: () => void }> = 
                 {i < 2 && (
                   <span className="relative flex-1 h-px bg-[#232838] overflow-hidden">
                     <m.span
-                      className="absolute inset-0 bg-[#C9A96E] origin-left"
+                      className="absolute inset-0 bg-[#A68BFF] origin-left"
                       initial={false}
                       animate={{ scaleX: i < stepIndex ? 1 : 0 }}
                       transition={{ duration: 0.5, ease: EASE }}
@@ -689,13 +689,13 @@ const InquiryDialog: React.FC<{ target: InquiryTarget; onClose: () => void }> = 
                           aria-checked={active}
                           onClick={() => setTimeline(t.value)}
                           className={`relative rounded-md border px-3 py-2 text-left transition-colors cursor-pointer ${
-                            active ? 'border-[#C9A96E] text-[#FAF8F5]' : 'border-[#232838] text-[#A1A1AA] hover:border-[#3A4058]'
+                            active ? 'border-[#A68BFF] text-[#FAF8F5]' : 'border-[#232838] text-[#A1A1AA] hover:border-[#3A4058]'
                           }`}
                         >
                           {active && (
                             <m.span
                               layoutId="timeline-highlight"
-                              className="absolute inset-0 rounded-md bg-[#C9A96E]/12"
+                              className="absolute inset-0 rounded-md bg-[#A68BFF]/12"
                               transition={{ type: 'spring', stiffness: 400, damping: 34 }}
                             />
                           )}
@@ -720,14 +720,14 @@ const InquiryDialog: React.FC<{ target: InquiryTarget; onClose: () => void }> = 
 
                 <div className="pt-2 flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-4">
                   <span className="flex items-center gap-2 text-xs text-[#8E92A0]">
-                    <ShieldCheck className="w-4 h-4 text-[#C9A96E]" />
+                    <ShieldCheck className="w-4 h-4 text-[#A68BFF]" />
                     Private. Never shared or spammed.
                   </span>
                   <m.button
                     type="submit"
                     whileHover={{ y: -2 }}
                     whileTap={{ scale: 0.98 }}
-                    className="btn-shine inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-md bg-[#C9A96E] text-[#0A0A0C] text-xs font-bold uppercase tracking-[0.16em] shadow-[0_10px_30px_-10px_rgba(201,169,110,0.6)] cursor-pointer group"
+                    className="btn-shine inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-md bg-[#A68BFF] text-[#0A0A0C] text-xs font-bold uppercase tracking-[0.16em] shadow-[0_10px_30px_-10px_rgba(166,139,255,0.6)] cursor-pointer group"
                   >
                     Continue
                     <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
@@ -772,7 +772,7 @@ const InquiryDialog: React.FC<{ target: InquiryTarget; onClose: () => void }> = 
                       title: 'Email',
                       text: `Your itemized brief goes straight to ${CONTACT.email}`,
                       icon: Mail,
-                      tone: 'from-[#C9A96E]/15 border-[#C9A96E]/35 hover:border-[#C9A96E] text-[#C9A96E]',
+                      tone: 'from-[#A68BFF]/15 border-[#A68BFF]/35 hover:border-[#A68BFF] text-[#A68BFF]',
                       onClick: handleSendEmail
                     },
                     {
@@ -848,7 +848,7 @@ const InquiryDialog: React.FC<{ target: InquiryTarget; onClose: () => void }> = 
                   <h3 className="font-serif text-3xl font-semibold">You're all set</h3>
                   <p className="text-sm text-[#A1A1AA] max-w-md mx-auto leading-relaxed">
                     Thank you, <span className="text-[#FAF8F5] font-medium">{clientName}</span>. Your brief for{' '}
-                    <span className="text-[#C9A96E] font-medium">{activeTarget.title}</span> has been recorded.
+                    <span className="text-[#A68BFF] font-medium">{activeTarget.title}</span> has been recorded.
                   </p>
                 </div>
 
@@ -862,7 +862,7 @@ const InquiryDialog: React.FC<{ target: InquiryTarget; onClose: () => void }> = 
                   {submittedMethod === 'email' &&
                     (emailDelivered ? (
                       <>
-                        <Mail className="w-4 h-4 text-[#C9A96E] shrink-0 mt-0.5" />
+                        <Mail className="w-4 h-4 text-[#A68BFF] shrink-0 mt-0.5" />
                         <span>
                           Your brief has been emailed to <strong className="text-[#FAF8F5]">{CONTACT.email}</strong>. We'll reply
                           to <strong className="text-[#FAF8F5]">{clientEmail}</strong> within 24 hours.
@@ -870,7 +870,7 @@ const InquiryDialog: React.FC<{ target: InquiryTarget; onClose: () => void }> = 
                       </>
                     ) : (
                       <>
-                        <Mail className="w-4 h-4 text-[#C9A96E] shrink-0 mt-0.5" />
+                        <Mail className="w-4 h-4 text-[#A68BFF] shrink-0 mt-0.5" />
                         <span>
                           Your email app opened with a pre-filled brief to <strong className="text-[#FAF8F5]">{CONTACT.email}</strong>.
                           Press send to finish. If nothing opened, email us directly at that address.
@@ -885,7 +885,7 @@ const InquiryDialog: React.FC<{ target: InquiryTarget; onClose: () => void }> = 
                         {lastSavedId && (
                           <>
                             {' '}
-                            (reference <code className="text-[#C9A96E] font-mono">{lastSavedId}</code>)
+                            (reference <code className="text-[#A68BFF] font-mono">{lastSavedId}</code>)
                           </>
                         )}
                         . We'll reply within 24 hours.
@@ -898,7 +898,7 @@ const InquiryDialog: React.FC<{ target: InquiryTarget; onClose: () => void }> = 
                   onClick={onClose}
                   whileHover={{ y: -2 }}
                   whileTap={{ scale: 0.98 }}
-                  className="btn-shine px-8 py-3 rounded-md bg-[#C9A96E] text-[#0A0A0C] text-xs font-bold uppercase tracking-[0.16em] cursor-pointer"
+                  className="btn-shine px-8 py-3 rounded-md bg-[#A68BFF] text-[#0A0A0C] text-xs font-bold uppercase tracking-[0.16em] cursor-pointer"
                 >
                   Done
                 </m.button>

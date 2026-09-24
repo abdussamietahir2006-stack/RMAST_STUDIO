@@ -23,7 +23,7 @@ export const WhatsAppButton: React.FC = () => {
           <p className="text-xs font-medium text-[#FAF8F5] mt-1.5">
             Raja Muhammad Abdussamie & Mashhood
           </p>
-          <p className="text-[11px] font-mono text-[#C9A96E] mt-0.5">
+          <p className="text-[11px] font-mono text-[#A68BFF] mt-0.5">
             {CONTACT.whatsappDisplay}
           </p>
           <div className="mt-2 pt-2 border-t border-[#1C1C24] flex items-center justify-between text-[10px] text-[#A1A1AA]">

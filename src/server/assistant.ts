@@ -8,7 +8,8 @@ import {
   completeBusinessPackages,
   aiVideoSinglePricing,
   videoMonthlyBundles,
-  USD_TO_AED_RATE
+  USD_TO_AED_RATE,
+  formatHourlyRate
 } from '../data/pricingData.js';
 
 let client: GoogleGenAI | null | undefined;
@@ -32,7 +33,10 @@ function buildSystemInstruction(currency: 'USD' | 'AED'): string {
   const services = servicesData
     .map((s) => {
       const route = s.division === 'real-estate' ? `/services/${s.slug}` : `/ai-content/${s.slug}`;
-      return `- ${s.title} (${s.division}, from ${money(s.startingPriceUSD)} ${s.billingType}, page ${route}): ${s.summary}`;
+      const tiers = s.tiers?.length ? `; tiers: ${s.tiers.map((t) => `${t.name} ${money(t.priceUSD)}`).join(', ')}` : '';
+      const hourly = s.hourlyRateUSD ? `; hourly rate ${formatHourlyRate(s.hourlyRateUSD, currency)}` : '';
+      const notes = s.scopeNotes ? ` Pricing note: ${s.scopeNotes}` : '';
+      return `- ${s.title} (${s.division}, from ${money(s.startingPriceUSD)} ${s.billingType}${tiers}${hourly}, page ${route}): ${s.summary}${notes}`;
     })
     .join('\n');
 
@@ -55,7 +59,10 @@ Rules:
 - Answer only questions about RMAST Studio, its services, pricing, process and how to get in touch. Politely decline anything unrelated.
 - Use only the facts below. If something is not covered (exact timelines, custom quotes, guarantees), say the founders will confirm it and suggest contacting them.
 - Quote prices in ${currency}. All prices are starting prices; final scope depends on requirements.
-- Keep replies short: 2 to 5 sentences, plain text, no markdown headings or tables.
+- Every service also has an hourly rate (listed below) for work billed by the hour, such as changes, extra features and ongoing support.
+- Keep replies short: 2 to 5 sentences, plain text, no markdown headings or tables. Replies may be read aloud, so write naturally and avoid long lists.
+- Reply in the same language the visitor uses (for example English, Urdu or Hindi written in Roman script, or Arabic).
+- This chat can create price-list PDFs (all services, Real Estate only, or Brands & Content only). If asked for a PDF, price list or brochure, tell the visitor to ask "send me the price list PDF" or tap the PDF option in the suggestions.
 - Contact: WhatsApp ${CONTACT.whatsappDisplay}, email ${CONTACT.email}, or the /contact page.
 
 Services:

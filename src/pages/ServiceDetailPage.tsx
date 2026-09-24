@@ -19,7 +19,7 @@ interface ServiceDetailPageProps {
 
 export const ServiceDetailPage: React.FC<ServiceDetailPageProps> = ({ slug, division }) => {
   const { navigate } = useNavigation();
-  const { format, currency } = useCurrency();
+  const { format, formatHourly, currency } = useCurrency();
   const { openInquiry } = useInquiry();
 
   const service = servicesData.find((s) => s.slug === slug && s.division === division);
@@ -41,7 +41,7 @@ export const ServiceDetailPage: React.FC<ServiceDetailPageProps> = ({ slug, divi
             onClick={() =>
               navigate(service.division === 'real-estate' ? '/real-estate' : '/ai-content')
             }
-            className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#71717A] hover:text-[#C9A96E] transition-colors cursor-pointer"
+            className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#71717A] hover:text-[#A68BFF] transition-colors cursor-pointer"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>
@@ -53,7 +53,7 @@ export const ServiceDetailPage: React.FC<ServiceDetailPageProps> = ({ slug, divi
         {/* Hero Section */}
         <section className="space-y-8">
           <div className="flex items-center gap-3">
-            <span className="text-xs font-mono uppercase tracking-[0.25em] text-[#C9A96E]">
+            <span className="text-xs font-mono uppercase tracking-[0.25em] text-[#A68BFF]">
               {service.kicker}
             </span>
             <span className="text-[#3F3F46]">·</span>
@@ -66,7 +66,7 @@ export const ServiceDetailPage: React.FC<ServiceDetailPageProps> = ({ slug, divi
             {service.title}
           </h1>
 
-          <p className="text-xl md:text-2xl text-[#C9A96E] font-serif italic max-w-3xl leading-relaxed">
+          <p className="text-xl md:text-2xl text-[#A68BFF] font-serif italic max-w-3xl leading-relaxed">
             "{service.headline}"
           </p>
 
@@ -90,6 +90,11 @@ export const ServiceDetailPage: React.FC<ServiceDetailPageProps> = ({ slug, divi
                     : 'starting quote'}
                 </span>
               </div>
+              {service.hourlyRateUSD && (
+                <div className="text-sm font-mono text-[#A68BFF] mt-2">
+                  Hourly: {formatHourly(service.hourlyRateUSD)}
+                </div>
+              )}
               <div className="text-xs font-mono text-[#71717A] mt-1">
                 Values calculated dynamically in {currency}.
               </div>
@@ -115,7 +120,7 @@ export const ServiceDetailPage: React.FC<ServiceDetailPageProps> = ({ slug, divi
                     features: service.keyFeatures
                   })
                 }
-                className="px-6 py-3.5 bg-[#C9A96E] text-[#0A0A0C] text-xs font-semibold uppercase tracking-[0.16em] hover:bg-[#D9B97E] transition-all cursor-pointer whitespace-nowrap"
+                className="px-6 py-3.5 bg-[#A68BFF] text-[#0A0A0C] text-xs font-semibold uppercase tracking-[0.16em] hover:bg-[#BBA6FF] transition-all cursor-pointer whitespace-nowrap"
               >
                 Inquire This Service
               </button>
@@ -144,7 +149,7 @@ export const ServiceDetailPage: React.FC<ServiceDetailPageProps> = ({ slug, divi
               <ul className="space-y-3 pt-2">
                 {service.keyFeatures.map((feat, idx) => (
                   <li key={idx} className="flex items-start gap-3 text-sm text-[#D4D4D8]">
-                    <Check className="w-4 h-4 text-[#C9A96E] shrink-0 mt-0.5" />
+                    <Check className="w-4 h-4 text-[#A68BFF] shrink-0 mt-0.5" />
                     <span>{feat}</span>
                   </li>
                 ))}
@@ -162,7 +167,7 @@ export const ServiceDetailPage: React.FC<ServiceDetailPageProps> = ({ slug, divi
               <ul className="space-y-3 pt-2">
                 {service.deliverables.map((deliv, idx) => (
                   <li key={idx} className="flex items-start gap-3 text-sm text-[#D4D4D8]">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#C9A96E] mt-2 shrink-0" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#A68BFF] mt-2 shrink-0" />
                     <span>{deliv}</span>
                   </li>
                 ))}
@@ -173,7 +178,7 @@ export const ServiceDetailPage: React.FC<ServiceDetailPageProps> = ({ slug, divi
           {/* Right Column: Audience & Boundaries (5 cols) */}
           <div className="lg:col-span-5 space-y-8">
             <div className="p-6 bg-[#0E111C]/80 backdrop-blur-md border border-[#232738]/80 space-y-3 shadow-md">
-              <div className="text-xs font-mono uppercase tracking-widest text-[#C9A96E]">
+              <div className="text-xs font-mono uppercase tracking-widest text-[#A68BFF]">
                 Designed Specifically For
               </div>
               <p className="text-sm text-[#FAF8F5] leading-relaxed">
@@ -184,7 +189,7 @@ export const ServiceDetailPage: React.FC<ServiceDetailPageProps> = ({ slug, divi
             {service.scopeNotes && (
               <div className="p-6 bg-[#0A0C14]/80 border border-[#1E2232] space-y-3 text-xs">
                 <div className="text-xs font-mono uppercase tracking-widest text-[#71717A] flex items-center gap-1.5">
-                  <HelpCircle className="w-3.5 h-3.5 text-[#C9A96E]" />
+                  <HelpCircle className="w-3.5 h-3.5 text-[#A68BFF]" />
                   <span>Scope Boundaries & Exclusions</span>
                 </div>
                 <p className="text-[#8E8D88] leading-relaxed">
@@ -202,7 +207,7 @@ export const ServiceDetailPage: React.FC<ServiceDetailPageProps> = ({ slug, divi
               </p>
               <button
                 onClick={() => navigate('/contact')}
-                className="w-full py-3 bg-[#17171E] border border-[#2B2B36] text-[#FAF8F5] hover:border-[#C9A96E] text-xs font-semibold uppercase tracking-wider transition-colors cursor-pointer"
+                className="w-full py-3 bg-[#17171E] border border-[#2B2B36] text-[#FAF8F5] hover:border-[#A68BFF] text-xs font-semibold uppercase tracking-wider transition-colors cursor-pointer"
               >
                 Schedule Scoping Session
               </button>
@@ -214,7 +219,7 @@ export const ServiceDetailPage: React.FC<ServiceDetailPageProps> = ({ slug, divi
         {relatedServices.length > 0 && (
           <section className="space-y-8 pt-12 border-t border-[#1C1C22]">
             <div className="space-y-2">
-              <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#C9A96E]">
+              <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#A68BFF]">
                 Interlocking Capabilities
               </span>
               <h3 className="font-serif text-2xl text-[#FAF8F5] font-semibold">
@@ -233,9 +238,9 @@ export const ServiceDetailPage: React.FC<ServiceDetailPageProps> = ({ slug, divi
                         : `/ai-content/${rel.slug}`;
                     navigate(r);
                   }}
-                  className="p-6 bg-[#0C0C10] border border-[#1E1E24] hover:border-[#C9A96E]/50 transition-all cursor-pointer space-y-3"
+                  className="p-6 bg-[#0C0C10] border border-[#1E1E24] hover:border-[#A68BFF]/50 transition-all cursor-pointer space-y-3"
                 >
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-[#C9A96E]">
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-[#A68BFF]">
                     {rel.kicker}
                   </span>
                   <h4 className="font-serif text-lg text-[#FAF8F5] font-medium">

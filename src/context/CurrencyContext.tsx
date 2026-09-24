@@ -1,12 +1,13 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Currency } from '../types';
-import { USD_TO_AED_RATE, formatPrice } from '../data/pricingData';
+import { USD_TO_AED_RATE, formatPrice, formatHourlyRate } from '../data/pricingData';
 
 interface CurrencyContextType {
   currency: Currency;
   setCurrency: (currency: Currency) => void;
   toggleCurrency: () => void;
   format: (usdAmount: number) => string;
+  formatHourly: (rate: { min: number; max: number }) => string;
   usdToAed: (usdAmount: number) => number;
 }
 
@@ -36,12 +37,14 @@ export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return formatPrice(usdAmount, currency);
   };
 
+  const formatHourly = (rate: { min: number; max: number }): string => formatHourlyRate(rate, currency);
+
   const usdToAed = (usdAmount: number): number => {
     return Math.round(usdAmount * USD_TO_AED_RATE);
   };
 
   return (
-    <CurrencyContext.Provider value={{ currency, setCurrency, toggleCurrency, format, usdToAed }}>
+    <CurrencyContext.Provider value={{ currency, setCurrency, toggleCurrency, format, formatHourly, usdToAed }}>
       {children}
     </CurrencyContext.Provider>
   );

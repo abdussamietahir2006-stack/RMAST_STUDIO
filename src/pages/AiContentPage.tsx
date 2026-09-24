@@ -16,7 +16,7 @@ import {
 
 export const AiContentPage: React.FC = () => {
   const { navigate } = useNavigation();
-  const { format, currency } = useCurrency();
+  const { format, formatHourly, currency } = useCurrency();
   const { openInquiry } = useInquiry();
 
   const aiContentServices = servicesData.filter((s) => s.division === 'ai-content');
@@ -38,7 +38,7 @@ export const AiContentPage: React.FC = () => {
         {/* Header */}
         <section className="space-y-6 max-w-4xl">
           <div className="flex items-center gap-3">
-            <span className="text-xs font-mono uppercase tracking-[0.25em] text-[#C9A96E]">
+            <span className="text-xs font-mono uppercase tracking-[0.25em] text-[#A68BFF]">
               Division Two · Creative AI Production Studio
             </span>
           </div>
@@ -47,7 +47,7 @@ export const AiContentPage: React.FC = () => {
             Production without the production.
           </h1>
 
-          <p className="text-2xl sm:text-3xl font-serif italic text-[#C9A96E]">
+          <p className="text-2xl sm:text-3xl font-serif italic text-[#A68BFF]">
             "Content that makes people stop scrolling."
           </p>
 
@@ -68,7 +68,7 @@ export const AiContentPage: React.FC = () => {
         <section className="space-y-10">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-[#1E1E24]">
             <div>
-              <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#C9A96E]">
+              <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#A68BFF]">
                 From Idea to Final Frame
               </span>
               <h2 className="font-serif text-3xl sm:text-5xl text-[#FAF8F5] font-semibold tracking-tight mt-1">
@@ -84,7 +84,7 @@ export const AiContentPage: React.FC = () => {
             {aiContentServices.map((service, index) => (
               <div
                 key={service.id}
-                className="group bg-[#0E111C]/80 backdrop-blur-md border border-[#232738]/80 hover:border-[#C9A96E]/60 shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden rounded-sm"
+                className="group bg-[#0E111C]/80 backdrop-blur-md border border-[#232738]/80 hover:border-[#A68BFF]/60 shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden rounded-sm"
               >
                 <div>
                   {/* Image header with overlay tags */}
@@ -94,7 +94,7 @@ export const AiContentPage: React.FC = () => {
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-80 group-hover:opacity-100"
                     />
                     <div className="absolute top-3 left-3 flex items-center gap-2">
-                      <span className="text-[10px] font-mono tracking-widest uppercase bg-[#0A0A0D]/90 backdrop-blur-sm px-2.5 py-1 text-[#C9A96E] font-bold border border-[#27272A]">
+                      <span className="text-[10px] font-mono tracking-widest uppercase bg-[#0A0A0D]/90 backdrop-blur-sm px-2.5 py-1 text-[#A68BFF] font-bold border border-[#27272A]">
                         DISCIPLINE {String(index + 1).padStart(2, '0')}
                       </span>
                       <span className="text-[10px] font-mono tracking-wider uppercase bg-[#0A0A0D]/80 backdrop-blur-sm px-2.5 py-1 text-[#FAF8F5] border border-[#27272A]">
@@ -102,18 +102,21 @@ export const AiContentPage: React.FC = () => {
                       </span>
                     </div>
 
-                    <div className="absolute bottom-3 right-3 text-xs font-mono bg-[#0A0A0D]/90 backdrop-blur-sm px-3 py-1 text-[#FAF8F5] border border-[#C9A96E]/40 font-semibold">
+                    <div className="absolute bottom-3 right-3 text-xs font-mono bg-[#0A0A0D]/90 backdrop-blur-sm px-3 py-1 text-[#FAF8F5] border border-[#A68BFF]/40 font-semibold">
                       Starting {format(service.startingPriceUSD)} / video
+                      {service.hourlyRateUSD && (
+                        <span className="font-normal text-[#A1A1AA]"> · {formatHourly(service.hourlyRateUSD)}</span>
+                      )}
                     </div>
                   </div>
 
                   {/* Body Content */}
                   <div className="p-6 sm:p-7 space-y-5">
                     <div>
-                      <h3 className="font-serif text-2xl sm:text-3xl text-[#FAF8F5] font-semibold group-hover:text-[#C9A96E] transition-colors tracking-tight">
+                      <h3 className="font-serif text-2xl sm:text-3xl text-[#FAF8F5] font-semibold group-hover:text-[#A68BFF] transition-colors tracking-tight">
                         {service.title}
                       </h3>
-                      <p className="text-xs font-mono text-[#C9A96E] mt-1 italic">
+                      <p className="text-xs font-mono text-[#A68BFF] mt-1 italic">
                         "{service.headline}"
                       </p>
                     </div>
@@ -121,7 +124,7 @@ export const AiContentPage: React.FC = () => {
                     {/* Delineated Compartments */}
                     <div className="space-y-3">
                       <div className="p-3.5 bg-[#121217] border border-[#1E1E26] rounded-sm">
-                        <div className="text-[10px] font-mono uppercase tracking-widest text-[#C9A96E] font-semibold mb-1">
+                        <div className="text-[10px] font-mono uppercase tracking-widest text-[#A68BFF] font-semibold mb-1">
                           01 · Visual Focus
                         </div>
                         <p className="text-xs sm:text-sm text-[#D4D4D8] leading-relaxed">
@@ -129,7 +132,7 @@ export const AiContentPage: React.FC = () => {
                         </p>
                       </div>
 
-                      <div className="p-3 bg-[#15151C] border-l-2 border-[#C9A96E] rounded-sm">
+                      <div className="p-3 bg-[#15151C] border-l-2 border-[#A68BFF] rounded-sm">
                         <span className="text-[10px] font-mono uppercase text-[#A1A1AA] block mb-0.5">
                           02 · Ideal For
                         </span>
@@ -139,14 +142,14 @@ export const AiContentPage: React.FC = () => {
                       </div>
 
                       <div className="p-3.5 bg-[#0F0F14] border border-[#1C1C24] rounded-sm">
-                        <div className="text-[10px] font-mono uppercase tracking-widest text-[#C9A96E] font-semibold mb-1.5 flex items-center justify-between">
+                        <div className="text-[10px] font-mono uppercase tracking-widest text-[#A68BFF] font-semibold mb-1.5 flex items-center justify-between">
                           <span>03 · Included Deliverables</span>
                           <span className="text-[10px] text-[#71717A]">{service.keyFeatures.length} Specs</span>
                         </div>
                         <ul className="space-y-1.5 text-xs text-[#A1A1AA]">
                           {service.keyFeatures.slice(0, 3).map((f, i) => (
                             <li key={i} className="flex items-start gap-2">
-                              <Check className="w-3.5 h-3.5 text-[#C9A96E] shrink-0 mt-0.5" />
+                              <Check className="w-3.5 h-3.5 text-[#A68BFF] shrink-0 mt-0.5" />
                               <span>{f}</span>
                             </li>
                           ))}
@@ -160,10 +163,10 @@ export const AiContentPage: React.FC = () => {
                 <div className="px-6 py-4 bg-[#0A0A0D] border-t border-[#1C1C22] flex items-center justify-between">
                   <button
                     onClick={() => navigate(`/ai-content/${service.slug}`)}
-                    className="inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-[#FAF8F5] hover:text-[#C9A96E] cursor-pointer group/link"
+                    className="inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-[#FAF8F5] hover:text-[#A68BFF] cursor-pointer group/link"
                   >
                     <span>View Specifications</span>
-                    <ArrowRight className="w-3.5 h-3.5 text-[#C9A96E] group-hover/link:translate-x-1 transition-transform" />
+                    <ArrowRight className="w-3.5 h-3.5 text-[#A68BFF] group-hover/link:translate-x-1 transition-transform" />
                   </button>
 
                   <button
@@ -180,7 +183,7 @@ export const AiContentPage: React.FC = () => {
                         features: service.keyFeatures
                       })
                     }
-                    className="px-4 py-1.5 bg-[#C9A96E] text-[#0A0A0C] text-xs font-mono font-semibold uppercase tracking-wider hover:bg-[#D9B97E] transition-all cursor-pointer"
+                    className="px-4 py-1.5 bg-[#A68BFF] text-[#0A0A0C] text-xs font-mono font-semibold uppercase tracking-wider hover:bg-[#BBA6FF] transition-all cursor-pointer"
                   >
                     Inquire Film
                   </button>
@@ -193,7 +196,7 @@ export const AiContentPage: React.FC = () => {
         {/* Industries Served */}
         <section className="space-y-8 p-8 md:p-12 bg-[#09090C] border border-[#1E1E24]">
           <div className="space-y-2">
-            <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#C9A96E]">
+            <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#A68BFF]">
               Market Versatility
             </span>
             <h2 className="font-serif text-2xl md:text-3xl text-[#FAF8F5] font-semibold">
@@ -207,7 +210,7 @@ export const AiContentPage: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pt-4">
             {industries.map((ind, i) => (
               <div key={i} className="p-5 bg-[#0E0E12] border border-[#1C1C22] space-y-2">
-                <div className="text-xs font-mono text-[#C9A96E] font-bold">
+                <div className="text-xs font-mono text-[#A68BFF] font-bold">
                   0{i + 1}
                 </div>
                 <h3 className="font-serif text-base text-[#FAF8F5] font-medium">
@@ -224,7 +227,7 @@ export const AiContentPage: React.FC = () => {
         {/* Video Tier Breakdown: Starter, Standard, Professional */}
         <section className="space-y-12">
           <div className="space-y-3">
-            <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#C9A96E]">
+            <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#A68BFF]">
               Per-Video Tier Standards
             </span>
             <h2 className="font-serif text-3xl md:text-4xl text-[#FAF8F5] font-semibold">
@@ -241,12 +244,12 @@ export const AiContentPage: React.FC = () => {
                 key={tier.tier}
                 className={`p-8 bg-[#0C0C10] border flex flex-col justify-between space-y-6 ${
                   tier.tier === 'Professional'
-                    ? 'border-[#C9A96E] relative'
+                    ? 'border-[#A68BFF] relative'
                     : 'border-[#1E1E24]'
                 }`}
               >
                 {tier.tier === 'Professional' && (
-                  <div className="absolute -top-3 left-6 px-3 py-0.5 bg-[#C9A96E] text-[#0A0A0C] text-[10px] font-mono uppercase tracking-widest font-bold">
+                  <div className="absolute -top-3 left-6 px-3 py-0.5 bg-[#A68BFF] text-[#0A0A0C] text-[10px] font-mono uppercase tracking-widest font-bold">
                     Signature Cinema
                   </div>
                 )}
@@ -280,7 +283,7 @@ export const AiContentPage: React.FC = () => {
                         selectedOptionId: tier.tier
                       })
                     }
-                    className="w-full py-3 text-xs font-semibold uppercase tracking-[0.16em] border border-[#27272A] hover:border-[#C9A96E] text-[#FAF8F5] transition-colors cursor-pointer"
+                    className="w-full py-3 text-xs font-semibold uppercase tracking-[0.16em] border border-[#27272A] hover:border-[#A68BFF] text-[#FAF8F5] transition-colors cursor-pointer"
                   >
                     Commission Video
                   </button>
@@ -294,14 +297,14 @@ export const AiContentPage: React.FC = () => {
         <section className="space-y-10">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-[#1E1E24]">
             <div className="space-y-2">
-              <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#C9A96E]">
+              <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#A68BFF]">
                 Volume Retainers
               </span>
               <h2 className="font-serif text-3xl md:text-4xl text-[#FAF8F5] font-semibold">
                 Monthly Content Bundles & Savings
               </h2>
             </div>
-            <p className="text-xs font-mono text-[#C9A96E]">
+            <p className="text-xs font-mono text-[#A68BFF]">
               Save up to 24% compared to ordering individual videos.
             </p>
           </div>
@@ -317,7 +320,7 @@ export const AiContentPage: React.FC = () => {
                     <span className="text-2xl font-serif font-bold text-[#FAF8F5]">
                       {bundle.quantity} Videos / Month
                     </span>
-                    <span className="text-[10px] font-mono uppercase px-2 py-0.5 bg-[#1F1F26] text-[#C9A96E] border border-[#C9A96E]/30">
+                    <span className="text-[10px] font-mono uppercase px-2 py-0.5 bg-[#1F1F26] text-[#A68BFF] border border-[#A68BFF]/30">
                       {bundle.savingsLabel}
                     </span>
                   </div>
@@ -340,7 +343,7 @@ export const AiContentPage: React.FC = () => {
                       </span>
                     </div>
                     <div className="flex items-center justify-between text-xs font-mono">
-                      <span className="text-[#C9A96E] font-medium">Professional Cinema:</span>
+                      <span className="text-[#A68BFF] font-medium">Professional Cinema:</span>
                       <span className="text-[#FAF8F5] font-bold">
                         {format(bundle.professional.usd)}
                       </span>
@@ -366,7 +369,7 @@ export const AiContentPage: React.FC = () => {
                         ]
                       })
                     }
-                    className="w-full py-3 text-xs font-semibold uppercase tracking-[0.16em] bg-[#C9A96E] text-[#0A0A0C] hover:bg-[#D9B97E] transition-all cursor-pointer"
+                    className="w-full py-3 text-xs font-semibold uppercase tracking-[0.16em] bg-[#A68BFF] text-[#0A0A0C] hover:bg-[#BBA6FF] transition-all cursor-pointer"
                   >
                     Order {bundle.quantity}-Video Package
                   </button>
@@ -393,7 +396,7 @@ export const AiContentPage: React.FC = () => {
                   kicker: 'Founder Treatment Scoping'
                 })
               }
-              className="px-8 py-3.5 bg-[#C9A96E] text-[#0A0A0C] text-xs font-semibold uppercase tracking-[0.16em] hover:bg-[#D9B97E] transition-all cursor-pointer"
+              className="px-8 py-3.5 bg-[#A68BFF] text-[#0A0A0C] text-xs font-semibold uppercase tracking-[0.16em] hover:bg-[#BBA6FF] transition-all cursor-pointer"
             >
               Start Creative Commission
             </button>

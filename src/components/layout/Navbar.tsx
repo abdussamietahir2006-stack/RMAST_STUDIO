@@ -138,7 +138,7 @@ export const Navbar: React.FC = () => {
           isScrolled
             ? isLight
               ? 'bg-white/85 backdrop-blur-md border-b border-slate-200/90 py-4 shadow-sm'
-              : 'bg-[#0A0C14]/85 backdrop-blur-md border-b border-[#1E2230] py-4'
+              : 'bg-black/85 backdrop-blur-md border-b border-[#1E2230] py-4'
             : 'bg-transparent py-6'
         }`}
       >
@@ -146,17 +146,17 @@ export const Navbar: React.FC = () => {
           {/* Brand Wordmark */}
           <button
             onClick={() => go('/')}
-            className="flex items-baseline gap-2 text-left group cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C9A96E] rounded-sm shrink-0"
+            className="flex items-baseline gap-2 text-left group cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-[#A68BFF] rounded-sm shrink-0"
             aria-label="RMAST Studio home"
           >
             <span
               className={`font-serif text-[26px] leading-none font-bold tracking-[0.16em] transition-colors duration-300 ${
                 isLight ? 'text-slate-900' : 'text-[#FAF8F5]'
-              } group-hover:text-[#C9A96E]`}
+              } group-hover:text-[#A68BFF]`}
             >
               RMAST
             </span>
-            <span className="font-editorial italic text-[22px] leading-none font-medium text-[#C9A96E] transition-transform duration-300 group-hover:translate-x-0.5">
+            <span className="font-editorial italic text-[22px] leading-none font-medium text-[#A68BFF] transition-transform duration-300 group-hover:translate-x-0.5">
               Studio
             </span>
           </button>
@@ -165,16 +165,16 @@ export const Navbar: React.FC = () => {
           <nav
             ref={navRef}
             aria-label="Main"
-            className={`hidden lg:flex items-center gap-9 text-[13px] uppercase font-medium tracking-[0.14em] ${
+            className={`hidden xl:flex items-center gap-9 text-[13px] uppercase font-medium tracking-[0.14em] ${
               isLight ? 'text-slate-600' : 'text-[#A1A1AA]'
             }`}
           >
             {NAV_ITEMS.map((item) => {
               const active = isActive(item);
-              const itemClasses = `transition-colors duration-200 cursor-pointer relative py-1 focus:outline-none focus-visible:text-[#C9A96E] ${
+              const itemClasses = `transition-colors duration-200 cursor-pointer relative py-1 focus:outline-none focus-visible:text-[#A68BFF] ${
                 isLight ? 'hover:text-slate-950' : 'hover:text-[#FAF8F5]'
-              } ${active ? 'text-[#C9A96E] font-semibold' : ''}`;
-              const underline = active && <span className="absolute -bottom-0.5 left-0 right-0 h-[1.5px] bg-[#C9A96E]" />;
+              } ${active ? 'text-[#A68BFF] font-semibold' : ''}`;
+              const underline = active && <span className="absolute -bottom-0.5 left-0 right-0 h-[1.5px] bg-[#A68BFF]" />;
 
               if (!item.menu) {
                 return (
@@ -205,8 +205,8 @@ export const Navbar: React.FC = () => {
                       aria-expanded={open}
                       aria-controls={menuId}
                       aria-label={`${item.label} menu`}
-                      className={`p-0.5 rounded cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C9A96E] ${
-                        active ? 'text-[#C9A96E]' : ''
+                      className={`p-0.5 rounded cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-[#A68BFF] ${
+                        active ? 'text-[#A68BFF]' : ''
                       }`}
                     >
                       <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
@@ -235,7 +235,7 @@ export const Navbar: React.FC = () => {
                             >
                               <span
                                 className={`mt-0.5 w-8 h-8 shrink-0 rounded flex items-center justify-center border ${
-                                  isLight ? 'border-slate-200 text-[#9A6818]' : 'border-[#2A3044] text-[#C9A96E]'
+                                  isLight ? 'border-slate-200 text-[#6A3FE0]' : 'border-[#2A3044] text-[#A68BFF]'
                                 }`}
                               >
                                 <Icon className="w-4 h-4" />
@@ -243,7 +243,7 @@ export const Navbar: React.FC = () => {
                               <span className="min-w-0">
                                 <span
                                   className={`block text-sm font-semibold ${
-                                    current ? 'text-[#C9A96E]' : isLight ? 'text-slate-900' : 'text-[#FAF8F5]'
+                                    current ? 'text-[#A68BFF]' : isLight ? 'text-slate-900' : 'text-[#FAF8F5]'
                                   }`}
                                 >
                                   {label}
@@ -270,7 +270,7 @@ export const Navbar: React.FC = () => {
               <CurrencyToggle />
               <button
                 onClick={() => go('/contact')}
-                className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.15em] bg-[#C9A96E] text-[#0A0A0C] hover:bg-[#D9B97E] transition-all duration-200 cursor-pointer shadow-sm whitespace-nowrap"
+                className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.15em] bg-[#A68BFF] text-[#0A0A0C] hover:bg-[#BBA6FF] transition-all duration-200 cursor-pointer shadow-sm whitespace-nowrap"
               >
                 <span>Start a Project</span>
                 <ArrowUpRight className="w-3.5 h-3.5" />
@@ -278,13 +278,12 @@ export const Navbar: React.FC = () => {
             </div>
             <div className="flex sm:hidden items-center gap-2">
               <ThemeToggle showLabel={false} />
-              <CurrencyToggle />
             </div>
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className={`lg:hidden p-2 focus:outline-none cursor-pointer ${
-                isLight ? 'text-slate-800 hover:text-[#C9A96E]' : 'text-[#E4E4E7] hover:text-[#C9A96E]'
+              className={`xl:hidden p-2 -mr-2 focus:outline-none cursor-pointer ${
+                isLight ? 'text-slate-800 hover:text-[#A68BFF]' : 'text-[#E4E4E7] hover:text-[#A68BFF]'
               }`}
               aria-label="Toggle menu"
               aria-expanded={mobileMenuOpen}
@@ -303,20 +302,25 @@ export const Navbar: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -12 }}
           transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-          className={`fixed inset-0 z-40 backdrop-blur-xl flex flex-col pt-24 px-8 pb-10 justify-between lg:hidden overflow-y-auto ${
-            isLight ? 'bg-white/95 text-slate-900' : 'bg-[#0A0C14]/95 text-[#E4E4E7]'
+          className={`fixed inset-0 z-40 backdrop-blur-xl flex flex-col pt-24 px-8 pb-10 justify-between xl:hidden overflow-y-auto ${
+            isLight ? 'bg-white/95 text-slate-900' : 'bg-black/95 text-[#E4E4E7]'
           }`}
         >
           <div className="space-y-6">
             <div className={`flex items-center justify-between pb-2 border-b ${isLight ? 'border-slate-200' : 'border-[#1E1E24]'}`}>
               <div className="text-[11px] font-mono tracking-widest text-[#71717A] uppercase">Navigation</div>
-              <ThemeToggle />
+              <div className="flex items-center gap-3">
+                <div className="sm:hidden">
+                  <CurrencyToggle />
+                </div>
+                <ThemeToggle />
+              </div>
             </div>
             <div className="flex flex-col space-y-4">
               {NAV_ITEMS.map((item) => {
                 const active = isActive(item);
                 const linkClasses = (isCurrent: boolean) =>
-                  isCurrent ? 'text-[#C9A96E]' : isLight ? 'text-slate-800 hover:text-[#C9A96E]' : 'text-[#E4E4E7] hover:text-[#C9A96E]';
+                  isCurrent ? 'text-[#A68BFF]' : isLight ? 'text-slate-800 hover:text-[#A68BFF]' : 'text-[#E4E4E7] hover:text-[#A68BFF]';
                 return (
                   <div key={item.path}>
                     <button
@@ -350,14 +354,14 @@ export const Navbar: React.FC = () => {
             <div className={`pt-4 border-t space-y-3 ${isLight ? 'border-slate-200' : 'border-[#1E1E24]'}`}>
               <div className="text-xs text-[#71717A] font-mono uppercase tracking-wider">Direct Inquiries</div>
               <p className={`text-sm ${isLight ? 'text-slate-600' : 'text-[#A1A1AA]'}`}>{CONTACT.email}</p>
-              <p className="text-sm text-[#C9A96E]">{CONTACT.whatsappDisplay} (WhatsApp)</p>
+              <p className="text-sm text-[#A68BFF]">{CONTACT.whatsappDisplay} (WhatsApp)</p>
             </div>
           </div>
 
           <div className="pt-6">
             <button
               onClick={() => go('/contact')}
-              className="w-full flex items-center justify-center gap-2 py-3.5 text-xs font-semibold uppercase tracking-[0.16em] bg-[#C9A96E] text-[#0A0A0C]"
+              className="w-full flex items-center justify-center gap-2 py-3.5 text-xs font-semibold uppercase tracking-[0.16em] bg-[#A68BFF] text-[#0A0A0C]"
             >
               <span>Start a Project</span>
               <ArrowUpRight className="w-4 h-4" />

@@ -26,9 +26,15 @@ export const servicesData: ServiceDetail[] = [
       'Interactive property showcase and contact modals',
       'Pre-configured DNS, SSL, and analytics dashboard hookup'
     ],
-    startingPriceUSD: 1000,
+    startingPriceUSD: 500,
     billingType: 'one-time',
-    scopeNotes: 'Excludes custom backend CRM or paid API usage. Domain registration and ongoing maintenance after month one quoted separately.',
+    hourlyRateUSD: { min: 10, max: 15 },
+    scopeNotes: 'Starter $500, Growth $1,000, Premium $1,500. Excludes custom backend CRM or paid API usage. Domain registration and ongoing maintenance after month one quoted separately.',
+    tiers: [
+      { name: 'Starter', priceUSD: 500, note: 'Up to 5 pages, WhatsApp & lead capture' },
+      { name: 'Growth', priceUSD: 1000, note: 'Up to 10 pages, AI chatbot & SEO' },
+      { name: 'Premium', priceUSD: 1500, note: 'Full custom flagship with listings & integrations' }
+    ],
     relatedServiceSlugs: ['crm-development', 'ai-assistants', 'ai-automation'],
     image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1600&q=80'
   },
@@ -56,8 +62,9 @@ export const servicesData: ServiceDetail[] = [
       'Production server deployment and database setup',
       'Operational training guide for your internal team'
     ],
-    startingPriceUSD: 2500,
+    startingPriceUSD: 1200,
     billingType: 'one-time',
+    hourlyRateUSD: { min: 12, max: 18 },
     scopeNotes: 'Final investment determined by user roles, complex transaction logic, and third-party enterprise integrations.',
     relatedServiceSlugs: ['crm-development', 'ai-automation', 'admin-support'],
     image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1600&q=80'
@@ -85,13 +92,14 @@ export const servicesData: ServiceDetail[] = [
       'Historical contact import and data sanitization',
       'Live agent workflow training session'
     ],
-    startingPriceUSD: 3500,
+    startingPriceUSD: 1000,
     billingType: 'one-time',
-    scopeNotes: 'Starter package starts at $3,500 / AED 12,850. Growth ($7,500 / AED 27,550) and Premium ($15,000+ / AED 55,100+) tiers expand custom modules and AI qualification.',
+    hourlyRateUSD: { min: 12, max: 18 },
+    scopeNotes: 'Starter from $1,000. Growth ($2,000) and Premium ($3,500+) tiers expand custom modules and AI qualification.',
     tiers: [
-      { name: 'Starter', priceUSD: 3500, note: 'Core pipeline, lead & deal management' },
-      { name: 'Growth', priceUSD: 7500, note: 'Custom modules and multi-stage pipelines' },
-      { name: 'Premium', priceUSD: 15000, note: 'AI qualification and bespoke architecture' }
+      { name: 'Starter', priceUSD: 1000, note: 'Core pipeline, lead & deal management' },
+      { name: 'Growth', priceUSD: 2000, note: 'Custom modules and multi-stage pipelines' },
+      { name: 'Premium', priceUSD: 3500, note: 'AI qualification and bespoke architecture' }
     ],
     relatedServiceSlugs: ['ai-automation', 'ai-assistants', 'admin-support'],
     image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1600&q=80'
@@ -118,14 +126,10 @@ export const servicesData: ServiceDetail[] = [
       'Automated reporting digest sent directly to executive Slack/WhatsApp',
       'Workflow schematics and operational documentation'
     ],
-    startingPriceUSD: 1500,
-    billingType: 'one-time',
-    scopeNotes: 'Starter includes 1–2 key workflows. Growth includes 3–6 workflows ($3,500 / AED 12,850). Premium covers multi-system agentic automation ($7,500+ / AED 27,550+).',
-    tiers: [
-      { name: 'Starter', priceUSD: 1500, note: '1–2 key workflows' },
-      { name: 'Growth', priceUSD: 3500, note: '3–6 workflows' },
-      { name: 'Premium', priceUSD: 7500, note: 'Multi-system agentic automation' }
-    ],
+    startingPriceUSD: 1000,
+    billingType: 'monthly',
+    hourlyRateUSD: { min: 12, max: 18 },
+    scopeNotes: 'From $1,000 per month. The final monthly rate depends on the automations: how many workflows, how many systems they connect, and how complex the logic is.',
     relatedServiceSlugs: ['ai-assistants', 'crm-development', 'web-development'],
     image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1600&q=80'
   },
@@ -152,13 +156,14 @@ export const servicesData: ServiceDetail[] = [
       'Human agent alert triggers for VIP high-intent leads',
       'Analytics dashboard tracking conversation volume and conversion'
     ],
-    startingPriceUSD: 500,
+    startingPriceUSD: 300,
     billingType: 'one-time',
-    scopeNotes: 'Starter starts at $500 / AED 1,850. Growth ($1,000 / AED 3,675) adds multichannel + CRM sync. Premium ($2,500+ / AED 9,200+) provides custom actions and deep API integration.',
+    hourlyRateUSD: { min: 12, max: 18 },
+    scopeNotes: 'Starter from $300. Growth ($600) adds multichannel + CRM sync. Premium ($1,200+) provides custom actions and deep API integration.',
     tiers: [
-      { name: 'Starter', priceUSD: 500, note: 'Website assistant with lead capture' },
-      { name: 'Growth', priceUSD: 1000, note: 'Multichannel + CRM sync' },
-      { name: 'Premium', priceUSD: 2500, note: 'Custom actions and deep API integration' }
+      { name: 'Starter', priceUSD: 300, note: 'Website assistant with lead capture' },
+      { name: 'Growth', priceUSD: 600, note: 'Multichannel + CRM sync' },
+      { name: 'Premium', priceUSD: 1200, note: 'Custom actions and deep API integration' }
     ],
     relatedServiceSlugs: ['ai-automation', 'crm-development', 'web-development'],
     image: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1600&q=80'
@@ -185,13 +190,14 @@ export const servicesData: ServiceDetail[] = [
       'Curated caption copies with researched local real estate tags',
       'Monthly performance audit and tactical refinement'
     ],
-    startingPriceUSD: 500,
+    startingPriceUSD: 250,
     billingType: 'monthly',
-    scopeNotes: 'Starter ($500/mo) includes 2 platforms & 8 posts. Growth ($1,000/mo) includes 3 platforms, 12 posts & 4 videos. Premium ($1,500/mo) includes 4 platforms, 16-20 posts & 8 videos.',
+    hourlyRateUSD: { min: 8, max: 12 },
+    scopeNotes: 'Starter ($250/mo) includes 2 platforms & 8 posts. Growth ($450/mo) includes 3 platforms, 12 posts & 4 videos. Premium ($700/mo) includes 4 platforms, 16-20 posts & 8 videos.',
     tiers: [
-      { name: 'Starter', priceUSD: 500, note: '2 platforms · 8 posts / month' },
-      { name: 'Growth', priceUSD: 1000, note: '3 platforms · 12 posts · 4 videos / month' },
-      { name: 'Premium', priceUSD: 1500, note: '4 platforms · 16–20 posts · 8 videos / month' }
+      { name: 'Starter', priceUSD: 250, note: '2 platforms · 8 posts / month' },
+      { name: 'Growth', priceUSD: 450, note: '3 platforms · 12 posts · 4 videos / month' },
+      { name: 'Premium', priceUSD: 700, note: '4 platforms · 16–20 posts · 8 videos / month' }
     ],
     relatedServiceSlugs: ['real-estate', 'web-development'],
     image: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&w=1600&q=80'
@@ -217,13 +223,14 @@ export const servicesData: ServiceDetail[] = [
       'Daily end-of-day summary reports of completed deliverables',
       'Standard Operating Procedure (SOP) documentation for your operations'
     ],
-    startingPriceUSD: 300,
+    startingPriceUSD: 200,
     billingType: 'monthly',
-    scopeNotes: 'Starter: up to 20 hours ($300/mo / AED 1,100). Growth: up to 40 hours ($600/mo / AED 2,200). Premium: up to 80 hours ($1,000/mo / AED 3,675).',
+    hourlyRateUSD: { min: 8, max: 10 },
+    scopeNotes: 'Starter: up to 20 hours ($200/mo). Growth: up to 40 hours ($400/mo). Premium: up to 80 hours ($750/mo).',
     tiers: [
-      { name: 'Starter', priceUSD: 300, note: 'Up to 20 hours / month' },
-      { name: 'Growth', priceUSD: 600, note: 'Up to 40 hours / month' },
-      { name: 'Premium', priceUSD: 1000, note: 'Up to 80 hours / month' }
+      { name: 'Starter', priceUSD: 200, note: 'Up to 20 hours / month' },
+      { name: 'Growth', priceUSD: 400, note: 'Up to 40 hours / month' },
+      { name: 'Premium', priceUSD: 750, note: 'Up to 80 hours / month' }
     ],
     relatedServiceSlugs: ['admin-support', 'crm-development'],
     image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1600&q=80'
@@ -249,8 +256,9 @@ export const servicesData: ServiceDetail[] = [
       'Regular pipeline hygiene audits and data cleanups',
       'Weekly operational report highlighting active deal milestones'
     ],
-    startingPriceUSD: 500,
+    startingPriceUSD: 250,
     billingType: 'monthly',
+    hourlyRateUSD: { min: 8, max: 12 },
     scopeNotes: 'Custom enterprise volume and multi-office requirements receive tailored quotes after operational audit.',
     relatedServiceSlugs: ['virtual-assistance', 'crm-development', 'custom-software'],
     image: 'https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&w=1600&q=80'
@@ -280,6 +288,7 @@ export const servicesData: ServiceDetail[] = [
     ],
     startingPriceUSD: 45,
     billingType: 'per-video',
+    hourlyRateUSD: { min: 10, max: 15 },
     scopeNotes: 'Individual video rates: Starter $45 (AED 165), Standard $65 (AED 240), Professional $100 (AED 370). Monthly 10/20/30 video packages offer up to 24% savings.',
     relatedServiceSlugs: ['fashion', 'products', 'web-development'],
     image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1600&q=80'
@@ -307,6 +316,7 @@ export const servicesData: ServiceDetail[] = [
     ],
     startingPriceUSD: 45,
     billingType: 'per-video',
+    hourlyRateUSD: { min: 10, max: 15 },
     scopeNotes: 'Starter at $45 / AED 165. Professional multi-angle storytelling at $100 / AED 370 per film. Monthly brand retainers available.',
     relatedServiceSlugs: ['products', 'real-estate', 'social-content'],
     image: 'https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=1600&q=80'
@@ -333,6 +343,7 @@ export const servicesData: ServiceDetail[] = [
     ],
     startingPriceUSD: 45,
     billingType: 'per-video',
+    hourlyRateUSD: { min: 10, max: 15 },
     scopeNotes: 'Starter from $45 (AED 165). Professional grade $100 (AED 370). Volume package discounts apply for full seasonal menu launches.',
     relatedServiceSlugs: ['products', 'fashion', 'social-content'],
     image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1600&q=80'
@@ -359,6 +370,7 @@ export const servicesData: ServiceDetail[] = [
     ],
     startingPriceUSD: 45,
     billingType: 'per-video',
+    hourlyRateUSD: { min: 10, max: 15 },
     scopeNotes: 'Professional tier ($100 / AED 370) features multi-angle choreography, advanced transitions, and bespoke visual direction.',
     relatedServiceSlugs: ['fashion', 'food', 'real-estate'],
     image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1600&q=80'
@@ -385,6 +397,7 @@ export const servicesData: ServiceDetail[] = [
     ],
     startingPriceUSD: 45,
     billingType: 'per-video',
+    hourlyRateUSD: { min: 10, max: 15 },
     scopeNotes: 'Best ordered in 10, 20, or 30 video monthly creative testing bundles for scalable media buying.',
     relatedServiceSlugs: ['products', 'social-content'],
     image: 'https://images.unsplash.com/photo-1533750349088-cd871a92f312?auto=format&fit=crop&w=1600&q=80'
@@ -410,6 +423,7 @@ export const servicesData: ServiceDetail[] = [
     ],
     startingPriceUSD: 45,
     billingType: 'per-video',
+    hourlyRateUSD: { min: 10, max: 15 },
     scopeNotes: 'Starter package starts at 10 videos ($405 / AED 1,490). Scaling to 30 videos ($1,020 / AED 3,745).',
     relatedServiceSlugs: ['fashion', 'products', 'food'],
     image: 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=1600&q=80'

@@ -32,10 +32,10 @@ export const HomeIntroVideo: React.FC = () => {
             <button
               type="button"
               onClick={start}
-              className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-[#12162A] via-[#0B0E17] to-[#1A1510] cursor-pointer"
+              className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-[#12162A] via-[#0B0E17] to-[#1A1030] cursor-pointer"
               aria-label="Play the RMAST Studio introduction video"
             >
-              <span className="w-16 h-16 rounded-full bg-[#C9A96E] text-[#0A0A0C] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+              <span className="w-16 h-16 rounded-full bg-[#A68BFF] text-[#0A0A0C] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
                 <Play className="w-6 h-6 ml-1 fill-current" />
               </span>
               <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#E8E6E1]">Watch: What is RMAST</span>
@@ -43,8 +43,8 @@ export const HomeIntroVideo: React.FC = () => {
           )}
         </>
       ) : (
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-[#12162A] via-[#0B0E17] to-[#1A1510]">
-          <span className="w-16 h-16 rounded-full border border-[#C9A96E]/50 text-[#C9A96E] flex items-center justify-center">
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-[#12162A] via-[#0B0E17] to-[#1A1030]">
+          <span className="w-16 h-16 rounded-full border border-[#A68BFF]/50 text-[#A68BFF] flex items-center justify-center">
             <Play className="w-6 h-6 ml-1" />
           </span>
           <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#A1A1AA]">Studio introduction · Coming soon</span>

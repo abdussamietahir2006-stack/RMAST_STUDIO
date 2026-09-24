@@ -75,11 +75,11 @@ export const ContactPage: React.FC = () => {
   ];
 
   const budgetRanges = [
-    currency === 'USD' ? '< $1,000 USD' : '< 3,675 AED',
-    currency === 'USD' ? '$1,000 – $2,500 USD' : '3,675 – 9,200 AED',
-    currency === 'USD' ? '$2,500 – $5,000 USD' : '9,200 – 18,360 AED',
-    currency === 'USD' ? '$5,000 – $10,000 USD' : '18,360 – 36,725 AED',
-    currency === 'USD' ? '$10,000+ USD (Enterprise)' : '36,725+ AED (Enterprise)'
+    currency === 'USD' ? '< $500 USD' : '< 1,835 AED',
+    currency === 'USD' ? '$500 – $1,500 USD' : '1,835 – 5,510 AED',
+    currency === 'USD' ? '$1,500 – $3,000 USD' : '5,510 – 11,020 AED',
+    currency === 'USD' ? '$3,000 – $6,000 USD' : '11,020 – 22,035 AED',
+    currency === 'USD' ? '$6,000+ USD (Enterprise)' : '22,035+ AED (Enterprise)'
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -130,14 +130,14 @@ export const ContactPage: React.FC = () => {
         {/* Header */}
         <section className="space-y-6 max-w-3xl">
           <div className="flex items-center gap-3">
-            <span className="text-xs font-mono uppercase tracking-[0.25em] text-[#C9A96E]">
+            <span className="text-xs font-mono uppercase tracking-[0.25em] text-[#A68BFF]">
               Direct Inquiries
             </span>
           </div>
 
           <h1 className="font-serif text-5xl sm:text-7xl lg:text-8xl font-bold text-[#FAF8F5] leading-[1.02] tracking-tight">
             Have something <br />
-            <span className="italic font-light text-[#C9A96E]">worth building?</span>
+            <span className="italic font-light text-[#A68BFF]">worth building?</span>
           </h1>
 
           <p className="text-lg md:text-xl text-[#A1A1AA] leading-relaxed font-light">
@@ -151,7 +151,7 @@ export const ContactPage: React.FC = () => {
           <div className="lg:col-span-7 bg-[#0E111C]/85 backdrop-blur-md border border-[#232738]/80 p-8 md:p-10 rounded-sm shadow-2xl">
             {submitted ? (
               <div className="space-y-6 py-12 text-center">
-                <div className="w-16 h-16 rounded-full bg-[#1A1A22] border border-[#C9A96E] text-[#C9A96E] flex items-center justify-center mx-auto">
+                <div className="w-16 h-16 rounded-full bg-[#1A1A22] border border-[#A68BFF] text-[#A68BFF] flex items-center justify-center mx-auto">
                   <CheckCircle2 className="w-8 h-8" />
                 </div>
                 <h3 className="font-serif text-2xl md:text-3xl text-[#FAF8F5] font-semibold">
@@ -165,7 +165,7 @@ export const ContactPage: React.FC = () => {
                     href={whatsappLink()}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-[#C9A96E] text-[#0A0A0C] text-xs font-semibold uppercase tracking-wider hover:bg-[#D9B97E] transition-all"
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-[#A68BFF] text-[#0A0A0C] text-xs font-semibold uppercase tracking-wider hover:bg-[#BBA6FF] transition-all"
                   >
                     <span>Connect on WhatsApp for Immediate Priority</span>
                     <ArrowRight className="w-4 h-4" />
@@ -186,7 +186,7 @@ export const ContactPage: React.FC = () => {
                       placeholder="e.g. Marcus Vance"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full bg-[#070709] border border-[#27272A] px-4 py-3 text-sm text-[#FAF8F5] placeholder-[#52525B] focus:outline-none focus:border-[#C9A96E] transition-colors"
+                      className="w-full bg-[#070709] border border-[#27272A] px-4 py-3 text-sm text-[#FAF8F5] placeholder-[#52525B] focus:outline-none focus:border-[#A68BFF] transition-colors"
                     />
                   </div>
 
@@ -201,7 +201,7 @@ export const ContactPage: React.FC = () => {
                       placeholder="e.g. marcus@vanguardrealty.com"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full bg-[#070709] border border-[#27272A] px-4 py-3 text-sm text-[#FAF8F5] placeholder-[#52525B] focus:outline-none focus:border-[#C9A96E] transition-colors"
+                      className="w-full bg-[#070709] border border-[#27272A] px-4 py-3 text-sm text-[#FAF8F5] placeholder-[#52525B] focus:outline-none focus:border-[#A68BFF] transition-colors"
                     />
                   </div>
                 </div>
@@ -217,7 +217,7 @@ export const ContactPage: React.FC = () => {
                       placeholder="e.g. Vanguard Properties LLC"
                       value={formData.company}
                       onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                      className="w-full bg-[#070709] border border-[#27272A] px-4 py-3 text-sm text-[#FAF8F5] placeholder-[#52525B] focus:outline-none focus:border-[#C9A96E] transition-colors"
+                      className="w-full bg-[#070709] border border-[#27272A] px-4 py-3 text-sm text-[#FAF8F5] placeholder-[#52525B] focus:outline-none focus:border-[#A68BFF] transition-colors"
                     />
                   </div>
 
@@ -229,7 +229,7 @@ export const ContactPage: React.FC = () => {
                     <select
                       value={formData.industry}
                       onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
-                      className="w-full bg-[#070709] border border-[#27272A] px-4 py-3 text-sm text-[#FAF8F5] focus:outline-none focus:border-[#C9A96E] transition-colors"
+                      className="w-full bg-[#070709] border border-[#27272A] px-4 py-3 text-sm text-[#FAF8F5] focus:outline-none focus:border-[#A68BFF] transition-colors"
                     >
                       {industriesList.map((ind, i) => (
                         <option key={i} value={ind} className="bg-[#0D0D10] text-[#FAF8F5]">
@@ -249,7 +249,7 @@ export const ContactPage: React.FC = () => {
                     <select
                       value={formData.service}
                       onChange={(e) => setFormData({ ...formData, service: e.target.value })}
-                      className="w-full bg-[#070709] border border-[#27272A] px-4 py-3 text-sm text-[#FAF8F5] focus:outline-none focus:border-[#C9A96E] transition-colors"
+                      className="w-full bg-[#070709] border border-[#27272A] px-4 py-3 text-sm text-[#FAF8F5] focus:outline-none focus:border-[#A68BFF] transition-colors"
                     >
                       {servicesList.map((srv, i) => (
                         <option key={i} value={srv} className="bg-[#0D0D10] text-[#FAF8F5]">
@@ -267,7 +267,7 @@ export const ContactPage: React.FC = () => {
                     <select
                       value={formData.budgetIndex}
                       onChange={(e) => setFormData({ ...formData, budgetIndex: Number(e.target.value) })}
-                      className="w-full bg-[#070709] border border-[#27272A] px-4 py-3 text-sm text-[#FAF8F5] focus:outline-none focus:border-[#C9A96E] transition-colors"
+                      className="w-full bg-[#070709] border border-[#27272A] px-4 py-3 text-sm text-[#FAF8F5] focus:outline-none focus:border-[#A68BFF] transition-colors"
                     >
                       {budgetRanges.map((b, i) => (
                         <option key={i} value={i} className="bg-[#0D0D10] text-[#FAF8F5]">
@@ -289,14 +289,14 @@ export const ContactPage: React.FC = () => {
                     placeholder="Briefly describe your business, what friction you are trying to remove, or what cinematic visual campaign you are envisioning..."
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                    className="w-full bg-[#070709] border border-[#27272A] px-4 py-3 text-sm text-[#FAF8F5] placeholder-[#52525B] focus:outline-none focus:border-[#C9A96E] transition-colors resize-none"
+                    className="w-full bg-[#070709] border border-[#27272A] px-4 py-3 text-sm text-[#FAF8F5] placeholder-[#52525B] focus:outline-none focus:border-[#A68BFF] transition-colors resize-none"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-4 bg-[#C9A96E] text-[#0A0A0C] text-xs font-semibold uppercase tracking-[0.18em] hover:bg-[#D9B97E] transition-all cursor-pointer shadow-lg disabled:opacity-50"
+                  className="w-full py-4 bg-[#A68BFF] text-[#0A0A0C] text-xs font-semibold uppercase tracking-[0.18em] hover:bg-[#BBA6FF] transition-all cursor-pointer shadow-lg disabled:opacity-50"
                 >
                   {loading ? 'Transmitting Brief...' : 'Start a Conversation'}
                 </button>
@@ -319,7 +319,7 @@ export const ContactPage: React.FC = () => {
             {/* Direct Studio Channels */}
             <div className="p-8 bg-[#0E111C]/85 backdrop-blur-md border border-[#232738]/80 space-y-6 shadow-2xl">
               <div className="space-y-1">
-                <span className="text-xs font-mono uppercase tracking-widest text-[#C9A96E]">
+                <span className="text-xs font-mono uppercase tracking-widest text-[#A68BFF]">
                   Studio Coordinates
                 </span>
                 <h3 className="font-serif text-2xl text-[#FAF8F5] font-semibold">
@@ -330,9 +330,9 @@ export const ContactPage: React.FC = () => {
               <div className="space-y-4 text-sm">
                 <a
                   href={mailtoLink()}
-                  className="flex items-center gap-3.5 p-3.5 bg-[#090B12]/80 border border-[#202434] hover:border-[#C9A96E]/50 text-[#FAF8F5] transition-all"
+                  className="flex items-center gap-3.5 p-3.5 bg-[#090B12]/80 border border-[#202434] hover:border-[#A68BFF]/50 text-[#FAF8F5] transition-all"
                 >
-                  <Mail className="w-5 h-5 text-[#C9A96E] shrink-0" />
+                  <Mail className="w-5 h-5 text-[#A68BFF] shrink-0" />
                   <div>
                     <div className="text-[10px] font-mono uppercase text-[#71717A]">
                       Email Inquiries
@@ -364,9 +364,9 @@ export const ContactPage: React.FC = () => {
                   href={CONTACT.instagramUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3.5 p-3.5 bg-[#090B12]/80 border border-[#202434] hover:border-[#C9A96E]/50 text-[#FAF8F5] transition-all"
+                  className="flex items-center gap-3.5 p-3.5 bg-[#090B12]/80 border border-[#202434] hover:border-[#A68BFF]/50 text-[#FAF8F5] transition-all"
                 >
-                  <Instagram className="w-5 h-5 text-[#C9A96E] shrink-0" />
+                  <Instagram className="w-5 h-5 text-[#A68BFF] shrink-0" />
                   <div>
                     <div className="text-[10px] font-mono uppercase text-[#71717A]">
                       Instagram Visual Feed
@@ -403,7 +403,7 @@ export const ContactPage: React.FC = () => {
 
             {/* Founder Direct Guarantee */}
             <div className="p-6 bg-[#0E111C]/80 backdrop-blur-md border border-[#232738]/80 space-y-3 shadow-xl">
-              <div className="text-xs font-mono uppercase tracking-widest text-[#C9A96E]">
+              <div className="text-xs font-mono uppercase tracking-widest text-[#A68BFF]">
                 Direct Founder Guarantee
               </div>
               <p className="text-xs text-[#8E8D88] leading-relaxed">

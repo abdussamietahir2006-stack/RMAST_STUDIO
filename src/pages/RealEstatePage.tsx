@@ -14,7 +14,7 @@ import {
 
 export const RealEstatePage: React.FC = () => {
   const { navigate } = useNavigation();
-  const { format, currency } = useCurrency();
+  const { format, formatHourly, currency } = useCurrency();
   const { openInquiry } = useInquiry();
 
   const realEstateServices = servicesData.filter((s) => s.division === 'real-estate');
@@ -25,7 +25,7 @@ export const RealEstatePage: React.FC = () => {
         {/* Editorial Page Header */}
         <section className="space-y-6 max-w-4xl">
           <div className="flex items-center gap-3">
-            <span className="text-xs font-mono uppercase tracking-[0.25em] text-[#C9A96E]">
+            <span className="text-xs font-mono uppercase tracking-[0.25em] text-[#A68BFF]">
               Division One · Real Estate Digital Systems
             </span>
           </div>
@@ -40,7 +40,7 @@ export const RealEstatePage: React.FC = () => {
 
           <div className="pt-2 flex flex-wrap items-center gap-6 text-xs font-mono text-[#71717A]">
             <span className="flex items-center gap-1.5 text-[#E4E4E7]">
-              <MapPin className="w-3.5 h-3.5 text-[#C9A96E]" />
+              <MapPin className="w-3.5 h-3.5 text-[#A68BFF]" />
               Target Markets: United States · UAE · Canada
             </span>
             <span>·</span>
@@ -53,7 +53,7 @@ export const RealEstatePage: React.FC = () => {
         {/* Interactive Visual Workflow */}
         <section className="space-y-6">
           <div className="space-y-2">
-            <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#C9A96E]">
+            <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#A68BFF]">
               The Operational Architecture
             </span>
             <h2 className="font-serif text-3xl md:text-4xl text-[#FAF8F5] font-semibold">
@@ -71,7 +71,7 @@ export const RealEstatePage: React.FC = () => {
         <section className="space-y-12">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-[#1E1E24]">
             <div className="space-y-2">
-              <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#C9A96E]">
+              <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#A68BFF]">
                 Comprehensive Capabilities
               </span>
               <h2 className="font-serif text-3xl sm:text-5xl text-[#FAF8F5] font-semibold tracking-tight">
@@ -87,12 +87,12 @@ export const RealEstatePage: React.FC = () => {
             {realEstateServices.map((service, index) => (
               <div
                 key={service.id}
-                className="p-7 sm:p-9 bg-[#0E111C]/80 backdrop-blur-md border border-[#232738]/80 hover:border-[#C9A96E]/60 shadow-xl transition-all duration-300 rounded-sm relative group"
+                className="p-7 sm:p-9 bg-[#0E111C]/80 backdrop-blur-md border border-[#232738]/80 hover:border-[#A68BFF]/60 shadow-xl transition-all duration-300 rounded-sm relative group"
               >
                 {/* Service Card Top Header */}
                 <div className="flex flex-wrap items-center justify-between gap-4 pb-5 border-b border-[#1E1E26]">
                   <div className="flex items-center gap-3">
-                    <span className="px-3 py-1 bg-[#1A1A24] border border-[#C9A96E]/40 text-[#C9A96E] text-xs font-mono font-bold tracking-widest">
+                    <span className="px-3 py-1 bg-[#1A1A24] border border-[#A68BFF]/40 text-[#A68BFF] text-xs font-mono font-bold tracking-widest">
                       SERVICE {String(index + 1).padStart(2, '0')} OF {realEstateServices.length}
                     </span>
                     <span className="text-xs font-mono uppercase tracking-wider text-[#A1A1AA]">
@@ -105,18 +105,23 @@ export const RealEstatePage: React.FC = () => {
                     <span className="text-sm font-mono text-[#FAF8F5] font-semibold">
                       {format(service.startingPriceUSD)}
                     </span>
-                    <span className="text-[10px] font-mono text-[#C9A96E] uppercase">
+                    <span className="text-[10px] font-mono text-[#A68BFF] uppercase">
                       ({service.billingType === 'monthly' ? 'per month' : 'one-time'})
                     </span>
+                    {service.hourlyRateUSD && (
+                      <span className="text-[11px] font-mono text-[#A1A1AA] border-l border-[#2A2A36] pl-2 ml-1">
+                        or {formatHourly(service.hourlyRateUSD)}
+                      </span>
+                    )}
                   </div>
                 </div>
 
                 {/* Title & Headline */}
                 <div className="pt-5 pb-5">
-                  <h3 className="font-serif text-2xl sm:text-3xl text-[#FAF8F5] font-semibold tracking-tight group-hover:text-[#C9A96E] transition-colors">
+                  <h3 className="font-serif text-2xl sm:text-3xl text-[#FAF8F5] font-semibold tracking-tight group-hover:text-[#A68BFF] transition-colors">
                     {service.title}
                   </h3>
-                  <p className="text-xs sm:text-sm font-mono text-[#C9A96E]/90 mt-1 italic">
+                  <p className="text-xs sm:text-sm font-mono text-[#A68BFF]/90 mt-1 italic">
                     "{service.headline}"
                   </p>
                 </div>
@@ -125,7 +130,7 @@ export const RealEstatePage: React.FC = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
                   {/* Compartment 1: What it builds */}
                   <div className="p-4 bg-[#121217] border border-[#1E1E26] rounded-sm space-y-2">
-                    <div className="text-[10px] font-mono uppercase tracking-widest text-[#C9A96E] font-semibold pb-1 border-b border-[#1C1C24]">
+                    <div className="text-[10px] font-mono uppercase tracking-widest text-[#A68BFF] font-semibold pb-1 border-b border-[#1C1C24]">
                       01 · What It Does & Solves
                     </div>
                     <p className="text-xs sm:text-sm text-[#D4D4D8] leading-relaxed">
@@ -135,24 +140,24 @@ export const RealEstatePage: React.FC = () => {
 
                   {/* Compartment 2: Who it is for */}
                   <div className="p-4 bg-[#121217] border border-[#1E1E26] rounded-sm space-y-2">
-                    <div className="text-[10px] font-mono uppercase tracking-widest text-[#C9A96E] font-semibold pb-1 border-b border-[#1C1C24]">
+                    <div className="text-[10px] font-mono uppercase tracking-widest text-[#A68BFF] font-semibold pb-1 border-b border-[#1C1C24]">
                       02 · Engineered For
                     </div>
-                    <div className="p-3 bg-[#171720] border-l-2 border-[#C9A96E] text-xs text-[#FAF8F5] italic leading-relaxed">
+                    <div className="p-3 bg-[#171720] border-l-2 border-[#A68BFF] text-xs text-[#FAF8F5] italic leading-relaxed">
                       {service.targetAudience}
                     </div>
                   </div>
 
                   {/* Compartment 3: Included Deliverables */}
                   <div className="p-4 bg-[#121217] border border-[#1E1E26] rounded-sm space-y-2">
-                    <div className="text-[10px] font-mono uppercase tracking-widest text-[#C9A96E] font-semibold pb-1 border-b border-[#1C1C24] flex items-center justify-between">
+                    <div className="text-[10px] font-mono uppercase tracking-widest text-[#A68BFF] font-semibold pb-1 border-b border-[#1C1C24] flex items-center justify-between">
                       <span>03 · Core Deliverables</span>
                       <span className="text-[10px] text-[#71717A]">{service.keyFeatures.length} Specs</span>
                     </div>
                     <ul className="space-y-1.5 text-xs text-[#A1A1AA]">
                       {service.keyFeatures.slice(0, 3).map((f, i) => (
                         <li key={i} className="flex items-start gap-2">
-                          <Check className="w-3.5 h-3.5 text-[#C9A96E] shrink-0 mt-0.5" />
+                          <Check className="w-3.5 h-3.5 text-[#A68BFF] shrink-0 mt-0.5" />
                           <span>{f}</span>
                         </li>
                       ))}
@@ -164,10 +169,10 @@ export const RealEstatePage: React.FC = () => {
                 <div className="mt-6 pt-5 border-t border-[#1C1C22] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <button
                     onClick={() => navigate(`/services/${service.slug}`)}
-                    className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-[#FAF8F5] hover:text-[#C9A96E] cursor-pointer group/link"
+                    className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-[#FAF8F5] hover:text-[#A68BFF] cursor-pointer group/link"
                   >
                     <span>View Architectural Specifications & Scope</span>
-                    <ArrowRight className="w-3.5 h-3.5 text-[#C9A96E] group-hover/link:translate-x-1 transition-transform" />
+                    <ArrowRight className="w-3.5 h-3.5 text-[#A68BFF] group-hover/link:translate-x-1 transition-transform" />
                   </button>
 
                   <button
@@ -184,7 +189,7 @@ export const RealEstatePage: React.FC = () => {
                         features: service.keyFeatures
                       })
                     }
-                    className="px-5 py-2 bg-[#C9A96E] text-[#0A0A0C] text-xs font-mono font-semibold uppercase tracking-wider hover:bg-[#D9B97E] transition-all cursor-pointer text-center"
+                    className="px-5 py-2 bg-[#A68BFF] text-[#0A0A0C] text-xs font-mono font-semibold uppercase tracking-wider hover:bg-[#BBA6FF] transition-all cursor-pointer text-center"
                   >
                     Inquire This System
                   </button>
@@ -197,7 +202,7 @@ export const RealEstatePage: React.FC = () => {
         {/* Real Estate Packages Section */}
         <section className="space-y-12">
           <div className="space-y-3">
-            <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#C9A96E]">
+            <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#A68BFF]">
               Investment Packages
             </span>
             <h2 className="font-serif text-3xl md:text-4xl text-[#FAF8F5] font-semibold">
@@ -214,12 +219,12 @@ export const RealEstatePage: React.FC = () => {
                 key={pkg.id}
                 className={`p-8 rounded-sm border flex flex-col justify-between space-y-8 ${
                   pkg.highlight
-                    ? 'bg-[#101015] border-[#C9A96E] shadow-xl relative'
+                    ? 'bg-[#101015] border-[#A68BFF] shadow-xl relative'
                     : 'bg-[#0A0A0D] border-[#1E1E24]'
                 }`}
               >
                 {pkg.highlight && (
-                  <div className="absolute -top-3 left-8 px-3 py-0.5 bg-[#C9A96E] text-[#0A0A0C] text-[10px] font-mono uppercase tracking-widest font-bold">
+                  <div className="absolute -top-3 left-8 px-3 py-0.5 bg-[#A68BFF] text-[#0A0A0C] text-[10px] font-mono uppercase tracking-widest font-bold">
                     Most Popular Pipeline
                   </div>
                 )}
@@ -248,13 +253,13 @@ export const RealEstatePage: React.FC = () => {
                   </p>
 
                   <div className="space-y-3 pt-2">
-                    <div className="text-[10px] font-mono uppercase tracking-wider text-[#C9A96E]">
+                    <div className="text-[10px] font-mono uppercase tracking-wider text-[#A68BFF]">
                       What's Included:
                     </div>
                     <ul className="space-y-2 text-xs text-[#D4D4D8]">
                       {pkg.included.map((item, idx) => (
                         <li key={idx} className="flex items-start gap-2">
-                          <Check className="w-3.5 h-3.5 text-[#C9A96E] shrink-0 mt-0.5" />
+                          <Check className="w-3.5 h-3.5 text-[#A68BFF] shrink-0 mt-0.5" />
                           <span>{item}</span>
                         </li>
                       ))}
@@ -294,8 +299,8 @@ export const RealEstatePage: React.FC = () => {
                   }
                   className={`w-full py-3.5 text-xs font-semibold uppercase tracking-[0.16em] transition-all cursor-pointer ${
                     pkg.highlight
-                      ? 'bg-[#C9A96E] text-[#0A0A0C] hover:bg-[#D9B97E]'
-                      : 'border border-[#27272A] text-[#FAF8F5] hover:border-[#C9A96E]'
+                      ? 'bg-[#A68BFF] text-[#0A0A0C] hover:bg-[#BBA6FF]'
+                      : 'border border-[#27272A] text-[#FAF8F5] hover:border-[#A68BFF]'
                   }`}
                 >
                   {pkg.ctaText || 'Build System'}
@@ -322,7 +327,7 @@ export const RealEstatePage: React.FC = () => {
                   kicker: 'Founder Scoping'
                 })
               }
-              className="px-8 py-3.5 bg-[#C9A96E] text-[#0A0A0C] text-xs font-semibold uppercase tracking-[0.16em] hover:bg-[#D9B97E] transition-all cursor-pointer"
+              className="px-8 py-3.5 bg-[#A68BFF] text-[#0A0A0C] text-xs font-semibold uppercase tracking-[0.16em] hover:bg-[#BBA6FF] transition-all cursor-pointer"
             >
               Start Real Estate Consultation
             </button>

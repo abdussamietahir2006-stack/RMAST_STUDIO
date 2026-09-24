@@ -10,59 +10,73 @@ export function formatPrice(amountUSD: number, currency: 'USD' | 'AED'): string 
   return `AED ${aed.toLocaleString()}`;
 }
 
+// Hourly rate range, e.g. "$10–$15/hr" or "AED 37–55/hr"
+export function formatHourlyRate(rate: { min: number; max: number }, currency: 'USD' | 'AED'): string {
+  if (currency === 'USD') return `$${rate.min}–$${rate.max}/hr`;
+  return `AED ${Math.round(rate.min * USD_TO_AED_RATE)}–${Math.round(rate.max * USD_TO_AED_RATE)}/hr`;
+}
+
 export const singleServicePricing = [
   {
     service: 'Website Development (US/UAE/CA Real Estate)',
-    startingUSD: 1000,
+    startingUSD: 500,
+    hourlyRateUSD: { min: 10, max: 15 },
     billing: 'one-time',
     scope: 'Custom multi-page web application, high-speed CDN, WhatsApp & AI chatbot, SEO & Google Analytics, first month maintenance included.',
     exclusions: 'Admin dashboard, custom CRM, third-party API costs & domain registration.'
   },
   {
     service: 'Custom Software Development',
-    startingUSD: 2500,
+    startingUSD: 1200,
+    hourlyRateUSD: { min: 12, max: 18 },
     billing: 'one-time',
     scope: 'Requirements analysis, UI/UX, frontend & secure backend API, database schema, role-based auth, core business logic, full deployment & docs.',
     exclusions: 'Third-party cloud infrastructure and ongoing post-launch SLA.'
   },
   {
     service: 'CRM Development & Architecture',
-    startingUSD: 3500,
+    startingUSD: 1000,
+    hourlyRateUSD: { min: 12, max: 18 },
     billing: 'one-time',
     scope: 'Lead management, deals, companies, custom single pipeline, authentication, dashboard reports, responsive interface & deployment.',
     exclusions: 'Multi-pipeline customization and AI qualification (available in Growth/Premium).'
   },
   {
     service: 'AI Workflow Automation',
-    startingUSD: 1500,
-    billing: 'one-time',
+    startingUSD: 1000,
+    hourlyRateUSD: { min: 12, max: 18 },
+    billing: '/month',
     scope: '1–2 automated workflows connecting lead sources, SMS/WhatsApp triggers, calendar booking, and CRM updates.',
     exclusions: 'Multi-agent autonomous logic and complex custom webhooks.'
   },
   {
     service: 'AI Conversational Assistant',
-    startingUSD: 500,
+    startingUSD: 300,
+    hourlyRateUSD: { min: 12, max: 18 },
     billing: 'one-time',
     scope: 'Website chatbot, proprietary knowledge base, FAQs, buyer lead capture, and instant human notification handoff.',
     exclusions: 'LLM token usage / OpenAI / Anthropic direct API costs.'
   },
   {
     service: 'Social Media Management',
-    startingUSD: 500,
+    startingUSD: 250,
+    hourlyRateUSD: { min: 8, max: 12 },
     billing: '/month',
     scope: '2 platforms, 8 static/carousel posts monthly, content calendar, caption copywriting, and basic performance reporting.',
     exclusions: 'Paid ad spend and on-site videography.'
   },
   {
     service: 'Virtual Assistance for Real Estate',
-    startingUSD: 300,
+    startingUSD: 200,
+    hourlyRateUSD: { min: 8, max: 10 },
     billing: '/month',
     scope: 'Up to 20 dedicated hours monthly for admin, CRM data upkeep, client research, showing scheduling, and task coordination.',
     exclusions: 'Licensed broker representation or legal drafting.'
   },
   {
     service: 'Real Estate Admin Operations',
-    startingUSD: 500,
+    startingUSD: 250,
+    hourlyRateUSD: { min: 8, max: 12 },
     billing: '/month',
     scope: 'Lead data management, CRM hygiene, listing portal entry (MLS/Bayut/Property Finder), document filing, and deal milestone tracking.',
     exclusions: 'Custom enterprise software licensing.'
@@ -76,7 +90,7 @@ export const realEstatePackages: PricingPackage[] = [
     title: 'Real Estate Starter',
     tier: 'Starter',
     division: 'real-estate',
-    priceUSD: 1250,
+    priceUSD: 800,
     billingFrequency: 'one-time',
     bestFor: 'Boutique agencies & solo brokers establishing a credible digital command post.',
     included: [
@@ -100,7 +114,7 @@ export const realEstatePackages: PricingPackage[] = [
     title: 'Real Estate Growth',
     tier: 'Growth',
     division: 'real-estate',
-    priceUSD: 2500,
+    priceUSD: 1600,
     billingFrequency: 'one-time',
     highlight: true,
     bestFor: 'Active brokerages & developers needing integrated lead flow and automated pipeline tracking.',
@@ -125,7 +139,7 @@ export const realEstatePackages: PricingPackage[] = [
     title: 'Real Estate Premium',
     tier: 'Premium',
     division: 'real-estate',
-    priceUSD: 5000,
+    priceUSD: 3200,
     billingFrequency: 'one-time',
     bestFor: 'Prestige brokerages, luxury developers & investment syndicates demanding an end-to-end digital monopoly.',
     included: [
@@ -224,7 +238,7 @@ export const completeBusinessPackages: PricingPackage[] = [
     title: 'Business Launch',
     tier: 'Starter',
     division: 'complete-business',
-    priceUSD: 2500,
+    priceUSD: 1800,
     billingFrequency: 'one-time',
     bestFor: 'Modern enterprises launching with both world-class digital systems and high-converting visual media.',
     included: [
@@ -244,7 +258,7 @@ export const completeBusinessPackages: PricingPackage[] = [
     title: 'Business Growth',
     tier: 'Growth',
     division: 'complete-business',
-    priceUSD: 5000,
+    priceUSD: 3500,
     billingFrequency: 'one-time',
     highlight: true,
     bestFor: 'Expanding companies scaling lead generation, internal operations, and brand prestige simultaneously.',
@@ -266,7 +280,7 @@ export const completeBusinessPackages: PricingPackage[] = [
     title: 'Digital Operating System',
     tier: 'Premium',
     division: 'complete-business',
-    priceUSD: 10000,
+    priceUSD: 7000,
     billingFrequency: 'one-time',
     bestFor: 'Serious enterprises building proprietary systems, automated operational pipelines, and an unforgettable brand identity.',
     included: [
@@ -333,25 +347,25 @@ export const videoMonthlyBundles: VideoTierPricing[] = [
 // ADD-ONS
 export const addOnItems: AddOnItem[] = [
   // Website
-  { id: 'add-admin', category: 'Website', title: 'Custom Admin Dashboard', priceUSD: 500, notes: 'Full internal control over website content, media, and leads.' },
-  { id: 'add-cms', category: 'Website', title: 'Advanced Headless CMS', priceUSD: 500, notes: 'Dynamic publishing pipeline for listings, blog posts, and resources.' },
-  { id: 'add-booking', category: 'Website', title: 'Automated Booking System', priceUSD: 300, notes: 'Direct calendar integration with SMS/WhatsApp confirmations.' },
-  { id: 'add-crm-int', category: 'Website', title: 'CRM Integration', priceUSD: 500, notes: 'Connect form submissions directly to HubSpot, Salesforce, or custom CRM.' },
-  { id: 'add-ai-assist', category: 'Website', title: 'Advanced AI Assistant Fine-Tuning', priceUSD: 500, notes: 'Custom vector database and document embeddings for accurate replies.' },
-  { id: 'add-ecomm', category: 'Website', title: 'E-Commerce / Payment Gateway', priceUSD: 1000, notes: 'Stripe, Apple Pay, or regional payment integration with cart checkout.' },
-  { id: 'add-lang', category: 'Website', title: 'Multilingual Support (Arabic & English)', priceUSD: 300, notes: 'Complete RTL Arabic layout and locale routing for UAE/GCC markets.' },
-  { id: 'add-seo', category: 'Website', title: 'Advanced Technical SEO & Schema', priceUSD: 300, notes: 'Deep keyword clustering, local real estate schema, and XML sitemaps.' },
-  { id: 'add-api', category: 'Website', title: 'Custom API Endpoint Integration', priceUSD: 250, notes: 'Secure REST or GraphQL webhook integrations with external tools.' },
-  { id: 'add-page', category: 'Website', title: 'Additional Custom Page', priceUSD: 75, notes: 'Bespoke designed and coded responsive page.' },
+  { id: 'add-admin', category: 'Website', title: 'Custom Admin Dashboard', priceUSD: 300, notes: 'Full internal control over website content, media, and leads.' },
+  { id: 'add-cms', category: 'Website', title: 'Advanced Headless CMS', priceUSD: 300, notes: 'Dynamic publishing pipeline for listings, blog posts, and resources.' },
+  { id: 'add-booking', category: 'Website', title: 'Automated Booking System', priceUSD: 150, notes: 'Direct calendar integration with SMS/WhatsApp confirmations.' },
+  { id: 'add-crm-int', category: 'Website', title: 'CRM Integration', priceUSD: 250, notes: 'Connect form submissions directly to HubSpot, Salesforce, or custom CRM.' },
+  { id: 'add-ai-assist', category: 'Website', title: 'Advanced AI Assistant Fine-Tuning', priceUSD: 250, notes: 'Custom vector database and document embeddings for accurate replies.' },
+  { id: 'add-ecomm', category: 'Website', title: 'E-Commerce / Payment Gateway', priceUSD: 500, notes: 'Stripe, Apple Pay, or regional payment integration with cart checkout.' },
+  { id: 'add-lang', category: 'Website', title: 'Multilingual Support (Arabic & English)', priceUSD: 150, notes: 'Complete RTL Arabic layout and locale routing for UAE/GCC markets.' },
+  { id: 'add-seo', category: 'Website', title: 'Advanced Technical SEO & Schema', priceUSD: 150, notes: 'Deep keyword clustering, local real estate schema, and XML sitemaps.' },
+  { id: 'add-api', category: 'Website', title: 'Custom API Endpoint Integration', priceUSD: 150, notes: 'Secure REST or GraphQL webhook integrations with external tools.' },
+  { id: 'add-page', category: 'Website', title: 'Additional Custom Page', priceUSD: 50, notes: 'Bespoke designed and coded responsive page.' },
 
   // AI Systems
-  { id: 'add-workflow', category: 'AI Systems', title: 'Additional Automation Workflow', priceUSD: 300, notes: 'Single automated multi-step trigger and action sequence.' },
-  { id: 'add-agent', category: 'AI Systems', title: 'Autonomous Multi-Step AI Agent', priceUSD: 1000, notes: 'Autonomous reasoning agent capable of multi-system execution.' },
-  { id: 'add-channel', category: 'AI Systems', title: 'Additional AI Channel Connection', priceUSD: 300, notes: 'Deploy same assistant to Instagram DM, Telegram, or WhatsApp Business.' },
-  { id: 'add-ai-api', category: 'AI Systems', title: 'Custom AI API Integration', priceUSD: 250, notes: 'Webhook sync with external CRM or private customer databases.' },
+  { id: 'add-workflow', category: 'AI Systems', title: 'Additional Automation Workflow', priceUSD: 150, notes: 'Single automated multi-step trigger and action sequence.' },
+  { id: 'add-agent', category: 'AI Systems', title: 'Autonomous Multi-Step AI Agent', priceUSD: 500, notes: 'Autonomous reasoning agent capable of multi-system execution.' },
+  { id: 'add-channel', category: 'AI Systems', title: 'Additional AI Channel Connection', priceUSD: 150, notes: 'Deploy same assistant to Instagram DM, Telegram, or WhatsApp Business.' },
+  { id: 'add-ai-api', category: 'AI Systems', title: 'Custom AI API Integration', priceUSD: 150, notes: 'Webhook sync with external CRM or private customer databases.' },
 
   // Ongoing Support
-  { id: 'add-maint-web', category: 'Ongoing Support', title: 'Website Maintenance & Hosting Upkeep', priceUSD: 100, isMonthly: true, notes: 'After first complimentary month. Security, updates, uptime monitoring.' },
-  { id: 'add-maint-ai', category: 'Ongoing Support', title: 'AI System & Workflow Maintenance', priceUSD: 150, isMonthly: true, notes: 'Prompt tuning, model upgrades, and error recovery audits.' },
-  { id: 'add-maint-crm', category: 'Ongoing Support', title: 'CRM Database & Pipeline Maintenance', priceUSD: 200, isMonthly: true, notes: 'Weekly database hygiene, contact deduplication, and workflow checks.' }
+  { id: 'add-maint-web', category: 'Ongoing Support', title: 'Website Maintenance & Hosting Upkeep', priceUSD: 50, isMonthly: true, notes: 'After first complimentary month. Security, updates, uptime monitoring.' },
+  { id: 'add-maint-ai', category: 'Ongoing Support', title: 'AI System & Workflow Maintenance', priceUSD: 80, isMonthly: true, notes: 'Prompt tuning, model upgrades, and error recovery audits.' },
+  { id: 'add-maint-crm', category: 'Ongoing Support', title: 'CRM Database & Pipeline Maintenance', priceUSD: 100, isMonthly: true, notes: 'Weekly database hygiene, contact deduplication, and workflow checks.' }
 ];

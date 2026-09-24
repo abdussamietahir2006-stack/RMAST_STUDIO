@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 
 export const PricingPage: React.FC = () => {
-  const { format } = useCurrency();
+  const { format, formatHourly } = useCurrency();
   const { openInquiry } = useInquiry();
   const divisionParam = useQueryParam('division');
   const [activeTab, setActiveTab] = useState<'real-estate' | 'ai-content' | 'complete-business'>(
@@ -42,14 +42,14 @@ export const PricingPage: React.FC = () => {
         {/* Page Header */}
         <section className="space-y-6 max-w-4xl">
           <div className="flex items-center gap-3">
-            <span className="text-xs font-mono uppercase tracking-[0.25em] text-[#C9A96E]">
+            <span className="text-xs font-mono uppercase tracking-[0.25em] text-[#A68BFF]">
               Investment Framework
             </span>
           </div>
 
           <h1 className="font-serif text-5xl sm:text-7xl lg:text-8xl font-bold text-[#FAF8F5] leading-[1.02] tracking-tight">
             Transparent Investment. <br />
-            <span className="italic font-light text-[#C9A96E]">Predictable Returns.</span>
+            <span className="italic font-light text-[#A68BFF]">Predictable Returns.</span>
           </h1>
 
           <p className="text-base sm:text-lg text-[#A1A1AA] leading-relaxed font-light">
@@ -85,7 +85,7 @@ export const PricingPage: React.FC = () => {
                 onClick={() => setActiveTab('real-estate')}
                 className={`flex items-center gap-2 px-6 py-3 text-xs font-mono uppercase tracking-wider transition-all cursor-pointer ${
                   activeTab === 'real-estate'
-                    ? 'bg-[#C9A96E] text-[#0A0A0C] font-bold shadow-md'
+                    ? 'bg-[#A68BFF] text-[#0A0A0C] font-bold shadow-md'
                     : 'text-[#8E8D88] hover:text-[#FAF8F5]'
                 }`}
               >
@@ -99,7 +99,7 @@ export const PricingPage: React.FC = () => {
                 onClick={() => setActiveTab('ai-content')}
                 className={`flex items-center gap-2 px-6 py-3 text-xs font-mono uppercase tracking-wider transition-all cursor-pointer ${
                   activeTab === 'ai-content'
-                    ? 'bg-[#C9A96E] text-[#0A0A0C] font-bold shadow-md'
+                    ? 'bg-[#A68BFF] text-[#0A0A0C] font-bold shadow-md'
                     : 'text-[#8E8D88] hover:text-[#FAF8F5]'
                 }`}
               >
@@ -113,7 +113,7 @@ export const PricingPage: React.FC = () => {
                 onClick={() => setActiveTab('complete-business')}
                 className={`flex items-center gap-2 px-6 py-3 text-xs font-mono uppercase tracking-wider transition-all cursor-pointer ${
                   activeTab === 'complete-business'
-                    ? 'bg-[#C9A96E] text-[#0A0A0C] font-bold shadow-md'
+                    ? 'bg-[#A68BFF] text-[#0A0A0C] font-bold shadow-md'
                     : 'text-[#8E8D88] hover:text-[#FAF8F5]'
                 }`}
               >
@@ -132,12 +132,12 @@ export const PricingPage: React.FC = () => {
                     key={pkg.id}
                     className={`p-8 rounded-sm border flex flex-col justify-between space-y-8 ${
                       pkg.highlight
-                        ? 'bg-[#101015] border-[#C9A96E] shadow-2xl relative'
+                        ? 'bg-[#101015] border-[#A68BFF] shadow-2xl relative'
                         : 'bg-[#0B0B0E] border-[#1E1E24]'
                     }`}
                   >
                     {pkg.highlight && (
-                      <div className="absolute -top-3 left-8 px-3 py-0.5 bg-[#C9A96E] text-[#0A0A0C] text-[10px] font-mono uppercase tracking-widest font-bold">
+                      <div className="absolute -top-3 left-8 px-3 py-0.5 bg-[#A68BFF] text-[#0A0A0C] text-[10px] font-mono uppercase tracking-widest font-bold">
                         Brokerage Standard
                       </div>
                     )}
@@ -166,13 +166,13 @@ export const PricingPage: React.FC = () => {
                       </p>
 
                       <div className="space-y-3 pt-2">
-                        <div className="text-[10px] font-mono uppercase tracking-wider text-[#C9A96E]">
+                        <div className="text-[10px] font-mono uppercase tracking-wider text-[#A68BFF]">
                           What's Included:
                         </div>
                         <ul className="space-y-2 text-xs text-[#D4D4D8]">
                           {pkg.included.map((item, idx) => (
                             <li key={idx} className="flex items-start gap-2">
-                              <Check className="w-3.5 h-3.5 text-[#C9A96E] shrink-0 mt-0.5" />
+                              <Check className="w-3.5 h-3.5 text-[#A68BFF] shrink-0 mt-0.5" />
                               <span>{item}</span>
                             </li>
                           ))}
@@ -212,8 +212,8 @@ export const PricingPage: React.FC = () => {
                       }
                       className={`w-full py-3.5 text-xs font-semibold uppercase tracking-[0.16em] transition-all cursor-pointer ${
                         pkg.highlight
-                          ? 'bg-[#C9A96E] text-[#0A0A0C] hover:bg-[#D9B97E]'
-                          : 'border border-[#27272A] text-[#FAF8F5] hover:border-[#C9A96E]'
+                          ? 'bg-[#A68BFF] text-[#0A0A0C] hover:bg-[#BBA6FF]'
+                          : 'border border-[#27272A] text-[#FAF8F5] hover:border-[#A68BFF]'
                       }`}
                     >
                       {pkg.ctaText}
@@ -230,7 +230,7 @@ export const PricingPage: React.FC = () => {
               {/* Individual Single Video Rates */}
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#C9A96E]">
+                  <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#A68BFF]">
                     Per Video Production
                   </span>
                   <h3 className="font-serif text-2xl text-[#FAF8F5]">
@@ -244,7 +244,7 @@ export const PricingPage: React.FC = () => {
                       key={item.tier}
                       className={`p-6 bg-[#0B0B0E] border space-y-4 ${
                         item.tier === 'Professional'
-                          ? 'border-[#C9A96E]'
+                          ? 'border-[#A68BFF]'
                           : 'border-[#1E1E24]'
                       }`}
                     >
@@ -269,7 +269,7 @@ export const PricingPage: React.FC = () => {
               <div className="space-y-6">
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-4 border-b border-[#1E1E24]">
                   <div>
-                    <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#C9A96E]">
+                    <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#A68BFF]">
                       Monthly Volume Retainers
                     </span>
                     <h3 className="font-serif text-2xl text-[#FAF8F5] mt-1">
@@ -292,7 +292,7 @@ export const PricingPage: React.FC = () => {
                           <span className="text-2xl font-serif font-bold text-[#FAF8F5]">
                             {b.quantity} Videos / Mo
                           </span>
-                          <span className="text-[10px] font-mono px-2 py-0.5 bg-[#1F1F26] text-[#C9A96E] border border-[#C9A96E]/30">
+                          <span className="text-[10px] font-mono px-2 py-0.5 bg-[#1F1F26] text-[#A68BFF] border border-[#A68BFF]/30">
                             {b.savingsLabel}
                           </span>
                         </div>
@@ -311,7 +311,7 @@ export const PricingPage: React.FC = () => {
                             </span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-[#C9A96E]">Professional Cinema:</span>
+                            <span className="text-[#A68BFF]">Professional Cinema:</span>
                             <span className="text-[#FAF8F5] font-bold">
                               {format(b.professional.usd)}
                             </span>
@@ -336,7 +336,7 @@ export const PricingPage: React.FC = () => {
                             ]
                           })
                         }
-                        className="w-full py-3 text-xs font-semibold uppercase tracking-[0.16em] bg-[#C9A96E] text-[#0A0A0C] hover:bg-[#D9B97E] transition-all cursor-pointer"
+                        className="w-full py-3 text-xs font-semibold uppercase tracking-[0.16em] bg-[#A68BFF] text-[#0A0A0C] hover:bg-[#BBA6FF] transition-all cursor-pointer"
                       >
                         Order {b.quantity}-Video Bundle
                       </button>
@@ -348,7 +348,7 @@ export const PricingPage: React.FC = () => {
               {/* Brand Content Packages */}
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#C9A96E]">
+                  <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#A68BFF]">
                     Curated Campaigns
                   </span>
                   <h3 className="font-serif text-2xl text-[#FAF8F5]">
@@ -361,7 +361,7 @@ export const PricingPage: React.FC = () => {
                     <div
                       key={pkg.id}
                       className={`p-8 bg-[#0B0B0E] border flex flex-col justify-between space-y-6 ${
-                        pkg.highlight ? 'border-[#C9A96E]' : 'border-[#1E1E24]'
+                        pkg.highlight ? 'border-[#A68BFF]' : 'border-[#1E1E24]'
                       }`}
                     >
                       <div className="space-y-4">
@@ -380,7 +380,7 @@ export const PricingPage: React.FC = () => {
                         <ul className="space-y-1.5 text-xs text-[#D4D4D8] pt-2">
                           {pkg.included.map((inc, i) => (
                             <li key={i} className="flex items-start gap-2">
-                              <Check className="w-3.5 h-3.5 text-[#C9A96E] shrink-0 mt-0.5" />
+                              <Check className="w-3.5 h-3.5 text-[#A68BFF] shrink-0 mt-0.5" />
                               <span>{inc}</span>
                             </li>
                           ))}
@@ -401,7 +401,7 @@ export const PricingPage: React.FC = () => {
                             features: pkg.included
                           })
                         }
-                        className="w-full py-3 text-xs font-semibold uppercase tracking-[0.16em] border border-[#27272A] hover:border-[#C9A96E] text-[#FAF8F5] transition-colors cursor-pointer"
+                        className="w-full py-3 text-xs font-semibold uppercase tracking-[0.16em] border border-[#27272A] hover:border-[#A68BFF] text-[#FAF8F5] transition-colors cursor-pointer"
                       >
                         {pkg.ctaText}
                       </button>
@@ -421,12 +421,12 @@ export const PricingPage: React.FC = () => {
                     key={pkg.id}
                     className={`p-8 rounded-sm border flex flex-col justify-between space-y-8 ${
                       pkg.highlight
-                        ? 'bg-[#101015] border-[#C9A96E] shadow-2xl relative'
+                        ? 'bg-[#101015] border-[#A68BFF] shadow-2xl relative'
                         : 'bg-[#0B0B0E] border-[#1E1E24]'
                     }`}
                   >
                     {pkg.highlight && (
-                      <div className="absolute -top-3 left-8 px-3 py-0.5 bg-[#C9A96E] text-[#0A0A0C] text-[10px] font-mono uppercase tracking-widest font-bold">
+                      <div className="absolute -top-3 left-8 px-3 py-0.5 bg-[#A68BFF] text-[#0A0A0C] text-[10px] font-mono uppercase tracking-widest font-bold">
                         Full Enterprise Growth
                       </div>
                     )}
@@ -455,13 +455,13 @@ export const PricingPage: React.FC = () => {
                       </p>
 
                       <div className="space-y-3 pt-2">
-                        <div className="text-[10px] font-mono uppercase tracking-wider text-[#C9A96E]">
+                        <div className="text-[10px] font-mono uppercase tracking-wider text-[#A68BFF]">
                           What's Included:
                         </div>
                         <ul className="space-y-2 text-xs text-[#D4D4D8]">
                           {pkg.included.map((item, idx) => (
                             <li key={idx} className="flex items-start gap-2">
-                              <Check className="w-3.5 h-3.5 text-[#C9A96E] shrink-0 mt-0.5" />
+                              <Check className="w-3.5 h-3.5 text-[#A68BFF] shrink-0 mt-0.5" />
                               <span>{item}</span>
                             </li>
                           ))}
@@ -485,8 +485,8 @@ export const PricingPage: React.FC = () => {
                       }
                       className={`w-full py-3.5 text-xs font-semibold uppercase tracking-[0.16em] transition-all cursor-pointer ${
                         pkg.highlight
-                          ? 'bg-[#C9A96E] text-[#0A0A0C] hover:bg-[#D9B97E]'
-                          : 'border border-[#27272A] text-[#FAF8F5] hover:border-[#C9A96E]'
+                          ? 'bg-[#A68BFF] text-[#0A0A0C] hover:bg-[#BBA6FF]'
+                          : 'border border-[#27272A] text-[#FAF8F5] hover:border-[#A68BFF]'
                       }`}
                     >
                       {pkg.ctaText}
@@ -501,7 +501,7 @@ export const PricingPage: React.FC = () => {
         {/* INDIVIDUAL SERVICES BASELINE TABLE */}
         <section className="space-y-8">
           <div className="space-y-2 pb-4 border-b border-[#1E1E24]">
-            <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#C9A96E]">
+            <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#A68BFF]">
               Individual Service Catalog
             </span>
             <h2 className="font-serif text-3xl text-[#FAF8F5] font-semibold">
@@ -518,6 +518,7 @@ export const PricingPage: React.FC = () => {
                 <tr>
                   <th className="py-4 px-6">Service</th>
                   <th className="py-4 px-6">Starting Rate</th>
+                  <th className="py-4 px-6">Hourly Rate</th>
                   <th className="py-4 px-6">Included Baseline Scope</th>
                   <th className="py-4 px-6">Key Exclusions</th>
                 </tr>
@@ -528,11 +529,14 @@ export const PricingPage: React.FC = () => {
                     <td className="py-4 px-6 font-medium text-[#FAF8F5]">
                       {item.service}
                     </td>
-                    <td className="py-4 px-6 font-mono text-[#C9A96E] whitespace-nowrap font-bold">
+                    <td className="py-4 px-6 font-mono text-[#A68BFF] whitespace-nowrap font-bold">
                       {format(item.startingUSD)}
                       <span className="text-[10px] font-normal text-[#71717A] ml-1">
                         ({item.billing})
                       </span>
+                    </td>
+                    <td className="py-4 px-6 font-mono text-[#FAF8F5] whitespace-nowrap">
+                      {formatHourly(item.hourlyRateUSD)}
                     </td>
                     <td className="py-4 px-6 text-[#A1A1AA] max-w-xs leading-relaxed">
                       {item.scope}
@@ -550,7 +554,7 @@ export const PricingPage: React.FC = () => {
         {/* DEDICATED ADD-ONS SECTION */}
         <section className="space-y-8">
           <div className="space-y-2 pb-4 border-b border-[#1E1E24]">
-            <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#C9A96E]">
+            <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#A68BFF]">
               System Extensions & Upgrades
             </span>
             <h2 className="font-serif text-3xl text-[#FAF8F5] font-semibold">
@@ -571,7 +575,7 @@ export const PricingPage: React.FC = () => {
                   <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider text-[#71717A]">
                     <span>{addon.category}</span>
                     {addon.isMonthly && (
-                      <span className="text-[#C9A96E]">Recurring</span>
+                      <span className="text-[#A68BFF]">Recurring</span>
                     )}
                   </div>
                   <h4 className="font-serif text-base text-[#FAF8F5] font-medium">
@@ -583,7 +587,7 @@ export const PricingPage: React.FC = () => {
                 </div>
 
                 <div className="pt-3 border-t border-[#1C1C22] flex items-center justify-between">
-                  <span className="text-xs font-mono font-semibold text-[#C9A96E]">
+                  <span className="text-xs font-mono font-semibold text-[#A68BFF]">
                     from {format(addon.priceUSD)}
                     {addon.isMonthly ? '/mo' : ''}
                   </span>
@@ -597,7 +601,7 @@ export const PricingPage: React.FC = () => {
                         features: [addon.notes || 'Modular system upgrade']
                       })
                     }
-                    className="text-[11px] font-mono uppercase tracking-wider text-[#FAF8F5] hover:text-[#C9A96E] cursor-pointer"
+                    className="text-[11px] font-mono uppercase tracking-wider text-[#FAF8F5] hover:text-[#A68BFF] cursor-pointer"
                   >
                     Add to Scope
                   </button>
@@ -609,7 +613,7 @@ export const PricingPage: React.FC = () => {
 
         {/* LEGAL / THIRD-PARTY TRANSPARENCY DISCLAIMER */}
         <section className="p-8 bg-[#0E111C]/80 backdrop-blur-md border border-[#232738]/80 space-y-4 shadow-xl">
-          <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#C9A96E]">
+          <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#A68BFF]">
             <ShieldAlert className="w-4 h-4" />
             <span>Important Terms & Third-Party Cost Policy</span>
           </div>
@@ -639,7 +643,7 @@ export const PricingPage: React.FC = () => {
                   kicker: 'Founder Scoping'
                 })
               }
-              className="px-8 py-3.5 bg-[#C9A96E] text-[#0A0A0C] text-xs font-semibold uppercase tracking-[0.16em] hover:bg-[#D9B97E] transition-all cursor-pointer"
+              className="px-8 py-3.5 bg-[#A68BFF] text-[#0A0A0C] text-xs font-semibold uppercase tracking-[0.16em] hover:bg-[#BBA6FF] transition-all cursor-pointer"
             >
               Request Custom Proposal
             </button>

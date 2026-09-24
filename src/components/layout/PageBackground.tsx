@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { useNavigation } from '../../context/NavigationContext';
 import { useTheme } from '../../context/ThemeContext';
+import { AuroraCanvas } from '../motion/AuroraCanvas';
 
 interface BackgroundConfig {
   imageUrl: string;
@@ -110,6 +111,15 @@ export const PageBackground: React.FC = () => {
     }
   }, [currentPath]);
 
+  // Dark mode is plain black across the whole site: no photo, tints, grid or vignette
+  if (!isLight) {
+    return (
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden select-none bg-black">
+        {currentPath === '/' && <AuroraCanvas showOrb light={false} />}
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden select-none transition-colors duration-700">
       {/* 1. Underlying Team Working & Meeting Image Layer (Preserved across both modes) */}
@@ -121,8 +131,8 @@ export const PageBackground: React.FC = () => {
         decoding="async"
         className={`w-full h-full object-cover object-center scale-100 transition-all duration-700 ease-in-out ${
           isLight
-            ? 'opacity-30 sm:opacity-35 filter brightness-[1.02] contrast-[1.06] saturate-[0.9]'
-            : 'opacity-35 sm:opacity-40 filter brightness-[0.85] contrast-[1.15] saturate-[0.95]'
+            ? 'opacity-20 sm:opacity-25 filter brightness-[1.02] contrast-[1.06] saturate-[0.8]'
+            : 'hidden'
         }`}
       />
 
@@ -131,23 +141,26 @@ export const PageBackground: React.FC = () => {
         className={`absolute inset-0 transition-colors duration-700 ${
           isLight
             ? 'bg-gradient-to-b from-[#FFFFFF]/90 via-[#F8FAFC]/82 to-[#F1F5F9]/92'
-            : 'bg-gradient-to-b from-[#0B0E17]/85 via-[#0E111C]/72 to-[#0A0C14]/88'
+            : 'bg-gradient-to-b from-[#000000]/95 via-[#000000]/92 to-[#000000]/96'
         }`}
       />
+
+      {/* Live aurora + 3D orb (WebGL) */}
+      <AuroraCanvas showOrb={currentPath === '/'} light={isLight} />
 
       {/* 3. Executive Gold/Bronze Ambient Radial Highlights */}
       <div
         className={`absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[650px] transition-opacity duration-700 ${
           isLight
-            ? 'bg-[radial-gradient(ellipse_at_top,rgba(201,169,110,0.22)_0%,rgba(248,250,252,0)_70%)]'
-            : 'bg-[radial-gradient(ellipse_at_top,rgba(201,169,110,0.15)_0%,rgba(14,17,28,0)_70%)]'
+            ? 'bg-[radial-gradient(ellipse_at_top,rgba(166,139,255,0.22)_0%,rgba(248,250,252,0)_70%)]'
+            : 'bg-[radial-gradient(ellipse_at_top,rgba(166,139,255,0.07)_0%,rgba(14,17,28,0)_70%)]'
         }`}
       />
       <div
         className={`absolute bottom-0 right-0 w-[500px] h-[500px] transition-opacity duration-700 ${
           isLight
-            ? 'bg-[radial-gradient(circle,rgba(59,130,246,0.06)_0%,transparent_70%)]'
-            : 'bg-[radial-gradient(circle,rgba(59,130,246,0.08)_0%,transparent_70%)]'
+            ? 'bg-[radial-gradient(circle,rgba(255,77,170,0.07)_0%,transparent_70%)]'
+            : 'bg-[radial-gradient(circle,rgba(255,77,170,0.05)_0%,transparent_70%)]'
         }`}
       />
 
