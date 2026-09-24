@@ -30,6 +30,9 @@ export const adminApi = {
   // Creates today's automatic idea if it doesn't exist yet (safe to call repeatedly)
   socialToday: () => request<SocialPost>('/api/admin/social/today', { method: 'POST' }),
   socialExtra: () => request<SocialPost>('/api/admin/social/extra', { method: 'POST' }),
+  // The founder's own idea (or ready-written slides) turned into a post; slides: 4-10 or 'auto'
+  socialFromIdea: (brief: string, slides: number | 'auto') =>
+    request<SocialPost>('/api/admin/social/custom', { method: 'POST', body: JSON.stringify({ brief, slides }) }),
   setSocialStatus: (id: string, status: SocialPostStatus) =>
     request<void>(`/api/admin/social/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify({ status }) }),
   deleteSocialPost: (id: string) => request<void>(`/api/admin/social/${encodeURIComponent(id)}`, { method: 'DELETE' }),

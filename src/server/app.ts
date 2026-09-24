@@ -30,7 +30,17 @@ import { leadStats, listLeads, newLead, parseLead, STATUSES, toDoc } from './lea
 import { emailLead, isMailConfigured } from './mail.js';
 import { generateReply, isAssistantConfigured, parseTurns } from './assistant.js';
 import { handleUploadToken, isBlobConfigured, listMedia, publicMedia, removeMedia, saveMedia } from './media.js';
-import { createExtraPost, ensureTodayPost, isSocialConfigured, listSocialPosts, SOCIAL_STATUSES } from './social.js';
+import {
+  createExtraPost,
+  createPostFromBrief,
+  ensureTodayPost,
+  isSocialConfigured,
+  listSocialPosts,
+  MAX_BRIEF_LENGTH,
+  MAX_SLIDES,
+  MIN_SLIDES,
+  SOCIAL_STATUSES
+} from './social.js';
 
 const LOGIN_WINDOW_MS = 15 * 60 * 1000;
 const MAX_FAILED_LOGINS_PER_EMAIL = 5;
@@ -339,6 +349,30 @@ export function createApp(): Express {
     requireSocial,
     ah(async (_req, res) => {
       res.status(201).json(await createExtraPost());
+    })
+  );
+
+  // The founder's own idea (or ready-written slide text) turned into a post
+  admin.post(
+    '/social/custom',
+    requireSocial,
+    ah(async (req, res) => {
+      const brief = typeof req.body?.brief === 'string' ? req.body.brief.trim() : '';
+      if (brief.length < 10) {
+        res.status(400).json({ error: 'Describe your idea in a sentence or more.' });
+        return;
+      }
+      if (brief.length > MAX_BRIEF_LENGTH) {
+        res.status(400).json({ error: `Keep your idea under ${MAX_BRIEF_LENGTH.toLocaleString()} characters.` });
+        return;
+      }
+      const raw = req.body?.slides;
+      const slides = raw === undefined || raw === 'auto' ? undefined : Number(raw);
+      if (slides !== undefined && !(Number.isInteger(slides) && slides >= MIN_SLIDES && slides <= MAX_SLIDES)) {
+        res.status(400).json({ error: `Choose between ${MIN_SLIDES} and ${MAX_SLIDES} slides.` });
+        return;
+      }
+      res.status(201).json(await createPostFromBrief(brief, slides));
     })
   );
 

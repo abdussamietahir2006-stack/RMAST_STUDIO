@@ -154,9 +154,16 @@ function background(ctx: Ctx, slide: SocialSlide) {
     case 'points':
       glow(ctx, 60, 160, 520, '255,92,170', 0.22);
       break;
+    case 'tags':
+      glow(ctx, 60, 160, 520, '255,92,170', 0.22);
+      break;
+    case 'compare':
+      glow(ctx, 1040, 120, 560, '166,139,255', 0.3);
+      break;
     case 'statement':
       glow(ctx, 1000, 1120, 560, '166,139,255', 0.28);
-      orb(ctx, 1010, 1120, 190);
+      // Tucked into the corner so long statements never run into it
+      orb(ctx, 1050, 1230, 150);
       break;
     case 'cta':
       glow(ctx, 1000, 1180, 640, '166,139,255', 0.34);
@@ -219,7 +226,7 @@ function paragraph(p: Pen, text: string, y: number, size: number, colour: string
 }
 
 // White headline with the gradient highlight underneath
-function title(p: Pen, slide: SocialSlide, y: number, max: number, min: number, maxW = TEXT_W, maxLines = 2) {
+function title(p: Pen, slide: SocialSlide, y: number, max: number, min: number, maxW = TEXT_W, maxLines = 3) {
   if (slide.headline) {
     const h = fit(p.ctx, slide.headline, SERIF, 900, max * p.s, min, maxW, maxLines);
     y = lines(p, h.lines, y, h.size, 1.0, WHITE, 900, SERIF);
@@ -399,6 +406,114 @@ function cta(p: Pen, slide: SocialSlide, index: number, total: number) {
   return y - 1050;
 }
 
+function roundRect(ctx: Ctx, x: number, y: number, w: number, h: number, r: number) {
+  ctx.beginPath();
+  if (typeof ctx.roundRect === 'function') ctx.roundRect(x, y, w, h, r);
+  else ctx.rect(x, y, w, h);
+}
+
+// Short labels as pills, wrapped across rows ("Price", "Commute", "Schools")
+function tags(p: Pen, slide: SocialSlide, index: number, total: number) {
+  const { ctx } = p;
+  pageLabel(p, index, total);
+  let y = 110;
+  kicker(p, slide.kicker, y);
+  y = title(p, slide, y + 24, 100, 56);
+  y = paragraph(p, slide.body, y + 16, 30 * p.s, MUTED);
+  y += 50;
+  const size = 52 * p.s;
+  const padX = 42 * p.s;
+  const h = size * 2;
+  const gap = 18;
+  let x = PAD;
+  setFont(ctx, 700, size, SANS);
+  for (const item of slide.items) {
+    const w = Math.min(ctx.measureText(item.label).width + padX * 2, TEXT_W);
+    if (x > PAD && x + w > SLIDE_W - PAD) {
+      x = PAD;
+      y += h + gap;
+    }
+    if (!p.dry) {
+      roundRect(ctx, x, y, w, h, h / 2);
+      ctx.fillStyle = 'rgba(166,139,255,0.08)';
+      ctx.fill();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = 'rgba(166,139,255,0.6)';
+      ctx.stroke();
+      setFont(ctx, 700, size, SANS);
+      ctx.fillStyle = WHITE;
+      ctx.fillText(item.label, x + padX, y + h / 2 + size * 0.35);
+    }
+    x += w + gap;
+  }
+  return y + h - 1220;
+}
+
+// The weak version crossed out, then the better version in a gradient-bordered card
+function compare(p: Pen, slide: SocialSlide, index: number, total: number) {
+  const { ctx } = p;
+  pageLabel(p, index, total);
+  let y = 110;
+  kicker(p, slide.kicker, y);
+  y = title(p, slide, y + 24, 100, 56);
+  y = paragraph(p, slide.body, y + 16, 30 * p.s, MUTED);
+  y += 50;
+  const size = 46 * p.s;
+  const pad = 44 * p.s;
+  const markW = 70 * p.s;
+  const textW = TEXT_W - pad * 2 - markW;
+  const lineH = size * 1.3;
+
+  const card = (text: string, good: boolean) => {
+    setFont(ctx, 600, size, SANS);
+    const rows = wrap(ctx, text, textW);
+    const h = pad * 2 + rows.length * lineH - (lineH - size);
+    if (!p.dry) {
+      ctx.save();
+      if (good) {
+        ctx.shadowColor = 'rgba(255,92,170,0.45)';
+        ctx.shadowBlur = 70;
+        ctx.shadowOffsetY = 24;
+        roundRect(ctx, PAD, y, TEXT_W, h, 22);
+        ctx.fillStyle = auroraGradient(ctx, PAD, TEXT_W, AURORA_FILL);
+        ctx.fill();
+        ctx.restore();
+        ctx.save();
+        roundRect(ctx, PAD + 3, y + 3, TEXT_W - 6, h - 6, 19);
+        ctx.fillStyle = '#0d0a1c';
+        ctx.fill();
+      } else {
+        roundRect(ctx, PAD, y, TEXT_W, h, 22);
+        ctx.fillStyle = '#120d16';
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#3a1f2e';
+        ctx.stroke();
+      }
+      ctx.restore();
+      setFont(ctx, 800, size, SANS);
+      ctx.fillStyle = good ? '#86e8ff' : '#ff5c7a';
+      ctx.fillText(good ? '✓' : '✗', PAD + pad, y + pad + size * 0.85);
+      setFont(ctx, 600, size, SANS);
+      rows.forEach((row, i) => {
+        const base = y + pad + size * 0.85 + i * lineH;
+        ctx.fillStyle = good ? WHITE : '#8f86a6';
+        ctx.fillText(row, PAD + pad + markW, base);
+        if (!good) {
+          ctx.fillStyle = 'rgba(255,92,122,0.7)';
+          ctx.fillRect(PAD + pad + markW, base - size * 0.3, ctx.measureText(row).width, 3);
+        }
+      });
+    }
+    y += h;
+  };
+
+  if (slide.before) card(slide.before, false);
+  y += 28;
+  if (slide.after) card(slide.after, true);
+  return y - 1220;
+}
+
 function drawLayout(p: Pen, slide: SocialSlide, index: number, total: number): number {
   switch (slide.layout) {
     case 'cover':
@@ -409,6 +524,10 @@ function drawLayout(p: Pen, slide: SocialSlide, index: number, total: number): n
       return points(p, slide, index, total);
     case 'statement':
       return statement(p, slide, index, total);
+    case 'tags':
+      return tags(p, slide, index, total);
+    case 'compare':
+      return compare(p, slide, index, total);
     case 'cta':
       return cta(p, slide, index, total);
   }

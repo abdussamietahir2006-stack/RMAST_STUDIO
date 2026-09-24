@@ -192,7 +192,7 @@ export interface ChatTurn {
 // ---------------------------------------------------------------------------
 
 // How a slide is laid out when drawn (see src/admin/social/slideRenderer.ts)
-export type SocialSlideLayout = 'cover' | 'list' | 'points' | 'statement' | 'cta';
+export type SocialSlideLayout = 'cover' | 'list' | 'points' | 'statement' | 'tags' | 'compare' | 'cta';
 
 export interface SocialSlide {
   layout: SocialSlideLayout;
@@ -200,8 +200,10 @@ export interface SocialSlide {
   headline: string; // white part of the headline
   highlight: string; // aurora-gradient part of the headline (second line)
   body: string; // supporting sentence
-  items: { label: string; value: string }[]; // "list" layout rows
+  items: { label: string; value: string }[]; // "list" rows (label + value); "tags" uses the labels as pills
   points: { title: string; text: string }[]; // "points" layout (numbered)
+  before?: string; // "compare" layout: the weak version (crossed out)
+  after?: string; // "compare" layout: the better version
 }
 
 export type SocialPostStatus = 'new' | 'downloaded' | 'posted' | 'skipped';
@@ -210,12 +212,13 @@ export interface SocialPost {
   id: string;
   day: string; // YYYY-MM-DD in the studio's time zone
   createdAt: string;
-  auto: boolean; // the day's automatic idea (false = extra idea requested from the dashboard)
+  auto: boolean; // the day's automatic idea (false = extra idea or the founder's own idea)
+  brief?: string; // the founder's own idea, when the post was made from one
   status: SocialPostStatus;
   pillar: string; // content angle used for the idea
   title: string; // internal name for the idea
   angle: string; // why this idea is worth posting
-  slides: SocialSlide[]; // always 4: cover, two content slides, call to action
+  slides: SocialSlide[]; // 4 to 10: cover, content slides, call to action
   caption: string;
   hashtags: string[];
 }

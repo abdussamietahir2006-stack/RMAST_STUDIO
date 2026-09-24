@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Check, ClipboardCopy, Download, FileArchive, Lightbulb, SkipForward, Sparkles, Trash2 } from 'lucide-react';
+import { Check, ClipboardCopy, Download, FileArchive, Lightbulb, PenLine, SkipForward, Sparkles, Trash2 } from 'lucide-react';
 import { SocialPost, SocialPostStatus } from '../types';
 import { adminApi } from './api';
 import { useAdmin } from './AdminApp';
@@ -124,9 +124,16 @@ const PostCard: React.FC<{
               <span className="text-[#A6A8B3]">{formatDay(post.day)}</span>
               <span className={`px-2 py-0.5 rounded-full border ${status.className}`}>{status.label}</span>
               <span className="px-2 py-0.5 rounded-full border border-[#2E3040] text-[#A6A8B3]">{post.pillar}</span>
-              {!post.auto && <span className="px-2 py-0.5 rounded-full border border-[#2E3040] text-[#8B8D98]">Extra idea</span>}
+              <span className="px-2 py-0.5 rounded-full border border-[#2E3040] text-[#8B8D98]">{post.slides.length} slides</span>
+              {!post.auto && !post.brief && <span className="px-2 py-0.5 rounded-full border border-[#2E3040] text-[#8B8D98]">Extra idea</span>}
             </div>
             <h2 className="text-lg font-semibold text-[#ECEAE5]">{post.title}</h2>
+            {post.brief && (
+              <details className="text-sm text-[#8B8D98]">
+                <summary className="cursor-pointer select-none text-[#A6A8B3]">Your idea</summary>
+                <p className="mt-1.5 whitespace-pre-line pl-4 border-l border-[#2E3040]">{post.brief}</p>
+              </details>
+            )}
             {post.angle && (
               <p className="text-sm text-[#8B8D98] flex gap-1.5">
                 <Lightbulb className="w-4 h-4 mt-0.5 shrink-0 text-[#C9A96E]" />
@@ -161,7 +168,7 @@ const PostCard: React.FC<{
         </div>
 
         {/* Slides */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className={`grid grid-cols-2 md:grid-cols-4 gap-3 ${post.slides.length > 4 ? 'xl:grid-cols-5' : ''}`}>
           {post.slides.map((_, i) => (
             <div key={i} className="space-y-2">
               <div className="aspect-[4/5] rounded-md overflow-hidden bg-black border border-[#22232D]">
@@ -194,6 +201,89 @@ const PostCard: React.FC<{
           <p className="px-4 py-3 text-sm text-[#D4D4D8] whitespace-pre-line leading-relaxed select-text">{fullCaption(post)}</p>
         </div>
       </div>
+    </Card>
+  );
+};
+
+const SLIDE_CHOICES = ['auto', 4, 5, 6, 7, 8, 9, 10] as const;
+const MAX_IDEA_LENGTH = 5000;
+
+// The founder's own idea (or ready-written slide text and caption) turned into a post
+const IdeaComposer: React.FC<{ disabled: boolean; onCreated: (post: SocialPost) => void; onError: (err: unknown) => void }> = ({
+  disabled,
+  onCreated,
+  onError
+}) => {
+  const [brief, setBrief] = useState('');
+  const [slides, setSlides] = useState<(typeof SLIDE_CHOICES)[number]>('auto');
+  const [busy, setBusy] = useState(false);
+
+  const create = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (brief.trim().length < 10 || busy) return;
+    setBusy(true);
+    try {
+      onCreated(await adminApi.socialFromIdea(brief.trim(), slides));
+      setBrief('');
+    } catch (err) {
+      onError(err);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Card className="p-5 mb-5">
+      <form onSubmit={create} className="space-y-3">
+        <div>
+          <h2 className="text-sm font-semibold text-[#ECEAE5] flex items-center gap-2">
+            <PenLine className="w-4 h-4 text-[#C9A96E]" />
+            Create from your idea
+          </h2>
+          <p className="text-xs text-[#8B8D98] mt-0.5">
+            Describe an idea, or paste your own slide text and caption. Your wording is kept; anything missing is written for you.
+          </p>
+        </div>
+        <textarea
+          value={brief}
+          onChange={(e) => setBrief(e.target.value)}
+          maxLength={MAX_IDEA_LENGTH}
+          rows={6}
+          disabled={disabled || busy}
+          aria-label="Your post idea"
+          placeholder={
+            'e.g. "Why most listing reels get views but no buyers: show what buyers actually want"\n\n' +
+            'Or paste slides:\nSlide 1: Your listing reel got 8,000 views. Not one was a buyer.\nSlide 2: ...'
+          }
+          className="w-full px-3 py-2 text-sm bg-[#0B0C10] border border-[#2E3040] rounded-md text-[#ECEAE5] placeholder:text-[#6E7180] outline-none focus:border-[#C9A96E] focus:ring-1 focus:ring-[#C9A96E]/40 resize-y"
+        />
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <label className="flex items-center gap-2 text-xs text-[#A6A8B3]">
+            Slides
+            <select
+              value={String(slides)}
+              onChange={(e) => setSlides(e.target.value === 'auto' ? 'auto' : (Number(e.target.value) as (typeof SLIDE_CHOICES)[number]))}
+              disabled={disabled || busy}
+              className="px-2 py-1.5 text-sm bg-[#0B0C10] border border-[#2E3040] rounded-md text-[#ECEAE5] outline-none focus:border-[#C9A96E]"
+            >
+              {SLIDE_CHOICES.map((c) => (
+                <option key={c} value={String(c)}>
+                  {c === 'auto' ? 'Auto (fits the idea)' : `${c} slides`}
+                </option>
+              ))}
+            </select>
+          </label>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-[#6E7180]">
+              {busy ? 'Creating your post… up to 30 seconds' : `${brief.length.toLocaleString()} / ${MAX_IDEA_LENGTH.toLocaleString()}`}
+            </span>
+            <Button type="submit" variant="primary" loading={busy} disabled={disabled || brief.trim().length < 10}>
+              <Sparkles className="w-4 h-4" />
+              Create post
+            </Button>
+          </div>
+        </div>
+      </form>
     </Card>
   );
 };
@@ -275,7 +365,7 @@ export const SocialPage: React.FC = () => {
     <div>
       <PageHeader
         title="Social posts"
-        subtitle="A fresh Instagram carousel idea every day. Pick one, download it and post."
+        subtitle="A fresh Instagram carousel idea every day, or create one from your own idea. Pick one, download it and post."
         action={
           <Button variant="primary" onClick={newIdea} loading={writingExtra} disabled={!ready || writingToday}>
             <Sparkles className="w-4 h-4" />
@@ -290,6 +380,17 @@ export const SocialPage: React.FC = () => {
           Post ideas need the Gemini API key. Add <code className="text-[#C9A96E]">GEMINI_API_KEY</code> to the environment
           variables and redeploy.
         </Card>
+      )}
+
+      {ready && (
+        <IdeaComposer
+          disabled={writingToday}
+          onCreated={(post) => {
+            setError(null);
+            addPost(post);
+          }}
+          onError={(err) => fail(err, "Couldn't create the post. Please try again.")}
+        />
       )}
 
       {writingToday && (

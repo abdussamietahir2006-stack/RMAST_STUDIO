@@ -87,7 +87,8 @@ export async function generateReply(turns: ChatTurn[], currency: 'USD' | 'AED'):
   if (!genai) throw new Error('Assistant is not configured');
 
   const primary = process.env.GEMINI_MODEL?.trim() || 'gemini-2.5-flash';
-  const fallback = process.env.GEMINI_FALLBACK_MODEL?.trim() || 'gemini-2.5-flash-lite';
+  // Alias Google keeps pointed at its current lite model (older fixed names get retired)
+  const fallback = process.env.GEMINI_FALLBACK_MODEL?.trim() || 'gemini-flash-lite-latest';
   // Primary model gets one retry before falling back
   const attempts = [primary, primary];
   if (fallback !== primary) attempts.push(fallback);
@@ -106,7 +107,8 @@ export async function generateReply(turns: ChatTurn[], currency: 'USD' | 'AED'):
           systemInstruction: buildSystemInstruction(currency),
           maxOutputTokens: 600,
           temperature: 0.4,
-          thinkingConfig: { thinkingBudget: 0 }
+          // thinkingBudget is a Gemini 2.5 setting; newer models reject it
+          ...(model.startsWith('gemini-2.5') ? { thinkingConfig: { thinkingBudget: 0 } } : {})
         }
       });
       const reply = response.text?.trim();
