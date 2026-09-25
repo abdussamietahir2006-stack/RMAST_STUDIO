@@ -13,7 +13,7 @@ const TEXT_W = SLIDE_W - PAD * 2;
 
 // Animated slides: text starts after a beat and every element has landed by TEXT_DONE seconds
 export const SLIDE_SECONDS = 8;
-const TEXT_START = 0.35;
+export const TEXT_START = 0.35;
 const ENTER = 0.7;
 const TEXT_DONE = 1.9;
 const MAX_STAGGER = 0.14;

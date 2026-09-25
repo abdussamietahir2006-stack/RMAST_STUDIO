@@ -6,6 +6,7 @@ import {
   FileArchive,
   Film,
   Lightbulb,
+  Music,
   Palette,
   PenLine,
   Play,
@@ -63,16 +64,27 @@ function useSlideImages(post: SocialPost, visible: boolean) {
   return urls;
 }
 
-// Live preview of the animated slides: small canvases looping the same animation as the MP4s
-const AnimatedSlides: React.FC<{ post: SocialPost }> = ({ post }) => {
+// Live preview of the animated slides: small canvases looping the same animation as the MP4s,
+// with the music looping in step when it is on
+const AnimatedSlides: React.FC<{ post: SocialPost; music: boolean }> = ({ post, music }) => {
   const refs = useRef<(HTMLCanvasElement | null)[]>([]);
   useEffect(() => {
     let frame = 0;
     let cancelled = false;
+    let audio: AudioContext | null = null;
     const scale = 0.4;
     (async () => {
       await loadSlideFonts();
+      const buffer = music ? await import('./social/slideMusic').then((m) => m.slideMusic(post.seed)) : null;
       if (cancelled) return;
+      if (buffer && typeof AudioContext !== 'undefined') {
+        audio = new AudioContext();
+        const source = audio.createBufferSource();
+        source.buffer = buffer;
+        source.loop = true;
+        source.connect(audio.destination);
+        source.start();
+      }
       const draws = post.slides.map((slide, i) => {
         const canvas = refs.current[i];
         const ctx = canvas?.getContext('2d');
@@ -93,8 +105,9 @@ const AnimatedSlides: React.FC<{ post: SocialPost }> = ({ post }) => {
     return () => {
       cancelled = true;
       cancelAnimationFrame(frame);
+      void audio?.close();
     };
-  }, [post]);
+  }, [post, music]);
 
   return (
     <>
@@ -124,6 +137,8 @@ const PostCard: React.FC<{
   const [copied, setCopied] = useState(false);
   const [zipping, setZipping] = useState(false);
   const [animate, setAnimate] = useState(false);
+  const [music, setMusic] = useState(true);
+  const [videoNote, setVideoNote] = useState<string | null>(null);
   const [videoJob, setVideoJob] = useState<{
     label: string;
     fraction: number;
@@ -184,6 +199,7 @@ const PostCard: React.FC<{
   // Animated slides as MP4 clips: one slide, or all of them in a ZIP with the caption
   const exportVideos = async (which: number | 'all') => {
     setVideoError(null);
+    setVideoNote(null);
     const controller = new AbortController();
     abort.current = controller;
     const indexes = which === 'all' ? post.slides.map((_, i) => i) : [which];
@@ -194,7 +210,8 @@ const PostCard: React.FC<{
         const label = indexes.length > 1 ? `Animating slide ${n + 1} of ${indexes.length}` : `Animating slide ${i + 1}`;
         const report = (f: number) => setVideoJob({ label, fraction: (n + f) / indexes.length });
         report(0);
-        const blob = await slideToMp4(post.slides[i], i, post.slides.length, lookOf(post), report, controller.signal);
+        const { blob, withMusic } = await slideToMp4(post.slides[i], i, post.slides.length, lookOf(post), music, report, controller.signal);
+        if (music && !withMusic) setVideoNote('This browser could not add the music, so the slides were saved without it. Chrome or Edge on a computer includes it.');
         if (which !== 'all') saveBlob(blob, `${fileBase}-slide-${i + 1}.mp4`);
         else
           entries.push({
@@ -324,6 +341,17 @@ const PostCard: React.FC<{
             {animate ? <Square className="w-4 h-4" /> : <Play className="w-4 h-4" />}
             {animate ? 'Stop preview' : 'Preview animation'}
           </Button>
+          <label className="flex items-center gap-2 text-xs text-[#A6A8B3] cursor-pointer select-none" title="Soft background music in the animated slides">
+            <input
+              type="checkbox"
+              checked={music}
+              onChange={(e) => setMusic(e.target.checked)}
+              disabled={videoJob !== null}
+              className="accent-[#C9A96E] w-3.5 h-3.5"
+            />
+            <Music className="w-3.5 h-3.5" />
+            Peaceful music
+          </label>
         </div>
 
         {videoJob && (
@@ -340,11 +368,12 @@ const PostCard: React.FC<{
           </div>
         )}
         <ErrorNote message={videoError} />
+        {videoNote && <p className="text-xs text-[#A6A8B3]">{videoNote}</p>}
 
         {/* Slides */}
         <div className={`grid grid-cols-2 md:grid-cols-4 gap-3 ${post.slides.length > 4 ? 'xl:grid-cols-5' : ''}`}>
           {animate ? (
-            <AnimatedSlides post={post} />
+            <AnimatedSlides post={post} music={music} />
           ) : (
             post.slides.map((_, i) => (
               <div key={i} className="space-y-2">
