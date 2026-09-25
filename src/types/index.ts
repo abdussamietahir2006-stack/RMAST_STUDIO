@@ -221,4 +221,51 @@ export interface SocialPost {
   slides: SocialSlide[]; // 4 to 10: cover, content slides, call to action
   caption: string;
   hashtags: string[];
+  style: VideoStyle; // visual look of the slides (same looks as the reels)
+  seed: number; // varies details within the look
+}
+
+// ---------------------------------------------------------------------------
+// Social video manager (dashboard): 30-40 second motion-graphics reels made from the founder's idea
+// ---------------------------------------------------------------------------
+
+// How a scene animates (see src/admin/video/engine.ts)
+export type VideoSceneType = 'hook' | 'statement' | 'list' | 'stat' | 'tags' | 'compare' | 'steps' | 'cta';
+// How a scene hands over to the next one
+export type VideoTransition = 'wipe' | 'zoom' | 'slide' | 'glitch' | 'circle' | 'flash';
+// The visual look of a reel (colours, type, background)
+export type VideoStyle = 'aurora' | 'editorial' | 'neon' | 'bold' | 'mono';
+// Background music composed for the reel
+export type MusicMood = 'none' | 'peaceful' | 'uplifting' | 'blazing';
+
+export interface VideoScene {
+  type: VideoSceneType;
+  duration: number; // seconds on screen
+  transition: VideoTransition; // into the next scene
+  kicker: string; // small label
+  headline: string; // white text
+  highlight: string; // gradient text
+  body: string; // supporting line
+  items: { label: string; value: string }[]; // list rows, tags, steps
+  statValue: number; // "stat": the number that counts up
+  statPrefix: string; // e.g. "$"
+  statSuffix: string; // e.g. "/mo", "%", "x"
+  before: string; // "compare": the weak version
+  after: string; // "compare": the better version
+}
+
+export interface SocialVideo {
+  id: string;
+  createdAt: string;
+  brief: string; // the founder's idea or script
+  seconds: number; // target length
+  status: SocialPostStatus;
+  style: VideoStyle;
+  seed: number; // varies layout details and music within a style, so no two reels look alike
+  music: MusicMood;
+  title: string;
+  angle: string;
+  scenes: VideoScene[];
+  caption: string;
+  hashtags: string[];
 }

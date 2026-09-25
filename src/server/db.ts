@@ -1,5 +1,5 @@
 import { MongoClient, type Db } from 'mongodb';
-import type { InquiryStatus, LeadCategory, MediaKind, AdminUser, SocialPost } from '../types/index.js';
+import type { InquiryStatus, LeadCategory, MediaKind, AdminUser, SocialPost, SocialVideo, VideoStyle } from '../types/index.js';
 
 // ---------------------------------------------------------------------------
 // Document shapes
@@ -60,9 +60,26 @@ export interface MediaDoc {
 }
 
 // A generated Instagram carousel (dates stored as Date, returned to the dashboard as strings)
-export interface SocialPostDoc extends Omit<SocialPost, 'id' | 'createdAt'> {
+export interface SocialPostDoc extends Omit<SocialPost, 'id' | 'createdAt' | 'style' | 'seed'> {
   _id: string;
   createdAt: Date;
+  style?: VideoStyle; // missing on posts made before looks existed
+  seed?: number;
+}
+
+// Dashboard switches (one document per area, e.g. _id "social")
+export interface SettingsDoc {
+  _id: string;
+  autoPost?: boolean;
+  updatedAt: Date;
+  updatedBy: string;
+}
+
+// A motion-graphics reel script made from the founder's idea (the MP4 is rendered in the browser)
+export interface SocialVideoDoc extends Omit<SocialVideo, 'id' | 'createdAt'> {
+  _id: string;
+  createdAt: Date;
+  day: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -117,6 +134,7 @@ async function ensureIndexes(db: Db): Promise<void> {
     db.collection<LeadDoc>('leads').createIndex({ createdAt: -1 }),
     db.collection<LeadDoc>('leads').createIndex({ 'category.division': 1, 'category.group': 1, createdAt: -1 }),
     db.collection<SocialPostDoc>('social_posts').createIndex({ createdAt: -1 }),
+    db.collection<SocialVideoDoc>('social_videos').createIndex({ createdAt: -1 }),
     // At most one automatic idea per day, even if the cron and the dashboard ask at the same time
     db
       .collection<SocialPostDoc>('social_posts')
@@ -130,5 +148,7 @@ export const collections = {
   sessions: async () => (await getDb()).collection<SessionDoc>('sessions'),
   counters: async () => (await getDb()).collection<CounterDoc>('counters'),
   media: async () => (await getDb()).collection<MediaDoc>('media'),
-  socialPosts: async () => (await getDb()).collection<SocialPostDoc>('social_posts')
+  socialPosts: async () => (await getDb()).collection<SocialPostDoc>('social_posts'),
+  socialVideos: async () => (await getDb()).collection<SocialVideoDoc>('social_videos'),
+  settings: async () => (await getDb()).collection<SettingsDoc>('settings')
 };

@@ -1,5 +1,5 @@
 import React, { Suspense, lazy, useCallback, useEffect, useState } from 'react';
-import { BarChart3, Inbox, Image as ImageIcon, Settings, LogOut, Menu, X, ExternalLink, Megaphone } from 'lucide-react';
+import { BarChart3, Inbox, Image as ImageIcon, Settings, LogOut, Menu, X, ExternalLink, Megaphone, Clapperboard } from 'lucide-react';
 import { useNavigation } from '../context/NavigationContext';
 import { AdminUser } from '../types';
 import { adminApi, ApiError } from './api';
@@ -10,6 +10,7 @@ const OverviewPage = lazy(() => import('./OverviewPage').then((m) => ({ default:
 const LeadsPage = lazy(() => import('./LeadsPage').then((m) => ({ default: m.LeadsPage })));
 const MediaPage = lazy(() => import('./MediaPage').then((m) => ({ default: m.MediaPage })));
 const SocialPage = lazy(() => import('./SocialPage').then((m) => ({ default: m.SocialPage })));
+const VideosPage = lazy(() => import('./VideosPage').then((m) => ({ default: m.VideosPage })));
 const SettingsPage = lazy(() => import('./SettingsPage').then((m) => ({ default: m.SettingsPage })));
 
 export interface AdminContextValue {
@@ -30,6 +31,7 @@ const NAV = [
   { path: '/admin', label: 'Overview', icon: BarChart3 },
   { path: '/admin/leads', label: 'Leads', icon: Inbox },
   { path: '/admin/social', label: 'Social posts', icon: Megaphone },
+  { path: '/admin/videos', label: 'Social videos', icon: Clapperboard },
   { path: '/admin/media', label: 'Website media', icon: ImageIcon },
   { path: '/admin/settings', label: 'Settings', icon: Settings }
 ];
@@ -88,6 +90,8 @@ export const AdminApp: React.FC = () => {
     ? 'leads'
     : path.startsWith('/admin/social')
     ? 'social'
+    : path.startsWith('/admin/videos')
+    ? 'videos'
     : path.startsWith('/admin/media')
     ? 'media'
     : path.startsWith('/admin/settings')
@@ -180,6 +184,7 @@ export const AdminApp: React.FC = () => {
               {section === 'overview' && <OverviewPage />}
               {section === 'leads' && <LeadsPage path={path} />}
               {section === 'social' && <SocialPage />}
+              {section === 'videos' && <VideosPage />}
               {section === 'media' && <MediaPage />}
               {section === 'settings' && <SettingsPage onSignedOut={() => setUser(null)} />}
             </Suspense>

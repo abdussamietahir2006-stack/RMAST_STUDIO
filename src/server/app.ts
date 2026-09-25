@@ -1,5 +1,5 @@
 import express, { type ErrorRequestHandler, type Express, type RequestHandler } from 'express';
-import type { InquiryStatus, SocialPostStatus } from '../types/index.js';
+import type { InquiryStatus, MusicMood, SocialPostStatus, VideoStyle } from '../types/index.js';
 import { collections, isDbConfigured } from './db.js';
 import {
   ah,
@@ -34,13 +34,17 @@ import {
   createExtraPost,
   createPostFromBrief,
   ensureTodayPost,
+  isAutoPostOn,
   isSocialConfigured,
   listSocialPosts,
+  setAutoPost,
+  type LookChoice,
   MAX_BRIEF_LENGTH,
   MAX_SLIDES,
   MIN_SLIDES,
   SOCIAL_STATUSES
 } from './social.js';
+import { createVideo, listVideos, MAX_VIDEO_BRIEF, MUSIC_MOODS, VIDEO_SECONDS, VIDEO_STYLES } from './socialVideo.js';
 
 const LOGIN_WINDOW_MS = 15 * 60 * 1000;
 const MAX_FAILED_LOGINS_PER_EMAIL = 5;
@@ -159,6 +163,11 @@ export function createApp(): Express {
       }
       if (!isSocialConfigured()) {
         res.status(503).json({ error: 'GEMINI_API_KEY is not configured' });
+        return;
+      }
+      // Switched off in the dashboard: the founder only makes posts from their own ideas
+      if (!(await isAutoPostOn())) {
+        res.json({ skipped: true, reason: 'Daily auto post is switched off' });
         return;
       }
       const post = await ensureTodayPost();
@@ -332,7 +341,22 @@ export function createApp(): Express {
   admin.get(
     '/social',
     ah(async (_req, res) => {
-      res.json({ posts: await listSocialPosts(), ready: isSocialConfigured() });
+      const [posts, autoPost] = await Promise.all([listSocialPosts(), isAutoPostOn()]);
+      res.json({ posts, ready: isSocialConfigured(), autoPost });
+    })
+  );
+
+  // The daily auto post switch
+  admin.put(
+    '/social/settings',
+    ah(async (req, res) => {
+      const autoPost = req.body?.autoPost;
+      if (typeof autoPost !== 'boolean') {
+        res.status(400).json({ error: 'autoPost must be true or false' });
+        return;
+      }
+      await setAutoPost(autoPost, currentUser(res).email);
+      res.status(204).end();
     })
   );
 
@@ -340,6 +364,10 @@ export function createApp(): Express {
     '/social/today',
     requireSocial,
     ah(async (_req, res) => {
+      if (!(await isAutoPostOn())) {
+        res.status(409).json({ error: 'Daily auto post is switched off.' });
+        return;
+      }
       res.json(await ensureTodayPost());
     })
   );
@@ -372,19 +400,35 @@ export function createApp(): Express {
         res.status(400).json({ error: `Choose between ${MIN_SLIDES} and ${MAX_SLIDES} slides.` });
         return;
       }
-      res.status(201).json(await createPostFromBrief(brief, slides));
+      const look = req.body?.style ?? 'surprise';
+      if (look !== 'surprise' && !VIDEO_STYLES.includes(look)) {
+        res.status(400).json({ error: 'Unknown look' });
+        return;
+      }
+      res.status(201).json(await createPostFromBrief(brief, slides, look as LookChoice));
     })
   );
 
   admin.patch(
     '/social/:id',
     ah(async (req, res) => {
-      const status = req.body?.status as SocialPostStatus;
-      if (!SOCIAL_STATUSES.includes(status)) {
-        res.status(400).json({ error: 'Invalid status' });
-        return;
+      // Status, look and variation can each be changed
+      const b = req.body ?? {};
+      const update: { status?: SocialPostStatus; style?: VideoStyle; seed?: number } = {};
+      if (b.status !== undefined) {
+        if (!SOCIAL_STATUSES.includes(b.status)) return void res.status(400).json({ error: 'Invalid status' });
+        update.status = b.status;
       }
-      const result = await (await collections.socialPosts()).updateOne({ _id: String(req.params.id) }, { $set: { status } });
+      if (b.style !== undefined) {
+        if (!VIDEO_STYLES.includes(b.style)) return void res.status(400).json({ error: 'Unknown look' });
+        update.style = b.style;
+      }
+      if (b.seed !== undefined) {
+        if (!(Number.isInteger(b.seed) && b.seed > 0 && b.seed < 2 ** 31)) return void res.status(400).json({ error: 'Invalid variation' });
+        update.seed = b.seed;
+      }
+      if (!Object.keys(update).length) return void res.status(400).json({ error: 'Nothing to update' });
+      const result = await (await collections.socialPosts()).updateOne({ _id: String(req.params.id) }, { $set: update });
       res.status(result.matchedCount ? 204 : 404).end();
     })
   );
@@ -393,6 +437,82 @@ export function createApp(): Express {
     '/social/:id',
     ah(async (req, res) => {
       const result = await (await collections.socialPosts()).deleteOne({ _id: String(req.params.id) });
+      res.status(result.deletedCount ? 204 : 404).end();
+    })
+  );
+
+  // Social video manager: motion-graphics reels, only made on request from the founder's idea
+  admin.get(
+    '/videos',
+    ah(async (_req, res) => {
+      res.json({ videos: await listVideos(), ready: isSocialConfigured() });
+    })
+  );
+
+  admin.post(
+    '/videos',
+    requireSocial,
+    ah(async (req, res) => {
+      const brief = typeof req.body?.brief === 'string' ? req.body.brief.trim() : '';
+      if (brief.length < 10) {
+        res.status(400).json({ error: 'Describe your video idea in a sentence or more.' });
+        return;
+      }
+      if (brief.length > MAX_VIDEO_BRIEF) {
+        res.status(400).json({ error: `Keep your idea under ${MAX_VIDEO_BRIEF.toLocaleString()} characters.` });
+        return;
+      }
+      const seconds = Number(req.body?.seconds);
+      if (!(VIDEO_SECONDS as readonly number[]).includes(seconds)) {
+        res.status(400).json({ error: `Choose a length of ${VIDEO_SECONDS.join(', ')} seconds.` });
+        return;
+      }
+      const look = req.body?.style ?? 'surprise';
+      if (look !== 'surprise' && !VIDEO_STYLES.includes(look)) {
+        res.status(400).json({ error: 'Unknown look' });
+        return;
+      }
+      const music = req.body?.music ?? 'uplifting';
+      if (!MUSIC_MOODS.includes(music)) {
+        res.status(400).json({ error: 'Unknown music' });
+        return;
+      }
+      res.status(201).json(await createVideo(brief, seconds, look as VideoStyle | 'surprise', music as MusicMood));
+    })
+  );
+
+  // Status, look, variation and music can each be changed after the script is written
+  admin.patch(
+    '/videos/:id',
+    ah(async (req, res) => {
+      const b = req.body ?? {};
+      const update: { status?: SocialPostStatus; style?: VideoStyle; seed?: number; music?: MusicMood } = {};
+      if (b.status !== undefined) {
+        if (!SOCIAL_STATUSES.includes(b.status)) return void res.status(400).json({ error: 'Invalid status' });
+        update.status = b.status;
+      }
+      if (b.style !== undefined) {
+        if (!VIDEO_STYLES.includes(b.style)) return void res.status(400).json({ error: 'Unknown look' });
+        update.style = b.style;
+      }
+      if (b.seed !== undefined) {
+        if (!(Number.isInteger(b.seed) && b.seed > 0 && b.seed < 2 ** 31)) return void res.status(400).json({ error: 'Invalid variation' });
+        update.seed = b.seed;
+      }
+      if (b.music !== undefined) {
+        if (!MUSIC_MOODS.includes(b.music)) return void res.status(400).json({ error: 'Unknown music' });
+        update.music = b.music;
+      }
+      if (!Object.keys(update).length) return void res.status(400).json({ error: 'Nothing to update' });
+      const result = await (await collections.socialVideos()).updateOne({ _id: String(req.params.id) }, { $set: update });
+      res.status(result.matchedCount ? 204 : 404).end();
+    })
+  );
+
+  admin.delete(
+    '/videos/:id',
+    ah(async (req, res) => {
+      const result = await (await collections.socialVideos()).deleteOne({ _id: String(req.params.id) });
       res.status(result.deletedCount ? 204 : 404).end();
     })
   );

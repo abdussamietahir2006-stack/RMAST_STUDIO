@@ -1,6 +1,7 @@
 // Shared building blocks for RMAST's branded PDFs (price lists, company profile).
 // Only imported by modules that the Studio Assistant loads on demand.
 import { jsPDF } from 'jspdf';
+import { formatHourlyRate, formatPrice, USD_TO_AED_RATE } from '../data/pricingData';
 import autoTable from 'jspdf-autotable';
 import { CONTACT } from '../config/contact';
 
@@ -156,7 +157,7 @@ export function createBrandedDoc(): BrandedDoc {
         margin: { left: margin, right: margin, top: 18, bottom: 20 },
         theme: 'grid',
         rowPageBreak: 'avoid',
-        styles: { font: 'helvetica', fontSize: 8.5, cellPadding: 2.4, textColor: INK, lineColor: RULE, lineWidth: 0.2, valign: 'middle' },
+        styles: { font: 'helvetica', fontSize: 8.5, cellPadding: 1.7, textColor: INK, lineColor: RULE, lineWidth: 0.2, valign: 'middle' },
         headStyles: { fillColor: INK, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8.5 },
         alternateRowStyles: { fillColor: ROW_TINT },
         columnStyles
@@ -199,8 +200,15 @@ export function headerBand(b: BrandedDoc, title: string, subtitle: string, right
   doc.setFontSize(9);
   doc.setTextColor(200, 196, 220);
   doc.text(plain(subtitle), margin, 37);
-  doc.text(plain(rightNote), pageW - margin, 37, { align: 'right' });
+  // Top right, level with the studio name, so a long subtitle never runs into it
+  doc.text(plain(rightNote), pageW - margin, 20, { align: 'right' });
   b.y = 58;
 }
 
 export const issuedDate = () => new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+
+// PDFs always show both currencies: US dollars and UAE dirhams
+export const bothPrices = (usd: number, sep = ' / ') => `${formatPrice(usd, 'USD')}${sep}${formatPrice(usd, 'AED')}`;
+export const bothHourly = (rate: { min: number; max: number }, sep = ' / ') =>
+  `${formatHourlyRate(rate, 'USD')}${sep}${formatHourlyRate(rate, 'AED')}`;
+export const CURRENCY_NOTE = `Prices in USD and AED (1 USD = ${USD_TO_AED_RATE} AED)`;

@@ -1,35 +1,43 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Check, ClipboardCopy, Download, FileArchive, Lightbulb, PenLine, SkipForward, Sparkles, Trash2 } from 'lucide-react';
-import { SocialPost, SocialPostStatus } from '../types';
+import {
+  Check,
+  ClipboardCopy,
+  Download,
+  FileArchive,
+  Film,
+  Lightbulb,
+  Palette,
+  PenLine,
+  Play,
+  Shuffle,
+  SkipForward,
+  Sparkles,
+  Square,
+  Trash2,
+  X
+} from 'lucide-react';
+import { SocialPost, SocialPostStatus, VideoStyle } from '../types';
 import { adminApi } from './api';
 import { useAdmin } from './AdminApp';
 import { Button, Card, ErrorNote, PageHeader, Spinner } from './ui';
-import { loadSlideFonts, slideToBlob } from './social/slideRenderer';
+import { loadSlideFonts, prepareSlide, SLIDE_H, SLIDE_SECONDS, SLIDE_W, slideToBlob } from './social/slideRenderer';
 import { makeZip } from './social/zip';
+import { fullCaption, newSeed, saveBlob, STATUS_STYLE } from './social/shared';
+import { STYLE_NAMES, STYLES } from './video/themes';
 
-const STATUS_STYLE: Record<SocialPostStatus, { label: string; className: string }> = {
-  new: { label: 'New', className: 'bg-[#A68BFF]/15 text-[#C9B8FF] border-[#A68BFF]/40' },
-  downloaded: { label: 'Downloaded', className: 'bg-[#3DDCFF]/10 text-[#86E8FF] border-[#3DDCFF]/35' },
-  posted: { label: 'Posted', className: 'bg-[#10B981]/12 text-[#6EE7B7] border-[#10B981]/40' },
-  skipped: { label: 'Skipped', className: 'bg-[#2A2B36] text-[#8B8D98] border-[#3A3B48]' }
-};
+type PostPatch = Partial<Pick<SocialPost, 'status' | 'style' | 'seed'>>;
+const lookOf = (post: SocialPost) => ({ style: post.style, seed: post.seed });
 
-const fullCaption = (post: SocialPost) =>
-  `${post.caption}${post.hashtags.length ? `\n\n${post.hashtags.map((h) => `#${h}`).join(' ')}` : ''}`;
+const selectClass =
+  'px-2 py-1.5 text-sm bg-[#0B0C10] border border-[#2E3040] rounded-md text-[#ECEAE5] outline-none focus:border-[#C9A96E] disabled:opacity-50';
 
 const formatDay = (day: string) =>
-  new Date(`${day}T12:00:00`).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-
-function saveBlob(blob: Blob, name: string) {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = name;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 2000);
-}
+  new Date(`${day}T12:00:00`).toLocaleDateString('en-GB', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  });
 
 // Draws the post's slides once the card scrolls near the screen (drawing 4 full-size slides is not free)
 function useSlideImages(post: SocialPost, visible: boolean) {
@@ -41,7 +49,7 @@ function useSlideImages(post: SocialPost, visible: boolean) {
     (async () => {
       await loadSlideFonts();
       for (const [i, slide] of post.slides.entries()) {
-        const blob = await slideToBlob(slide, i, post.slides.length);
+        const blob = await slideToBlob(slide, i, post.slides.length, lookOf(post));
         if (cancelled) return;
         made.push(URL.createObjectURL(blob));
         setUrls([...made]);
@@ -55,17 +63,81 @@ function useSlideImages(post: SocialPost, visible: boolean) {
   return urls;
 }
 
+// Live preview of the animated slides: small canvases looping the same animation as the MP4s
+const AnimatedSlides: React.FC<{ post: SocialPost }> = ({ post }) => {
+  const refs = useRef<(HTMLCanvasElement | null)[]>([]);
+  useEffect(() => {
+    let frame = 0;
+    let cancelled = false;
+    const scale = 0.4;
+    (async () => {
+      await loadSlideFonts();
+      if (cancelled) return;
+      const draws = post.slides.map((slide, i) => {
+        const canvas = refs.current[i];
+        const ctx = canvas?.getContext('2d');
+        if (!canvas || !ctx) return null;
+        canvas.width = Math.round(SLIDE_W * scale);
+        canvas.height = Math.round(SLIDE_H * scale);
+        ctx.setTransform(scale, 0, 0, scale, 0, 0);
+        return prepareSlide(ctx, slide, i, post.slides.length, lookOf(post));
+      });
+      const start = performance.now();
+      const tick = (now: number) => {
+        const t = ((now - start) / 1000) % SLIDE_SECONDS;
+        draws.forEach((draw) => draw?.(t));
+        frame = requestAnimationFrame(tick);
+      };
+      frame = requestAnimationFrame(tick);
+    })();
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(frame);
+    };
+  }, [post]);
+
+  return (
+    <>
+      {post.slides.map((_, i) => (
+        <div key={i} className="aspect-[4/5] rounded-md overflow-hidden bg-black border border-[#22232D]">
+          <canvas
+            ref={(el) => {
+              refs.current[i] = el;
+            }}
+            className="w-full h-full"
+            aria-label={`Slide ${i + 1}, animated`}
+          />
+        </div>
+      ))}
+    </>
+  );
+};
+
 const PostCard: React.FC<{
   post: SocialPost;
-  onStatus: (id: string, status: SocialPostStatus) => void;
+  onChange: (id: string, patch: PostPatch) => void;
   onDelete: (id: string) => void;
-}> = ({ post, onStatus, onDelete }) => {
+}> = ({ post, onChange, onDelete }) => {
+  const onStatus = (id: string, status: SocialPostStatus) => onChange(id, { status });
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
   const [copied, setCopied] = useState(false);
   const [zipping, setZipping] = useState(false);
+  const [animate, setAnimate] = useState(false);
+  const [videoJob, setVideoJob] = useState<{
+    label: string;
+    fraction: number;
+  } | null>(null);
+  const [videoError, setVideoError] = useState<string | null>(null);
+  const abort = useRef<AbortController | null>(null);
   const urls = useSlideImages(post, visible);
-  const fileBase = `rmast-${post.day}-${post.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'post'}`;
+  const fileBase = `rmast-${post.day}-${
+    post.title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '')
+      .slice(0, 40) || 'post'
+  }`;
 
   useEffect(() => {
     const el = ref.current;
@@ -81,7 +153,7 @@ const PostCard: React.FC<{
 
   const downloadSlide = async (i: number) => {
     await loadSlideFonts();
-    saveBlob(await slideToBlob(post.slides[i], i, post.slides.length), `${fileBase}-slide-${i + 1}.png`);
+    saveBlob(await slideToBlob(post.slides[i], i, post.slides.length, lookOf(post)), `${fileBase}-slide-${i + 1}.png`);
     markDownloaded();
   };
 
@@ -91,16 +163,69 @@ const PostCard: React.FC<{
       await loadSlideFonts();
       const entries = [];
       for (const [i, slide] of post.slides.entries()) {
-        const blob = await slideToBlob(slide, i, post.slides.length);
-        entries.push({ name: `slide-${i + 1}.png`, data: new Uint8Array(await blob.arrayBuffer()) });
+        const blob = await slideToBlob(slide, i, post.slides.length, lookOf(post));
+        entries.push({
+          name: `slide-${i + 1}.png`,
+          data: new Uint8Array(await blob.arrayBuffer())
+        });
       }
       // UTF-8 byte-order mark so Windows apps show quotes and emojis correctly
-      entries.push({ name: 'caption.txt', data: new TextEncoder().encode(`﻿${fullCaption(post)}`) });
+      entries.push({
+        name: 'caption.txt',
+        data: new TextEncoder().encode(`﻿${fullCaption(post)}`)
+      });
       saveBlob(makeZip(entries), `${fileBase}.zip`);
       markDownloaded();
     } finally {
       setZipping(false);
     }
+  };
+
+  // Animated slides as MP4 clips: one slide, or all of them in a ZIP with the caption
+  const exportVideos = async (which: number | 'all') => {
+    setVideoError(null);
+    const controller = new AbortController();
+    abort.current = controller;
+    const indexes = which === 'all' ? post.slides.map((_, i) => i) : [which];
+    try {
+      const { slideToMp4 } = await import('./social/animatedSlides');
+      const entries = [];
+      for (const [n, i] of indexes.entries()) {
+        const label = indexes.length > 1 ? `Animating slide ${n + 1} of ${indexes.length}` : `Animating slide ${i + 1}`;
+        const report = (f: number) => setVideoJob({ label, fraction: (n + f) / indexes.length });
+        report(0);
+        const blob = await slideToMp4(post.slides[i], i, post.slides.length, lookOf(post), report, controller.signal);
+        if (which !== 'all') saveBlob(blob, `${fileBase}-slide-${i + 1}.mp4`);
+        else
+          entries.push({
+            name: `slide-${i + 1}.mp4`,
+            data: new Uint8Array(await blob.arrayBuffer())
+          });
+      }
+      if (which === 'all') {
+        entries.push({
+          name: 'caption.txt',
+          data: new TextEncoder().encode(`\uFEFF${fullCaption(post)}`)
+        });
+        saveBlob(makeZip(entries), `${fileBase}-animated.zip`);
+      }
+      markDownloaded();
+    } catch (err) {
+      if (!(err instanceof DOMException && err.name === 'AbortError')) {
+        setVideoError(err instanceof Error ? err.message : 'The export failed. Please try again.');
+      }
+    } finally {
+      setVideoJob(null);
+      abort.current = null;
+    }
+  };
+
+  const shuffleLook = () => {
+    const others = STYLES.filter((s) => s !== post.style);
+    onChange(post.id, {
+      style: others[Math.floor(Math.random() * others.length)],
+      seed: newSeed()
+    });
   };
 
   const copyCaption = async () => {
@@ -125,7 +250,9 @@ const PostCard: React.FC<{
               <span className={`px-2 py-0.5 rounded-full border ${status.className}`}>{status.label}</span>
               <span className="px-2 py-0.5 rounded-full border border-[#2E3040] text-[#A6A8B3]">{post.pillar}</span>
               <span className="px-2 py-0.5 rounded-full border border-[#2E3040] text-[#8B8D98]">{post.slides.length} slides</span>
-              {!post.auto && !post.brief && <span className="px-2 py-0.5 rounded-full border border-[#2E3040] text-[#8B8D98]">Extra idea</span>}
+              {!post.auto && !post.brief && (
+                <span className="px-2 py-0.5 rounded-full border border-[#2E3040] text-[#8B8D98]">Extra idea</span>
+              )}
             </div>
             <h2 className="text-lg font-semibold text-[#ECEAE5]">{post.title}</h2>
             {post.brief && (
@@ -145,6 +272,10 @@ const PostCard: React.FC<{
             <Button variant="primary" onClick={downloadAll} loading={zipping}>
               <FileArchive className="w-4 h-4" />
               Download all
+            </Button>
+            <Button onClick={() => exportVideos('all')} disabled={videoJob !== null} title="Each slide as a short MP4 with animated text">
+              <Film className="w-4 h-4" />
+              Download animated
             </Button>
             {post.status !== 'posted' ? (
               <Button onClick={() => onStatus(post.id, 'posted')}>
@@ -167,33 +298,94 @@ const PostCard: React.FC<{
           </div>
         </div>
 
+        {/* Look and animation: change any time without rewriting the post */}
+        <div className="flex flex-wrap items-center gap-2">
+          <label className="flex items-center gap-2 text-xs text-[#A6A8B3]">
+            <Palette className="w-3.5 h-3.5" />
+            <select
+              value={post.style}
+              disabled={videoJob !== null}
+              onChange={(e) => onChange(post.id, { style: e.target.value as VideoStyle })}
+              className={selectClass}
+              aria-label="Look"
+            >
+              {STYLES.map((s) => (
+                <option key={s} value={s}>
+                  {STYLE_NAMES[s]}
+                </option>
+              ))}
+            </select>
+          </label>
+          <Button variant="ghost" onClick={shuffleLook} disabled={videoJob !== null} title="Random look and variation">
+            <Shuffle className="w-4 h-4" />
+            Shuffle look
+          </Button>
+          <Button variant="ghost" onClick={() => setAnimate((a) => !a)} title="Preview the text animation">
+            {animate ? <Square className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+            {animate ? 'Stop preview' : 'Preview animation'}
+          </Button>
+        </div>
+
+        {videoJob && (
+          <div className="flex items-center gap-3 text-xs text-[#A6A8B3]">
+            <div className="flex-1 h-1.5 rounded-full bg-[#22232D] overflow-hidden">
+              <div className="h-full bg-[#C9A96E]" style={{ width: `${Math.round(videoJob.fraction * 100)}%` }} />
+            </div>
+            <span className="shrink-0">
+              {videoJob.label}… {Math.round(videoJob.fraction * 100)}%
+            </span>
+            <button onClick={() => abort.current?.abort()} className="shrink-0 hover:text-[#ECEAE5] cursor-pointer" aria-label="Cancel">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+        <ErrorNote message={videoError} />
+
         {/* Slides */}
         <div className={`grid grid-cols-2 md:grid-cols-4 gap-3 ${post.slides.length > 4 ? 'xl:grid-cols-5' : ''}`}>
-          {post.slides.map((_, i) => (
-            <div key={i} className="space-y-2">
-              <div className="aspect-[4/5] rounded-md overflow-hidden bg-black border border-[#22232D]">
-                {urls[i] ? (
-                  <img src={urls[i]} alt={`Slide ${i + 1}`} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full grid place-items-center text-xs text-[#6E7180]">Drawing…</div>
-                )}
+          {animate ? (
+            <AnimatedSlides post={post} />
+          ) : (
+            post.slides.map((_, i) => (
+              <div key={i} className="space-y-2">
+                <div className="aspect-[4/5] rounded-md overflow-hidden bg-black border border-[#22232D]">
+                  {urls[i] ? (
+                    <img src={urls[i]} alt={`Slide ${i + 1}`} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full grid place-items-center text-xs text-[#6E7180]">Drawing…</div>
+                  )}
+                </div>
+                <div className="flex">
+                  <button
+                    onClick={() => downloadSlide(i)}
+                    className="flex-1 inline-flex items-center justify-center gap-1.5 text-xs text-[#A6A8B3] hover:text-[#ECEAE5] py-1 cursor-pointer"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    Slide {i + 1}
+                  </button>
+                  <button
+                    onClick={() => exportVideos(i)}
+                    disabled={videoJob !== null}
+                    title={`Slide ${i + 1} as an animated MP4`}
+                    className="inline-flex items-center gap-1 px-1.5 text-xs text-[#A6A8B3] hover:text-[#ECEAE5] py-1 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <Film className="w-3.5 h-3.5" />
+                    MP4
+                  </button>
+                </div>
               </div>
-              <button
-                onClick={() => downloadSlide(i)}
-                className="w-full inline-flex items-center justify-center gap-1.5 text-xs text-[#A6A8B3] hover:text-[#ECEAE5] py-1 cursor-pointer"
-              >
-                <Download className="w-3.5 h-3.5" />
-                Slide {i + 1}
-              </button>
-            </div>
-          ))}
+            ))
+          )}
         </div>
 
         {/* Caption */}
         <div className="rounded-md border border-[#22232D] bg-[#0B0C10]">
           <div className="flex items-center justify-between px-4 py-2 border-b border-[#22232D]">
             <span className="text-xs font-medium text-[#A6A8B3]">Caption</span>
-            <button onClick={copyCaption} className="inline-flex items-center gap-1.5 text-xs text-[#C9A96E] hover:text-[#E3C88E] cursor-pointer">
+            <button
+              onClick={copyCaption}
+              className="inline-flex items-center gap-1.5 text-xs text-[#C9A96E] hover:text-[#E3C88E] cursor-pointer"
+            >
               {copied ? <Check className="w-3.5 h-3.5" /> : <ClipboardCopy className="w-3.5 h-3.5" />}
               {copied ? 'Copied' : 'Copy caption'}
             </button>
@@ -209,13 +401,14 @@ const SLIDE_CHOICES = ['auto', 4, 5, 6, 7, 8, 9, 10] as const;
 const MAX_IDEA_LENGTH = 5000;
 
 // The founder's own idea (or ready-written slide text and caption) turned into a post
-const IdeaComposer: React.FC<{ disabled: boolean; onCreated: (post: SocialPost) => void; onError: (err: unknown) => void }> = ({
-  disabled,
-  onCreated,
-  onError
-}) => {
+const IdeaComposer: React.FC<{
+  disabled: boolean;
+  onCreated: (post: SocialPost) => void;
+  onError: (err: unknown) => void;
+}> = ({ disabled, onCreated, onError }) => {
   const [brief, setBrief] = useState('');
   const [slides, setSlides] = useState<(typeof SLIDE_CHOICES)[number]>('auto');
+  const [look, setLook] = useState<VideoStyle | 'surprise'>('surprise');
   const [busy, setBusy] = useState(false);
 
   const create = async (e: React.FormEvent) => {
@@ -223,7 +416,7 @@ const IdeaComposer: React.FC<{ disabled: boolean; onCreated: (post: SocialPost) 
     if (brief.trim().length < 10 || busy) return;
     setBusy(true);
     try {
-      onCreated(await adminApi.socialFromIdea(brief.trim(), slides));
+      onCreated(await adminApi.socialFromIdea(brief.trim(), slides, look));
       setBrief('');
     } catch (err) {
       onError(err);
@@ -273,7 +466,23 @@ const IdeaComposer: React.FC<{ disabled: boolean; onCreated: (post: SocialPost) 
               ))}
             </select>
           </label>
-          <div className="flex items-center gap-3">
+          <label className="flex items-center gap-2 text-xs text-[#A6A8B3]">
+            Look
+            <select
+              value={look}
+              onChange={(e) => setLook(e.target.value as VideoStyle | 'surprise')}
+              disabled={disabled || busy}
+              className={selectClass}
+            >
+              <option value="surprise">Surprise me (random)</option>
+              {STYLES.map((s) => (
+                <option key={s} value={s}>
+                  {STYLE_NAMES[s]}
+                </option>
+              ))}
+            </select>
+          </label>
+          <div className="flex items-center gap-3 ml-auto">
             <span className="text-xs text-[#6E7180]">
               {busy ? 'Creating your post… up to 30 seconds' : `${brief.length.toLocaleString()} / ${MAX_IDEA_LENGTH.toLocaleString()}`}
             </span>
@@ -292,6 +501,8 @@ export const SocialPage: React.FC = () => {
   const { onUnauthorized } = useAdmin();
   const [posts, setPosts] = useState<SocialPost[] | null>(null);
   const [ready, setReady] = useState(true);
+  const [autoPost, setAutoPostState] = useState(false);
+  const [savingAuto, setSavingAuto] = useState(false);
   const [writingToday, setWritingToday] = useState(false);
   const [writingExtra, setWritingExtra] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -303,19 +514,20 @@ export const SocialPage: React.FC = () => {
     if (!unauthorizedRef.current(err)) setError(err instanceof Error && err.message ? err.message : fallback);
   }, []);
 
-  const addPost = (post: SocialPost) =>
-    setPosts((prev) => (prev?.some((p) => p.id === post.id) ? prev : [post, ...(prev ?? [])]));
+  const addPost = (post: SocialPost) => setPosts((prev) => (prev?.some((p) => p.id === post.id) ? prev : [post, ...(prev ?? [])]));
 
-  // Load the list, then make sure today's idea exists (written now if the daily job hasn't run yet)
+  // Load the list; with daily auto post on, also make sure today's idea exists
+  // (written now if the daily job hasn't run yet)
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const { posts: list, ready: ok } = await adminApi.socialPosts();
+        const { posts: list, ready: ok, autoPost: on } = await adminApi.socialPosts();
         if (cancelled) return;
         setPosts(list);
         setReady(ok);
-        if (!ok) return;
+        setAutoPostState(on);
+        if (!ok || !on) return;
         setWritingToday(true);
         const today = await adminApi.socialToday();
         if (!cancelled) addPost(today);
@@ -342,10 +554,30 @@ export const SocialPage: React.FC = () => {
     }
   };
 
-  const setStatus = async (id: string, status: SocialPostStatus) => {
-    setPosts((prev) => prev?.map((p) => (p.id === id ? { ...p, status } : p)) ?? prev);
+  const toggleAutoPost = async () => {
+    const on = !autoPost;
+    setSavingAuto(true);
+    setError(null);
     try {
-      await adminApi.setSocialStatus(id, status);
+      await adminApi.setAutoPost(on);
+      setAutoPostState(on);
+      if (on && ready) {
+        // Switched on: write today's idea straight away
+        setWritingToday(true);
+        addPost(await adminApi.socialToday());
+      }
+    } catch (err) {
+      fail(err, "Couldn't change the daily auto post setting.");
+    } finally {
+      setSavingAuto(false);
+      setWritingToday(false);
+    }
+  };
+
+  const change = async (id: string, patch: PostPatch) => {
+    setPosts((prev) => prev?.map((p) => (p.id === id ? { ...p, ...patch } : p)) ?? prev);
+    try {
+      await adminApi.updateSocialPost(id, patch);
     } catch (err) {
       fail(err, "Couldn't update the post.");
     }
@@ -365,20 +597,40 @@ export const SocialPage: React.FC = () => {
     <div>
       <PageHeader
         title="Social posts"
-        subtitle="A fresh Instagram carousel idea every day, or create one from your own idea. Pick one, download it and post."
+        subtitle="Create Instagram carousels from your own ideas, or switch on daily auto post for a fresh idea every day."
         action={
-          <Button variant="primary" onClick={newIdea} loading={writingExtra} disabled={!ready || writingToday}>
-            <Sparkles className="w-4 h-4" />
-            New idea
-          </Button>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              role="switch"
+              aria-checked={autoPost}
+              onClick={toggleAutoPost}
+              disabled={savingAuto || posts === null}
+              title={autoPost ? 'A new idea is written every day' : 'Only posts you create are made'}
+              className="inline-flex items-center gap-2.5 text-sm text-[#A6A8B3] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span
+                className={`relative w-10 h-6 rounded-full border transition-colors ${autoPost ? 'bg-[#C9A96E] border-[#C9A96E]' : 'bg-[#16171F] border-[#2E3040]'}`}
+              >
+                <span
+                  className={`absolute top-0.5 left-0.5 w-[18px] h-[18px] rounded-full transition-transform ${autoPost ? 'translate-x-4 bg-[#0B0C10]' : 'bg-[#6E7180]'}`}
+                />
+              </span>
+              Daily auto post {autoPost ? 'on' : 'off'}
+            </button>
+            <Button variant="primary" onClick={newIdea} loading={writingExtra} disabled={!ready || writingToday}>
+              <Sparkles className="w-4 h-4" />
+              New idea
+            </Button>
+          </div>
         }
       />
 
       <ErrorNote message={error} />
       {!ready && (
         <Card className="p-5 mb-5 text-sm text-[#A6A8B3]">
-          Post ideas need the Gemini API key. Add <code className="text-[#C9A96E]">GEMINI_API_KEY</code> to the environment
-          variables and redeploy.
+          Post ideas need the Gemini API key. Add <code className="text-[#C9A96E]">GEMINI_API_KEY</code> to the environment variables and
+          redeploy.
         </Card>
       )}
 
@@ -403,11 +655,11 @@ export const SocialPage: React.FC = () => {
       {posts === null ? (
         <Spinner label="Loading post ideas…" />
       ) : posts.length === 0 && !writingToday ? (
-        <Card className="p-8 text-center text-sm text-[#8B8D98]">No post ideas yet. Press "New idea" to create one.</Card>
+        <Card className="p-8 text-center text-sm text-[#8B8D98]">No posts yet. Create one from your idea above, or press "New idea".</Card>
       ) : (
         <div className="space-y-5">
           {posts.map((post) => (
-            <PostCard key={post.id} post={post} onStatus={setStatus} onDelete={remove} />
+            <PostCard key={post.id} post={post} onChange={change} onDelete={remove} />
           ))}
         </div>
       )}

@@ -4,7 +4,7 @@
 // dashboard draws the slides in the studio's visual style (src/admin/social/slideRenderer.ts).
 import { randomUUID } from 'node:crypto';
 import { GoogleGenAI, Type } from '@google/genai';
-import type { SocialPost, SocialPostStatus, SocialSlide, SocialSlideLayout } from '../types/index.js';
+import type { SocialPost, SocialPostStatus, SocialSlide, SocialSlideLayout, VideoStyle } from '../types/index.js';
 import { collections, type SocialPostDoc } from './db.js';
 import { CONTACT } from '../config/contact.js';
 import { servicesData } from '../data/servicesData.js';
@@ -18,6 +18,13 @@ import {
 
 export const SOCIAL_STATUSES: SocialPostStatus[] = ['new', 'downloaded', 'posted', 'skipped'];
 const LAYOUTS: SocialSlideLayout[] = ['cover', 'list', 'points', 'statement', 'tags', 'compare', 'cta'];
+
+// Visual looks shared by posts and reels (drawn in the dashboard, see src/admin/video/themes.ts)
+export const VIDEO_STYLES: VideoStyle[] = ['aurora', 'editorial', 'neon', 'bold', 'mono'];
+// A fresh random variation; also picks a random look when the founder chose "Surprise me"
+export const randomSeed = () => 1 + Math.floor(Math.random() * 2_000_000_000);
+export const randomStyle = () => VIDEO_STYLES[Math.floor(Math.random() * VIDEO_STYLES.length)];
+export type LookChoice = VideoStyle | 'surprise';
 
 export const MIN_SLIDES = 4;
 export const MAX_SLIDES = 10;
@@ -45,7 +52,7 @@ const PILLARS: { name: string; brief: string }[] = [
 const OWN_IDEA = 'Your idea';
 
 // Facts the model may use; everything comes from the site's own data
-function studioFacts(): string {
+export function studioFacts(): string {
   const usd = (n: number) => `$${n.toLocaleString('en-US')}`;
   const services = servicesData
     .map((s) => {
@@ -106,7 +113,7 @@ const postSchema = (min: number, max: number) => ({
   required: ['title', 'angle', 'slides', 'caption', 'hashtags']
 });
 
-const CREATIVE_STANDARD = `CREATIVE STANDARD:
+export const CREATIVE_STANDARD = `CREATIVE STANDARD:
 - The post must be specific, surprising and useful, and feel like it could only come from RMAST.
 - Build it around ONE creative device: a sharp number from our real prices, a surprising comparison, a hypothetical mini-story told beat by beat, a myth and its correction, a "this vs that" contrast, or a reveal of how something is actually made.
 - Banned: generic tips lists ("5 tips to..."), "Did you know?", "In today's digital world", "game-changer", "unlock", "elevate", "take it to the next level", "seamless", "cutting-edge", motivational quotes, emojis on slides (except inside a quoted example).
@@ -201,7 +208,7 @@ ${studioFacts()}`;
 // Model output is checked and trimmed before it is stored
 // ---------------------------------------------------------------------------
 
-const text = (v: unknown, max: number) => {
+export const clipText = (v: unknown, max: number) => {
   const clean = (typeof v === 'string' ? v : '').replace(/\s+/g, ' ').replace(/^#+/, '').trim();
   if (clean.length <= max) return clean;
   const cut = clean.slice(0, max);
@@ -213,7 +220,7 @@ const text = (v: unknown, max: number) => {
 };
 
 // Leading tick/cross marks on compare examples (the slide design draws its own)
-const MARKS = /^[\s✗✘✕×❌✓✔✅xX]+(?=\s|["“])\s*/u;
+export const MARKS = /^[\s✗✘✕×❌✓✔✅xX]+(?=\s|["“])\s*/u;
 
 function cleanSlide(raw: unknown, forced?: SocialSlideLayout): SocialSlide {
   const r = (raw ?? {}) as Record<string, unknown>;
@@ -221,20 +228,20 @@ function cleanSlide(raw: unknown, forced?: SocialSlideLayout): SocialSlide {
   const statement = layout === 'statement';
   return {
     layout,
-    kicker: text(r.kicker, 34),
-    headline: text(r.headline, statement ? 120 : 72),
-    highlight: text(r.highlight, statement ? 70 : 54),
-    body: text(r.body, 200),
+    kicker: clipText(r.kicker, 34),
+    headline: clipText(r.headline, statement ? 120 : 72),
+    highlight: clipText(r.highlight, statement ? 70 : 54),
+    body: clipText(r.body, 200),
     items: (Array.isArray(r.items) ? r.items : [])
       .slice(0, 6)
-      .map((i) => ({ label: text((i as Record<string, unknown>)?.label, 40), value: text((i as Record<string, unknown>)?.value, 22) }))
+      .map((i) => ({ label: clipText((i as Record<string, unknown>)?.label, 40), value: clipText((i as Record<string, unknown>)?.value, 22) }))
       .filter((i) => i.label),
     points: (Array.isArray(r.points) ? r.points : [])
       .slice(0, 4)
-      .map((p) => ({ title: text((p as Record<string, unknown>)?.title, 48), text: text((p as Record<string, unknown>)?.text, 150) }))
+      .map((p) => ({ title: clipText((p as Record<string, unknown>)?.title, 48), text: clipText((p as Record<string, unknown>)?.text, 150) }))
       .filter((p) => p.title),
-    before: text(r.before, 90).replace(MARKS, ''),
-    after: text(r.after, 100).replace(MARKS, '')
+    before: clipText(r.before, 90).replace(MARKS, ''),
+    after: clipText(r.after, 100).replace(MARKS, '')
   };
 }
 
@@ -258,7 +265,7 @@ function cleanPost(raw: unknown): Pick<SocialPost, 'title' | 'angle' | 'slides' 
     .filter(Boolean)
     .slice(0, 15);
   if (!caption || !(cleaned[0].headline || cleaned[0].highlight)) throw new Error('The post came back incomplete. Please try again.');
-  return { title: text(r.title, 80) || 'Untitled idea', angle: text(r.angle, 240), slides: cleaned, caption, hashtags };
+  return { title: clipText(r.title, 80) || 'Untitled idea', angle: clipText(r.angle, 240), slides: cleaned, caption, hashtags };
 }
 
 // ---------------------------------------------------------------------------
@@ -273,6 +280,42 @@ function getClient(): GoogleGenAI | null {
   return client;
 }
 export const isSocialConfigured = () => Boolean(getClient());
+
+// Structured (JSON) generation with the primary model, falling back to the lite model when the
+// primary is overloaded or out of quota. Shared by the post and video managers.
+export async function generateJson(
+  prompt: string,
+  schema: object,
+  opts: { temperature: number; label: string; maxOutputTokens?: number }
+): Promise<unknown> {
+  const genai = getClient();
+  if (!genai) throw new Error('GEMINI_API_KEY is not configured');
+  const primary = process.env.GEMINI_MODEL?.trim() || 'gemini-2.5-flash';
+  // Alias Google keeps pointed at its current lite model (older fixed names get retired)
+  const fallback = process.env.GEMINI_FALLBACK_MODEL?.trim() || 'gemini-flash-lite-latest';
+  let lastError: unknown;
+  for (const model of primary === fallback ? [primary] : [primary, fallback]) {
+    try {
+      const response = await genai.models.generateContent({
+        model,
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        config: {
+          responseMimeType: 'application/json',
+          responseSchema: schema,
+          temperature: opts.temperature,
+          maxOutputTokens: opts.maxOutputTokens ?? 8000,
+          // thinkingBudget is a Gemini 2.5 setting; newer models reject it
+          ...(model.startsWith('gemini-2.5') ? { thinkingConfig: { thinkingBudget: model.includes('lite') ? 0 : 1024 } } : {})
+        }
+      });
+      return JSON.parse(response.text ?? '{}');
+    } catch (err) {
+      lastError = err;
+      console.warn(`${opts.label} generation with ${model} failed: ${err instanceof Error ? err.message : err}`);
+    }
+  }
+  throw lastError;
+}
 
 // Least recently used angle first, so the week covers a spread of angles
 function pickPillar(recent: SocialPostDoc[]) {
@@ -297,12 +340,16 @@ export const toSocialPost = (d: SocialPostDoc): SocialPost => ({
   angle: d.angle,
   slides: d.slides,
   caption: d.caption,
-  hashtags: d.hashtags
+  hashtags: d.hashtags,
+  // Posts made before looks existed keep the original aurora design
+  style: d.style ?? 'aurora',
+  seed: d.seed ?? 1
 });
 
 export interface DraftOptions {
   brief?: string; // the founder's own idea or draft
   slides?: number; // exact number of slides (4-10); otherwise the model decides
+  look?: LookChoice;
 }
 
 async function recentPosts(): Promise<SocialPostDoc[]> {
@@ -317,8 +364,6 @@ async function recentPosts(): Promise<SocialPostDoc[]> {
 // Writes a post without saving it. Daily/extra ideas rotate angles and avoid recent posts;
 // a founder's brief is followed closely instead.
 export async function draftPost(recent: SocialPostDoc[], auto: boolean, opts: DraftOptions = {}): Promise<SocialPostDoc> {
-  const genai = getClient();
-  if (!genai) throw new Error('GEMINI_API_KEY is not configured');
   const day = studioDay();
   const brief = opts.brief?.trim();
   const exact = opts.slides && opts.slides >= MIN_SLIDES && opts.slides <= MAX_SLIDES ? opts.slides : undefined;
@@ -333,42 +378,24 @@ export async function draftPost(recent: SocialPostDoc[], auto: boolean, opts: Dr
   const pillar = brief ? null : pickPillar(recent);
   const prompt = brief ? briefInstructions(brief, day, slideRule) : dailyInstructions(pillar!, recent, day, slideRule);
 
-  const primary = process.env.GEMINI_MODEL?.trim() || 'gemini-2.5-flash';
-  // Alias Google keeps pointed at its current lite model (older fixed names get retired)
-  const fallback = process.env.GEMINI_FALLBACK_MODEL?.trim() || 'gemini-flash-lite-latest';
-  let lastError: unknown;
-  for (const model of primary === fallback ? [primary] : [primary, fallback]) {
-    try {
-      const response = await genai.models.generateContent({
-        model,
-        contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        config: {
-          responseMimeType: 'application/json',
-          responseSchema: postSchema(min, max),
-          // The founder's wording should be kept, so their posts get a steadier hand
-          temperature: brief ? 0.6 : 1,
-          maxOutputTokens: 8000,
-          // thinkingBudget is a Gemini 2.5 setting; newer models reject it
-          ...(model.startsWith('gemini-2.5') ? { thinkingConfig: { thinkingBudget: model.includes('lite') ? 0 : 1024 } } : {})
-        }
-      });
-      const post = cleanPost(JSON.parse(response.text ?? '{}'));
-      return {
-        _id: randomUUID(),
-        day,
-        createdAt: new Date(),
-        auto,
-        ...(brief ? { brief: brief.slice(0, MAX_BRIEF_LENGTH) } : {}),
-        status: 'new',
-        pillar: pillar?.name ?? OWN_IDEA,
-        ...post
-      };
-    } catch (err) {
-      lastError = err;
-      console.warn(`Social post generation with ${model} failed: ${err instanceof Error ? err.message : err}`);
-    }
-  }
-  throw lastError;
+  const raw = await generateJson(prompt, postSchema(min, max), {
+    // The founder's wording should be kept, so their posts get a steadier hand
+    temperature: brief ? 0.6 : 1,
+    label: 'Social post'
+  });
+  const post = cleanPost(raw);
+  return {
+    _id: randomUUID(),
+    day,
+    createdAt: new Date(),
+    auto,
+    ...(brief ? { brief: brief.slice(0, MAX_BRIEF_LENGTH) } : {}),
+    status: 'new',
+    pillar: pillar?.name ?? OWN_IDEA,
+    style: !opts.look || opts.look === 'surprise' ? randomStyle() : opts.look,
+    seed: randomSeed(),
+    ...post
+  };
 }
 
 // Today's automatic idea: created on first request of the day (cron or dashboard), never twice
@@ -392,14 +419,14 @@ export async function ensureTodayPost(): Promise<SocialPost> {
 
 // An extra idea on demand from the dashboard
 export async function createExtraPost(): Promise<SocialPost> {
-  const doc = await draftPost(await recentPosts(), false);
+  const doc = await draftPost(await recentPosts(), false, { look: 'surprise' });
   await (await collections.socialPosts()).insertOne(doc);
   return toSocialPost(doc);
 }
 
 // The founder's own idea (or ready-written slides) turned into a post
-export async function createPostFromBrief(brief: string, slides?: number): Promise<SocialPost> {
-  const doc = await draftPost([], false, { brief, slides });
+export async function createPostFromBrief(brief: string, slides?: number, look: LookChoice = 'surprise'): Promise<SocialPost> {
+  const doc = await draftPost([], false, { brief, slides, look });
   await (await collections.socialPosts()).insertOne(doc);
   return toSocialPost(doc);
 }
@@ -407,4 +434,18 @@ export async function createPostFromBrief(brief: string, slides?: number): Promi
 export async function listSocialPosts(): Promise<SocialPost[]> {
   const docs = await (await collections.socialPosts()).find({}).sort({ createdAt: -1 }).limit(60).toArray();
   return docs.map(toSocialPost);
+}
+
+// The daily automatic idea only runs while the founder has it switched on (off by default)
+export async function isAutoPostOn(): Promise<boolean> {
+  const doc = await (await collections.settings()).findOne({ _id: 'social' });
+  return doc?.autoPost === true;
+}
+
+export async function setAutoPost(on: boolean, by: string): Promise<void> {
+  await (await collections.settings()).updateOne(
+    { _id: 'social' },
+    { $set: { autoPost: on, updatedAt: new Date(), updatedBy: by } },
+    { upsert: true }
+  );
 }

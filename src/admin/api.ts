@@ -1,5 +1,5 @@
 import { request } from '../lib/api';
-import { AdminUser, InquiryStatus, LeadStats, MediaAsset, SocialPost, SocialPostStatus, StoredInquiry } from '../types';
+import { AdminUser, InquiryStatus, LeadStats, MediaAsset, SocialPost, SocialVideo, StoredInquiry, VideoStyle, MusicMood } from '../types';
 
 export { ApiError } from '../lib/api';
 
@@ -26,16 +26,27 @@ export const adminApi = {
     request<void>(`/api/admin/leads/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify({ status }) }),
   deleteLead: (id: string) => request<void>(`/api/admin/leads/${encodeURIComponent(id)}`, { method: 'DELETE' }),
 
-  socialPosts: () => request<{ posts: SocialPost[]; ready: boolean }>('/api/admin/social'),
+  socialPosts: () => request<{ posts: SocialPost[]; ready: boolean; autoPost: boolean }>('/api/admin/social'),
+  setAutoPost: (autoPost: boolean) =>
+    request<void>('/api/admin/social/settings', { method: 'PUT', body: JSON.stringify({ autoPost }) }),
   // Creates today's automatic idea if it doesn't exist yet (safe to call repeatedly)
   socialToday: () => request<SocialPost>('/api/admin/social/today', { method: 'POST' }),
   socialExtra: () => request<SocialPost>('/api/admin/social/extra', { method: 'POST' }),
   // The founder's own idea (or ready-written slides) turned into a post; slides: 4-10 or 'auto'
-  socialFromIdea: (brief: string, slides: number | 'auto') =>
-    request<SocialPost>('/api/admin/social/custom', { method: 'POST', body: JSON.stringify({ brief, slides }) }),
-  setSocialStatus: (id: string, status: SocialPostStatus) =>
-    request<void>(`/api/admin/social/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify({ status }) }),
+  socialFromIdea: (brief: string, slides: number | 'auto', style: VideoStyle | 'surprise') =>
+    request<SocialPost>('/api/admin/social/custom', { method: 'POST', body: JSON.stringify({ brief, slides, style }) }),
+  updateSocialPost: (id: string, patch: Partial<Pick<SocialPost, 'status' | 'style' | 'seed'>>) =>
+    request<void>(`/api/admin/social/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify(patch) }),
   deleteSocialPost: (id: string) => request<void>(`/api/admin/social/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+
+  socialVideos: () => request<{ videos: SocialVideo[]; ready: boolean }>('/api/admin/videos'),
+  // A motion-graphics reel script from the founder's idea (the MP4 is rendered in the browser)
+  createVideo: (brief: string, seconds: number, style: VideoStyle | 'surprise', music: MusicMood) =>
+    request<SocialVideo>('/api/admin/videos', { method: 'POST', body: JSON.stringify({ brief, seconds, style, music }) }),
+  // Change a video's status, look, variation or music (the script stays the same)
+  updateVideo: (id: string, patch: Partial<Pick<SocialVideo, 'status' | 'style' | 'seed' | 'music'>>) =>
+    request<void>(`/api/admin/videos/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify(patch) }),
+  deleteVideo: (id: string) => request<void>(`/api/admin/videos/${encodeURIComponent(id)}`, { method: 'DELETE' }),
 
   media: () => request<{ assets: MediaAsset[]; storageReady: boolean }>('/api/admin/media'),
   removeMedia: (key: string) => request<void>(`/api/admin/media/${encodeURIComponent(key)}`, { method: 'DELETE' }),

@@ -208,8 +208,13 @@ export const StudioAssistant: React.FC = () => {
   const [speakReplies, setSpeakReplies] = useState(true);
   const [pdfBusy, setPdfBusy] = useState<PdfKind | null>(null);
   const recognitionRef = useRef<Recognition | null>(null);
-  // Hands-free conversation: after each spoken reply the mic opens again, until the visitor stops it
-  const conversationRef = useRef(false);
+  // Dictation: speech is typed into the box and only sent when the visitor presses Send.
+  // dictatingRef = the visitor wants the mic on (pauses restart it instead of ending it);
+  // spokenRef = the current message was dictated, so its reply is read aloud.
+  const dictatingRef = useRef(false);
+  const spokenRef = useRef(false);
+  const inputTextRef = useRef(inputText);
+  inputTextRef.current = inputText;
   const isOpenRef = useRef(isOpen);
   isOpenRef.current = isOpen;
   const speakRepliesRef = useRef(speakReplies);
@@ -227,9 +232,10 @@ export const StudioAssistant: React.FC = () => {
   }, [messages, isOpen, isThinking]);
 
   const stopVoice = () => {
-    conversationRef.current = false;
-    recognitionRef.current?.abort();
+    dictatingRef.current = false;
+    const recognition = recognitionRef.current;
     recognitionRef.current = null;
+    recognition?.abort();
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) window.speechSynthesis.cancel();
     setListening(false);
     setSpeaking(false);
@@ -268,10 +274,10 @@ export const StudioAssistant: React.FC = () => {
     try {
       if (kind === 'profile') {
         const { downloadCompanyProfilePdf } = await import('../../lib/companyProfilePdf');
-        downloadCompanyProfilePdf(currency);
+        downloadCompanyProfilePdf();
       } else {
         const { downloadPriceListPdf } = await import('../../lib/pricePdf');
-        downloadPriceListPdf(kind, currency);
+        downloadPriceListPdf(kind);
       }
     } catch {
       setMessages((prev) => [
@@ -305,8 +311,8 @@ export const StudioAssistant: React.FC = () => {
       if (sheet) void downloadPdf(sheet);
       reply = {
         text: sheet
-          ? `Your ${SHEET_NAMES[sheet]} price list PDF is downloading now, in ${currency}. You can also download these:`
-          : `Here are our documents (prices in ${currency}). Tap one to download the PDF:`,
+          ? `Your ${SHEET_NAMES[sheet]} price list PDF is downloading now, with prices in USD and AED. You can also download these:`
+          : 'Here are our documents (prices in USD and AED). Tap one to download the PDF:',
         pdf: true
       };
     } else {
@@ -327,17 +333,16 @@ export const StudioAssistant: React.FC = () => {
 
     setMessages((prev) => [...prev, { id: nextId(), sender: 'assistant', ...reply }]);
 
-    if (viaVoice || conversationRef.current) {
-      // Answer aloud, then keep listening while the conversation is on
+    if (viaVoice) {
+      // Answer aloud, then open the mic for the next question (it still waits for Send)
       speak(reply.text, () => {
-        if (conversationRef.current && isOpenRef.current) startListening();
+        if (isOpenRef.current && !recognitionRef.current) startListening();
       });
     }
   };
-  // Speech callbacks outlive a render, so they call the latest ask through a ref
-  const askRef = useRef(ask);
-  askRef.current = ask;
 
+  // Starts dictation into the input box. Browsers end recognition after a pause; while the
+  // visitor still wants the mic on, it is restarted, so a pause never sends or cuts off a message.
   const startListening = () => {
     const Ctor = getRecognition();
     if (!Ctor) return;
@@ -345,21 +350,23 @@ export const StudioAssistant: React.FC = () => {
     const recognition = new Ctor();
     recognition.lang = speechLang();
     recognition.interimResults = true;
-    recognition.continuous = false;
-    let finalText = '';
+    recognition.continuous = true;
+    const before = inputTextRef.current.trim();
+    let heard = false;
 
     recognition.onresult = (e) => {
-      let interim = '';
-      for (let i = e.resultIndex; i < e.results.length; i++) {
-        const result = e.results[i];
-        if (result.isFinal) finalText += result[0].transcript;
-        else interim += result[0].transcript;
-      }
-      setInputText((finalText + interim).trim());
+      if (recognitionRef.current !== recognition) return;
+      let spoken = '';
+      for (let i = 0; i < e.results.length; i++) spoken += e.results[i][0].transcript;
+      spoken = spoken.trim();
+      if (!spoken) return;
+      heard = true;
+      spokenRef.current = true;
+      setInputText(before ? `${before} ${spoken}` : spoken);
     };
     recognition.onerror = (e) => {
       if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
-        conversationRef.current = false;
+        dictatingRef.current = false;
         setMessages((prev) => [
           ...prev,
           { id: nextId(), sender: 'assistant', text: 'I could not use your microphone. Please allow microphone access for this site in your browser, then tap the mic again.' }
@@ -367,42 +374,63 @@ export const StudioAssistant: React.FC = () => {
       }
     };
     recognition.onend = () => {
-      if (recognitionRef.current === recognition) recognitionRef.current = null;
-      setListening(false);
-      const spoken = finalText.trim();
-      if (spoken) {
-        setInputText('');
-        void askRef.current(spoken, true);
-      } else {
-        // Nothing heard: end the hands-free conversation instead of looping silently
-        conversationRef.current = false;
+      if (recognitionRef.current !== recognition) return;
+      recognitionRef.current = null;
+      // Keep listening through pauses; a stretch with no speech at all turns the mic off
+      if (dictatingRef.current && heard && isOpenRef.current) {
+        startListening();
+        return;
       }
+      dictatingRef.current = false;
+      setListening(false);
     };
 
+    dictatingRef.current = true;
     recognitionRef.current = recognition;
     setListening(true);
     try {
       recognition.start();
     } catch {
+      recognitionRef.current = null;
+      dictatingRef.current = false;
       setListening(false);
     }
   };
 
+  // Stops the mic; words already heard stay in the box (a last result may still arrive)
+  const stopListening = () => {
+    dictatingRef.current = false;
+    recognitionRef.current?.stop();
+    setListening(false);
+  };
+
   const toggleMic = () => {
-    if (listening || speaking) {
-      stopVoice();
+    if (listening) {
+      stopListening();
+      return;
+    }
+    if (speaking) {
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) window.speechSynthesis.cancel();
+      setSpeaking(false);
       return;
     }
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) window.speechSynthesis.cancel();
-    conversationRef.current = true;
     startListening();
   };
 
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
     const text = inputText;
+    const viaVoice = spokenRef.current;
+    spokenRef.current = false;
+    // Sending ends dictation; anything the mic hears afterwards is ignored
+    dictatingRef.current = false;
+    const recognition = recognitionRef.current;
+    recognitionRef.current = null;
+    recognition?.abort();
+    setListening(false);
     setInputText('');
-    ask(text);
+    ask(text, viaVoice);
   };
 
   return (
@@ -455,7 +483,7 @@ export const StudioAssistant: React.FC = () => {
               <div>
                 <div className="text-xs font-semibold uppercase tracking-wider text-[#FAF8F5]">RMAST Assistant</div>
                 <div className="text-[10px] font-mono text-[#71717A]">
-                  {listening ? 'Listening…' : speaking ? 'Speaking…' : 'Ask about systems, pricing & AI content'}
+                  {listening ? 'Listening… press Send when done' : speaking ? 'Speaking…' : 'Ask about systems, pricing & AI content'}
                 </div>
               </div>
             </div>
@@ -576,9 +604,9 @@ export const StudioAssistant: React.FC = () => {
                     ? 'border-[#A68BFF] text-[#A68BFF]'
                     : 'border-[#27272A] text-[#A1A1AA] hover:text-[#FAF8F5] hover:border-[#A68BFF]/60'
                 }`}
-                aria-label={listening || speaking ? 'Stop voice conversation' : 'Talk to the assistant'}
+                aria-label={listening ? 'Stop the microphone' : speaking ? 'Stop speaking' : 'Speak your question'}
                 aria-pressed={listening}
-                title={listening || speaking ? 'Stop' : 'Talk'}
+                title={listening ? 'Stop the microphone (your words stay in the box)' : speaking ? 'Stop speaking' : 'Speak your question, then press Send'}
               >
                 {listening && <span className="absolute inset-0 animate-ping bg-[#FF5CAA]/40" aria-hidden="true" />}
                 {listening || speaking ? <Square className="relative w-3.5 h-3.5 fill-current" /> : <Mic className="w-3.5 h-3.5" />}
@@ -589,7 +617,7 @@ export const StudioAssistant: React.FC = () => {
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               maxLength={1000}
-              placeholder={listening ? 'Listening… speak now' : 'Ask about systems, pricing, video...'}
+              placeholder={listening ? 'Listening… press Send when you are done' : 'Ask about systems, pricing, video...'}
               aria-label="Your question"
               className="flex-1 bg-[#0A0A0C] border border-[#27272A] px-3 py-2 text-xs text-[#FAF8F5] placeholder-[#71717A] focus:outline-none focus:border-[#A68BFF]"
             />

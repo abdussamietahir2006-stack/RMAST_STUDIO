@@ -9,19 +9,17 @@ import {
   realEstatePackages,
   aiContentPackages,
   completeBusinessPackages,
-  aiVideoSinglePricing,
-  formatPrice,
-  formatHourlyRate
+  aiVideoSinglePricing
 } from '../data/pricingData';
 import { CONTACT } from '../config/contact';
-import type { Currency, ServiceDetail } from '../types';
-import { auroraStripe, createBrandedDoc, issuedDate, plain, INK, MUTED, VIOLET, type BrandedDoc } from './pdfDoc';
+import type { ServiceDetail } from '../types';
+import { auroraStripe, bothHourly, bothPrices, createBrandedDoc, CURRENCY_NOTE, issuedDate, plain, INK, MUTED, VIOLET, type BrandedDoc } from './pdfDoc';
 import { packageTable } from './pricePdf';
 
 // Portfolio entries carry a "[CMS Placeholder]" marker for the admin; it is not for clients
 const clean = (text: string) => text.replace(/\s*\[CMS Placeholder\]/gi, '').trim();
 
-function coverPage(b: BrandedDoc, currency: Currency) {
+function coverPage(b: BrandedDoc) {
   const { doc, pageW, pageH, margin } = b;
   doc.setFillColor(...INK);
   doc.rect(0, 0, pageW, pageH, 'F');
@@ -72,13 +70,13 @@ function coverPage(b: BrandedDoc, currency: Currency) {
   doc.text(plain(`Instagram: @${CONTACT.instagramHandle}`), margin, y + 22);
   doc.setFontSize(8.5);
   doc.setTextColor(150, 146, 170);
-  doc.text(plain(`Issued ${issuedDate()}  |  Prices in ${currency}`), margin, pageH - 20);
+  doc.text(plain(`Issued ${issuedDate()}  |  ${CURRENCY_NOTE}`), margin, pageH - 20);
 
   b.newPage();
 }
 
-function serviceSection(b: BrandedDoc, s: ServiceDetail, currency: Currency) {
-  const money = (usd: number) => formatPrice(usd, currency);
+function serviceSection(b: BrandedDoc, s: ServiceDetail) {
+  const money = (usd: number) => bothPrices(usd);
   // Keep each service together on one page
   b.ensureSpace(
     40 +
@@ -103,9 +101,9 @@ function serviceSection(b: BrandedDoc, s: ServiceDetail, currency: Currency) {
   const unit = s.billingType === 'monthly' ? ' per month' : s.billingType === 'per-video' ? ' per video' : ' one-time';
   const parts = [`From ${money(s.startingPriceUSD)}${unit}`];
   if (s.tiers?.length) parts.push(s.tiers.map((t) => `${t.name} ${money(t.priceUSD)}`).join(', '));
-  if (s.hourlyRateUSD) parts.push(`Hourly ${formatHourlyRate(s.hourlyRateUSD, currency)}`);
+  if (s.hourlyRateUSD) parts.push(`Hourly ${bothHourly(s.hourlyRateUSD)}`);
   b.label('Investment');
-  b.paragraph(parts.join('  |  '), { size: 9, color: INK });
+  b.paragraph(parts.join('\n'), { size: 9, color: INK });
 
   // Divider between services
   b.doc.setDrawColor(226, 222, 240);
@@ -114,13 +112,13 @@ function serviceSection(b: BrandedDoc, s: ServiceDetail, currency: Currency) {
   b.y += 6;
 }
 
-export function buildCompanyProfilePdf(currency: Currency): jsPDF {
+export function buildCompanyProfilePdf(): jsPDF {
   const b = createBrandedDoc();
-  const money = (usd: number) => formatPrice(usd, currency);
+  const money = (usd: number) => bothPrices(usd);
   const reServices = servicesData.filter((s) => s.division === 'real-estate');
   const contentServices = servicesData.filter((s) => s.division === 'ai-content');
 
-  coverPage(b, currency);
+  coverPage(b);
 
   // --- About ---
   b.heading('About RMAST Studio');
@@ -153,13 +151,13 @@ export function buildCompanyProfilePdf(currency: Currency): jsPDF {
   // --- Services in detail ---
   b.newPage();
   b.heading('Real Estate Digital Systems', 'Every service in detail: what it does, who it is for, what you receive and what it costs.');
-  reServices.forEach((s) => serviceSection(b, s, currency));
+  reServices.forEach((s) => serviceSection(b, s));
 
   b.newPage();
   b.heading('Brands & AI Content Studio', 'Cinematic AI video for property, fashion, food, products, advertising and social media.');
   b.label('Per-video rates');
-  b.paragraph(aiVideoSinglePricing.map((v) => `${v.tier} ${money(v.priceUSD)}`).join('  |  ') + '  (monthly bundles save up to 24%)', { size: 9, color: INK });
-  contentServices.forEach((s) => serviceSection(b, s, currency));
+  b.paragraph(aiVideoSinglePricing.map((v) => `${v.tier}: ${money(v.priceUSD)}`).join('\n') + '\n(monthly bundles save up to 24%)', { size: 9, color: INK });
+  contentServices.forEach((s) => serviceSection(b, s));
 
   // --- Portfolio ---
   b.newPage();
@@ -232,16 +230,16 @@ export function buildCompanyProfilePdf(currency: Currency): jsPDF {
 
   // --- Pricing overview ---
   b.newPage();
-  b.heading('Packages at a Glance', `Starting prices in ${currency}. Full price lists are available on request.`);
+  b.heading('Packages at a Glance', 'Starting prices in USD and AED. Full price lists are available on request.');
   // Each package table (about 70mm) stays on one page with its title
   b.subheading('Real Estate Packages');
-  packageTable(b, realEstatePackages, currency);
+  packageTable(b, realEstatePackages);
   b.ensureSpace(80);
   b.subheading('Content Packages');
-  packageTable(b, aiContentPackages, currency);
+  packageTable(b, aiContentPackages);
   b.ensureSpace(80);
   b.subheading('Complete Business Packages');
-  packageTable(b, completeBusinessPackages, currency);
+  packageTable(b, completeBusinessPackages);
 
   // --- Next steps ---
   b.heading("Let's Build What's Next");
@@ -257,6 +255,6 @@ export function buildCompanyProfilePdf(currency: Currency): jsPDF {
   return b.finish({ skipCover: true });
 }
 
-export function downloadCompanyProfilePdf(currency: Currency): void {
-  buildCompanyProfilePdf(currency).save(`RMAST-Studio-Company-Profile-${currency}.pdf`);
+export function downloadCompanyProfilePdf(): void {
+  buildCompanyProfilePdf().save(`RMAST-Studio-Company-Profile.pdf`);
 }

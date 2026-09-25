@@ -8,12 +8,10 @@ import {
   completeBusinessPackages,
   aiVideoSinglePricing,
   videoMonthlyBundles,
-  addOnItems,
-  formatPrice,
-  formatHourlyRate
+  addOnItems
 } from '../data/pricingData';
-import type { Currency, PricingPackage } from '../types';
-import { createBrandedDoc, headerBand, issuedDate, plain, MUTED, type BrandedDoc } from './pdfDoc';
+import type { PricingPackage } from '../types';
+import { bothHourly, bothPrices, createBrandedDoc, CURRENCY_NOTE, headerBand, issuedDate, plain, MUTED, type BrandedDoc } from './pdfDoc';
 
 export type PriceSheet = 'all' | 'real-estate' | 'ai-content';
 
@@ -32,24 +30,24 @@ const FILE_NAMES: Record<PriceSheet, string> = {
 const packageColumns = { 0: { cellWidth: 38, fontStyle: 'bold' }, 1: { cellWidth: 28 } };
 
 // Package tables (also used by the company profile's pricing overview)
-export function packageTable(b: BrandedDoc, packages: PricingPackage[], currency: Currency) {
+export function packageTable(b: BrandedDoc, packages: PricingPackage[]) {
   b.table(
     ['Package', 'Price', "What's included"],
     packages.map((p) => [
       p.title.includes(p.tier) ? p.title : `${p.title}\n${p.tier}`,
-      `${formatPrice(p.priceUSD, currency)}\n${p.billingFrequency}`,
+      `${bothPrices(p.priceUSD, '\n')}\n${p.billingFrequency}`,
       p.included.slice(0, 6).join('\n')
     ]),
     packageColumns
   );
 }
 
-export function buildPriceListPdf(sheet: PriceSheet, currency: Currency): jsPDF {
+export function buildPriceListPdf(sheet: PriceSheet): jsPDF {
   const b = createBrandedDoc();
-  const money = (usd: number) => formatPrice(usd, currency);
-  const hourly = (rate?: { min: number; max: number }) => (rate ? formatHourlyRate(rate, currency) : '-');
+  const money = (usd: number) => bothPrices(usd, '\n');
+  const hourly = (rate?: { min: number; max: number }) => (rate ? bothHourly(rate, '\n') : '-');
 
-  headerBand(b, SHEET_TITLES[sheet], `Prices in ${currency}  |  Issued ${issuedDate()}`, 'Digital systems for real estate  |  Cinematic AI content for brands');
+  headerBand(b, SHEET_TITLES[sheet], `${CURRENCY_NOTE}  |  Issued ${issuedDate()}`, 'Digital systems for real estate  |  Cinematic AI content for brands');
 
   // --- Real estate ---
   if (sheet !== 'ai-content') {
@@ -61,7 +59,7 @@ export function buildPriceListPdf(sheet: PriceSheet, currency: Currency): jsPDF 
         .map((s) => [
           s.title,
           money(s.startingPriceUSD),
-          s.tiers?.length ? s.tiers.map((t) => money(t.priceUSD)).join(' / ') : 'Custom quote',
+          s.tiers?.length ? s.tiers.map((t) => `${t.name}: ${bothPrices(t.priceUSD)}`).join('\n') : 'Custom quote',
           hourly(s.hourlyRateUSD),
           s.billingType === 'monthly' ? 'per month' : 'one-time'
         ]),
@@ -69,7 +67,7 @@ export function buildPriceListPdf(sheet: PriceSheet, currency: Currency): jsPDF 
     );
 
     b.heading('Real Estate Packages');
-    packageTable(b, realEstatePackages, currency);
+    packageTable(b, realEstatePackages);
 
     b.heading('Add-ons & Ongoing Support');
     b.table(
@@ -103,20 +101,19 @@ export function buildPriceListPdf(sheet: PriceSheet, currency: Currency): jsPDF 
     );
 
     b.heading('Content Packages');
-    packageTable(b, aiContentPackages, currency);
+    packageTable(b, aiContentPackages);
   }
 
   // --- Both divisions together ---
   if (sheet === 'all') {
     b.heading('Complete Business Packages', 'Digital systems and AI content combined in one engagement.');
-    packageTable(b, completeBusinessPackages, currency);
+    packageTable(b, completeBusinessPackages);
   }
 
   b.paragraph(
     plain(
-      `All prices are starting rates in ${currency}. Final pricing is confirmed after a short scoping call. ` +
-        'Hourly rates apply to work quoted by the hour (changes, extra features, ongoing support). ' +
-        'Third-party costs such as domains, hosting, paid APIs and ad spend are billed separately.'
+      'Starting rates; final pricing is confirmed after a short scoping call. Hourly rates apply to work quoted by the hour. ' +
+        'Domains, hosting, paid APIs and ad spend are billed separately.'
     ),
     { size: 8.5, color: MUTED }
   );
@@ -124,6 +121,6 @@ export function buildPriceListPdf(sheet: PriceSheet, currency: Currency): jsPDF 
   return b.finish();
 }
 
-export function downloadPriceListPdf(sheet: PriceSheet, currency: Currency): void {
-  buildPriceListPdf(sheet, currency).save(`RMAST-Price-List-${FILE_NAMES[sheet]}-${currency}.pdf`);
+export function downloadPriceListPdf(sheet: PriceSheet): void {
+  buildPriceListPdf(sheet).save(`RMAST-Price-List-${FILE_NAMES[sheet]}.pdf`);
 }
