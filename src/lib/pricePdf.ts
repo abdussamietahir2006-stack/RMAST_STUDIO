@@ -8,10 +8,12 @@ import {
   completeBusinessPackages,
   aiVideoSinglePricing,
   videoMonthlyBundles,
+  aiPostSinglePricing,
+  postMonthlyBundles,
   addOnItems
 } from '../data/pricingData';
 import type { PricingPackage } from '../types';
-import { bothHourly, bothPrices, createBrandedDoc, CURRENCY_NOTE, headerBand, issuedDate, plain, MUTED, type BrandedDoc } from './pdfDoc';
+import { bothHourly, bothPrices, createBrandedDoc, CURRENCY_NOTE, headerBand, issuedDate, type BrandedDoc } from './pdfDoc';
 
 export type PriceSheet = 'all' | 'real-estate' | 'ai-content';
 
@@ -47,7 +49,14 @@ export function buildPriceListPdf(sheet: PriceSheet): jsPDF {
   const money = (usd: number) => bothPrices(usd, '\n');
   const hourly = (rate?: { min: number; max: number }) => (rate ? bothHourly(rate, '\n') : '-');
 
-  headerBand(b, SHEET_TITLES[sheet], `${CURRENCY_NOTE}  |  Issued ${issuedDate()}`, 'Digital systems for real estate  |  Cinematic AI content for brands');
+  headerBand(
+    b,
+    SHEET_TITLES[sheet],
+    `${CURRENCY_NOTE}  |  Issued ${issuedDate()}`,
+    'Digital systems for real estate  |  Cinematic AI content for brands',
+    'Starting rates; final pricing is confirmed after a short scoping call. Hourly rates apply to work quoted by the hour. ' +
+      'Domains, hosting, paid APIs and ad spend are billed separately.'
+  );
 
   // --- Real estate ---
   if (sheet !== 'ai-content') {
@@ -100,6 +109,20 @@ export function buildPriceListPdf(sheet: PriceSheet): jsPDF {
       { 0: { fontStyle: 'bold' } }
     );
 
+    b.heading('AI Static Post Rates', 'Designed single posts for feeds and ads, with caption and hashtags. Half the price of a video.');
+    b.table(
+      ['Tier', 'Price per post', 'What you get'],
+      aiPostSinglePricing.map((p) => [p.tier, money(p.priceUSD), p.description]),
+      { 0: { cellWidth: 30, fontStyle: 'bold' }, 1: { cellWidth: 30 } }
+    );
+
+    b.heading('Monthly Post Bundles', 'Price per month for the number of posts delivered each month.');
+    b.table(
+      ['Posts / month', 'Starter', 'Standard', 'Professional', 'Savings'],
+      postMonthlyBundles.map((p) => [`${p.quantity} posts`, money(p.starter.usd), money(p.standard.usd), money(p.professional.usd), p.savingsLabel ?? '']),
+      { 0: { fontStyle: 'bold' } }
+    );
+
     b.heading('Content Packages');
     packageTable(b, aiContentPackages);
   }
@@ -109,14 +132,6 @@ export function buildPriceListPdf(sheet: PriceSheet): jsPDF {
     b.heading('Complete Business Packages', 'Digital systems and AI content combined in one engagement.');
     packageTable(b, completeBusinessPackages);
   }
-
-  b.paragraph(
-    plain(
-      'Starting rates; final pricing is confirmed after a short scoping call. Hourly rates apply to work quoted by the hour. ' +
-        'Domains, hosting, paid APIs and ad spend are billed separately.'
-    ),
-    { size: 8.5, color: MUTED }
-  );
 
   return b.finish();
 }

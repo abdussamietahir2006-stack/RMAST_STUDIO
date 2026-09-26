@@ -4,6 +4,7 @@ import {
   ClipboardCopy,
   Download,
   FileArchive,
+  FileText,
   Film,
   Lightbulb,
   Music,
@@ -21,7 +22,7 @@ import { SocialPost, SocialPostStatus, VideoStyle } from '../types';
 import { adminApi } from './api';
 import { useAdmin } from './AdminApp';
 import { Button, Card, ErrorNote, PageHeader, Spinner } from './ui';
-import { loadSlideFonts, prepareSlide, SLIDE_H, SLIDE_SECONDS, SLIDE_W, slideToBlob } from './social/slideRenderer';
+import { loadSlideFonts, prepareSlide, renderSlide, SLIDE_H, SLIDE_SECONDS, SLIDE_W, slideToBlob } from './social/slideRenderer';
 import { makeZip } from './social/zip';
 import { fullCaption, newSeed, saveBlob, STATUS_STYLE } from './social/shared';
 import { STYLE_NAMES, STYLES } from './video/themes';
@@ -136,6 +137,7 @@ const PostCard: React.FC<{
   const [visible, setVisible] = useState(false);
   const [copied, setCopied] = useState(false);
   const [zipping, setZipping] = useState(false);
+  const [pdfBusy, setPdfBusy] = useState(false);
   const [animate, setAnimate] = useState(false);
   const [music, setMusic] = useState(true);
   const [videoNote, setVideoNote] = useState<string | null>(null);
@@ -170,6 +172,29 @@ const PostCard: React.FC<{
     await loadSlideFonts();
     saveBlob(await slideToBlob(post.slides[i], i, post.slides.length, lookOf(post)), `${fileBase}-slide-${i + 1}.png`);
     markDownloaded();
+  };
+
+  // Every slide as one page of a 4:5 PDF (also the format LinkedIn uses for carousel posts).
+  // A PDF cannot animate, so animated slides appear as their finished frame, the same as the images.
+  const downloadPdf = async () => {
+    setPdfBusy(true);
+    try {
+      await loadSlideFonts();
+      const { jsPDF } = await import('jspdf');
+      const size: [number, number] = [540, 675]; // points; each page holds the full 1080x1350 slide
+      const doc = new jsPDF({ unit: 'pt', format: size, compress: true });
+      doc.setProperties({ title: post.title, author: 'RMAST Studio' });
+      const canvas = document.createElement('canvas');
+      for (const [i, slide] of post.slides.entries()) {
+        renderSlide(canvas, slide, i, post.slides.length, lookOf(post));
+        if (i > 0) doc.addPage(size);
+        doc.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, size[0], size[1]);
+      }
+      saveBlob(doc.output('blob'), `${fileBase}.pdf`);
+      markDownloaded();
+    } finally {
+      setPdfBusy(false);
+    }
   };
 
   const downloadAll = async () => {
@@ -289,6 +314,10 @@ const PostCard: React.FC<{
             <Button variant="primary" onClick={downloadAll} loading={zipping}>
               <FileArchive className="w-4 h-4" />
               Download all
+            </Button>
+            <Button onClick={downloadPdf} loading={pdfBusy} title="All slides in one PDF, one slide per page">
+              <FileText className="w-4 h-4" />
+              Download PDF
             </Button>
             <Button onClick={() => exportVideos('all')} disabled={videoJob !== null} title="Each slide as a short MP4 with animated text">
               <Film className="w-4 h-4" />

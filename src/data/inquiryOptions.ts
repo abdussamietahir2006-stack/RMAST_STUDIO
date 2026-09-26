@@ -1,6 +1,6 @@
 // Builds the tier choices shown inside the inquiry popup, from the same pricing data the pages use.
 import type { InquiryOption, PricingPackage, ServiceDetail } from '../types/index.js';
-import { aiVideoSinglePricing, videoMonthlyBundles } from './pricingData.js';
+import { aiPostSinglePricing, aiVideoSinglePricing, postMonthlyBundles, videoMonthlyBundles } from './pricingData.js';
 
 // Individual AI videos: Starter / Standard / Professional (per video)
 export function videoTierOptions(): InquiryOption[] {
@@ -38,6 +38,48 @@ export function videoBundleOptions(quantity: number): InquiryOption[] {
       `${quantity} ${id.toLowerCase()} videos delivered every month`,
       'Monthly creative direction and storyboard alignment',
       'TikTok, Reels & 16:9 widescreen formats included',
+      bundle.savingsLabel ?? ''
+    ].filter(Boolean),
+    badge: id === 'Standard' ? 'Popular' : undefined
+  }));
+}
+
+// Individual AI static posts: Starter / Standard / Professional (per post)
+export function postTierOptions(): InquiryOption[] {
+  return aiPostSinglePricing.map((t) => ({
+    id: t.tier,
+    label: t.tier,
+    title: `${t.tier} Tier AI Static Post`,
+    priceUSD: t.priceUSD,
+    billingFrequency: '/ post',
+    packageId: `post-${t.tier.toLowerCase()}`,
+    description: t.description,
+    features: [t.description, 'Caption and hashtags included', 'High-resolution files for Instagram, Facebook & LinkedIn'],
+    badge: t.tier === 'Professional' ? 'Signature' : undefined
+  }));
+}
+
+// Monthly post bundles: the same three tiers at the chosen volume (per month)
+export function postBundleOptions(quantity: number): InquiryOption[] {
+  const bundle = postMonthlyBundles.find((b) => b.quantity === quantity);
+  if (!bundle) return [];
+  const tiers = [
+    { id: 'Starter', price: bundle.starter.usd },
+    { id: 'Standard', price: bundle.standard.usd },
+    { id: 'Professional', price: bundle.professional.usd }
+  ];
+  return tiers.map(({ id, price }) => ({
+    id,
+    label: id,
+    title: `${quantity}-Post Monthly Retainer · ${id}`,
+    priceUSD: price,
+    billingFrequency: '/ month',
+    packageId: `post-bundle-${quantity}-${id.toLowerCase()}`,
+    description: aiPostSinglePricing.find((t) => t.tier === id)?.description,
+    features: [
+      `${quantity} ${id.toLowerCase()} static posts delivered every month`,
+      'Monthly content calendar and captions',
+      'Feed, story and ad sizes included',
       bundle.savingsLabel ?? ''
     ].filter(Boolean),
     badge: id === 'Standard' ? 'Popular' : undefined

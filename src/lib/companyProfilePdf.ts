@@ -9,7 +9,8 @@ import {
   realEstatePackages,
   aiContentPackages,
   completeBusinessPackages,
-  aiVideoSinglePricing
+  aiVideoSinglePricing,
+  aiPostSinglePricing
 } from '../data/pricingData';
 import { CONTACT } from '../config/contact';
 import type { ServiceDetail } from '../types';
@@ -157,6 +158,8 @@ export function buildCompanyProfilePdf(): jsPDF {
   b.heading('Brands & AI Content Studio', 'Cinematic AI video for property, fashion, food, products, advertising and social media.');
   b.label('Per-video rates');
   b.paragraph(aiVideoSinglePricing.map((v) => `${v.tier}: ${money(v.priceUSD)}`).join('\n') + '\n(monthly bundles save up to 24%)', { size: 9, color: INK });
+  b.label('Per-post rates (AI static posts)');
+  b.paragraph(aiPostSinglePricing.map((p) => `${p.tier}: ${money(p.priceUSD)}`).join('\n') + '\n(monthly post bundles save up to 24%)', { size: 9, color: INK });
   contentServices.forEach((s) => serviceSection(b, s));
 
   // --- Portfolio ---

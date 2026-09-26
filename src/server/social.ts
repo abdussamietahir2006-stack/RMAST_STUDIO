@@ -13,7 +13,8 @@ import {
   aiContentPackages,
   completeBusinessPackages,
   aiVideoSinglePricing,
-  videoMonthlyBundles
+  videoMonthlyBundles,
+  aiPostSinglePricing
 } from '../data/pricingData.js';
 
 export const SOCIAL_STATUSES: SocialPostStatus[] = ['new', 'downloaded', 'posted', 'skipped'];
@@ -70,6 +71,7 @@ Division 2 - Brands & AI Content: cinematic AI video for brands worldwide (no fi
 Promises: transparent pricing published on the website, reply within 24 hours, you work directly with the founders, first month of website maintenance included.
 Website extras: an AI assistant visitors can talk to by voice or chat, downloadable price-list PDFs and a company profile PDF.
 AI video: ${aiVideoSinglePricing.map((v) => `${v.tier} ${usd(v.priceUSD)}`).join(', ')} per video; monthly bundles of 10/20/30 videos from ${usd(videoMonthlyBundles[0].starter.usd)}/month, saving up to 24%.
+AI static posts: ${aiPostSinglePricing.map((p) => `${p.tier} ${usd(p.priceUSD)}`).join(', ')} per post (half the price of a video), with monthly post bundles too.
 Contact: WhatsApp ${CONTACT.whatsappDisplay}, ${CONTACT.email}, Instagram @${CONTACT.instagramHandle}, website link in bio.
 
 Services:

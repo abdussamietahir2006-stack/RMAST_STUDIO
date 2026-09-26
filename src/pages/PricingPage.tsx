@@ -10,9 +10,11 @@ import {
   singleServicePricing,
   aiVideoSinglePricing,
   videoMonthlyBundles,
+  aiPostSinglePricing,
+  postMonthlyBundles,
   addOnItems
 } from '../data/pricingData';
-import { packageOptions, videoBundleOptions } from '../data/inquiryOptions';
+import { packageOptions, postBundleOptions, videoBundleOptions } from '../data/inquiryOptions';
 import {
   Check,
   Building2,
@@ -339,6 +341,79 @@ export const PricingPage: React.FC = () => {
                         className="w-full py-3 text-xs font-semibold uppercase tracking-[0.16em] bg-[#A68BFF] text-[#0A0A0C] hover:bg-[#BBA6FF] transition-all cursor-pointer"
                       >
                         Order {b.quantity}-Video Bundle
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* AI static posts: half the per-video rates */}
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#A68BFF]">
+                    AI Static Posts
+                  </span>
+                  <h3 className="font-serif text-2xl text-[#FAF8F5]">Single Post Rates & Monthly Post Bundles</h3>
+                  <p className="text-xs text-[#8E8D88]">Designed static posts for feeds and ads, with caption and hashtags. Half the price of a video.</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {aiPostSinglePricing.map((item) => (
+                    <div
+                      key={item.tier}
+                      className={`p-6 bg-[#0B0B0E] border space-y-4 ${item.tier === 'Professional' ? 'border-[#A68BFF]' : 'border-[#1E1E24]'}`}
+                    >
+                      <div className="text-xs font-mono uppercase text-[#71717A]">{item.tier} Post</div>
+                      <div className="text-3xl font-serif font-bold text-[#FAF8F5]">
+                        {format(item.priceUSD)}
+                        <span className="text-xs font-mono font-normal text-[#71717A] ml-2">/ post</span>
+                      </div>
+                      <p className="text-xs text-[#8E8D88] leading-relaxed">{item.description}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {postMonthlyBundles.map((b) => (
+                    <div key={b.quantity} className="p-6 bg-[#0C0C10] border border-[#1E1E24] space-y-4 flex flex-col justify-between">
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-xl font-serif font-bold text-[#FAF8F5]">{b.quantity} Posts / Mo</span>
+                          <span className="text-[10px] font-mono px-2 py-0.5 bg-[#1F1F26] text-[#A68BFF] border border-[#A68BFF]/30 text-right">
+                            {b.savingsLabel}
+                          </span>
+                        </div>
+                        <div className="space-y-2 pt-3 border-t border-[#1C1C22] text-xs font-mono">
+                          {(
+                            [
+                              ['Starter', b.starter.usd],
+                              ['Standard', b.standard.usd],
+                              ['Professional', b.professional.usd]
+                            ] as const
+                          ).map(([name, usd]) => (
+                            <div key={name} className="flex justify-between">
+                              <span className={name === 'Professional' ? 'text-[#A68BFF]' : 'text-[#8E8D88]'}>{name}:</span>
+                              <span className="text-[#FAF8F5] font-semibold">{format(usd)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() =>
+                          openInquiry({
+                            title: `${b.quantity}-Post Monthly Retainer`,
+                            division: 'ai-content',
+                            priceUSD: b.standard.usd,
+                            billingFrequency: '/ month',
+                            kicker: b.savingsLabel,
+                            options: postBundleOptions(b.quantity),
+                            selectedOptionId: 'Standard',
+                            features: [`${b.quantity} static posts / month`, 'Content calendar and captions', 'Feed, story and ad sizes']
+                          })
+                        }
+                        className="w-full py-2.5 text-xs font-semibold uppercase tracking-[0.16em] border border-[#27272A] hover:border-[#A68BFF] text-[#FAF8F5] transition-colors cursor-pointer"
+                      >
+                        Order {b.quantity}-Post Bundle
                       </button>
                     </div>
                   ))}

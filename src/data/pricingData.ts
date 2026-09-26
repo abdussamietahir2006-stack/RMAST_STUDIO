@@ -344,6 +344,50 @@ export const videoMonthlyBundles: VideoTierPricing[] = [
   }
 ];
 
+// AI STATIC POSTS: designed single images for feeds and ads, at half the per-video rates
+export const aiPostSinglePricing = [
+  {
+    tier: 'Starter',
+    priceUSD: 22,
+    description: 'One AI-designed static post in your brand colours and fonts, with a ready-to-post caption and hashtags.'
+  },
+  {
+    tier: 'Standard',
+    priceUSD: 32,
+    description: 'Photoreal AI product, property or lifestyle scene with headline typography, caption, and square + portrait sizes.'
+  },
+  {
+    tier: 'Professional',
+    priceUSD: 50,
+    description: 'Campaign-grade art direction, bespoke composition and luxury retouching, delivered for feed, story and ads.'
+  }
+];
+
+// MONTHLY POST BUNDLES: the same savings as the video bundles
+export const postMonthlyBundles: VideoTierPricing[] = [
+  {
+    quantity: 10,
+    starter: { usd: 198 }, // vs $220 (10% saving)
+    standard: { usd: 288 }, // vs $320 (10% saving)
+    professional: { usd: 450 }, // vs $500 (10% saving)
+    savingsLabel: 'Save 10% vs individual posts'
+  },
+  {
+    quantity: 20,
+    starter: { usd: 374 }, // vs $440 (15% saving)
+    standard: { usd: 544 }, // vs $640 (15% saving)
+    professional: { usd: 900 }, // vs $1,000 (10% saving)
+    savingsLabel: 'Save up to 15% vs individual posts'
+  },
+  {
+    quantity: 30,
+    starter: { usd: 500 }, // vs $660 (24% saving)
+    standard: { usd: 816 }, // vs $960 (15% saving)
+    professional: { usd: 1200 }, // vs $1,500 (20% saving)
+    savingsLabel: 'Save up to 24% vs individual posts'
+  }
+];
+
 // ADD-ONS
 export const addOnItems: AddOnItem[] = [
   // Website

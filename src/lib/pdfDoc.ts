@@ -184,11 +184,15 @@ export function createBrandedDoc(): BrandedDoc {
 }
 
 // Dark header band used at the top of the first page of a document
-export function headerBand(b: BrandedDoc, title: string, subtitle: string, rightNote: string) {
+// Optional small print (terms) sits inside the band, so it never spills onto a page of its own
+export function headerBand(b: BrandedDoc, title: string, subtitle: string, rightNote: string, terms?: string) {
   const { doc, pageW, margin } = b;
+  doc.setFontSize(7.5);
+  const termLines = terms ? (doc.splitTextToSize(plain(terms), pageW - margin * 2) as string[]) : [];
+  const bandH = 46 + termLines.length * 3.6;
   doc.setFillColor(...INK);
-  doc.rect(0, 0, pageW, 46, 'F');
-  auroraStripe(doc, 0, 46, pageW, 1.6);
+  doc.rect(0, 0, pageW, bandH, 'F');
+  auroraStripe(doc, 0, bandH, pageW, 1.6);
   doc.setTextColor(255, 255, 255);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(24);
@@ -202,7 +206,12 @@ export function headerBand(b: BrandedDoc, title: string, subtitle: string, right
   doc.text(plain(subtitle), margin, 37);
   // Top right, level with the studio name, so a long subtitle never runs into it
   doc.text(plain(rightNote), pageW - margin, 20, { align: 'right' });
-  b.y = 58;
+  if (termLines.length) {
+    doc.setFontSize(7.5);
+    doc.setTextColor(150, 146, 170);
+    doc.text(termLines, margin, 43.5, { lineHeightFactor: 1.35 });
+  }
+  b.y = bandH + 12;
 }
 
 export const issuedDate = () => new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });

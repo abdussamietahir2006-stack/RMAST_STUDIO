@@ -5,7 +5,7 @@ import { CONTACT } from '../../config/contact';
 import { askAssistant } from '../../lib/api';
 import type { PriceSheet } from '../../lib/pricePdf';
 import { servicesData } from '../../data/servicesData';
-import { realEstatePackages, completeBusinessPackages, aiVideoSinglePricing } from '../../data/pricingData';
+import { realEstatePackages, completeBusinessPackages, aiVideoSinglePricing, aiPostSinglePricing } from '../../data/pricingData';
 import { AnimatePresence, m } from 'motion/react';
 import { Sparkles, X, Send, ArrowRight, Bot, Mic, Square, Volume2, VolumeX, FileDown } from 'lucide-react';
 
@@ -172,7 +172,7 @@ function scriptedReply(question: string, format: (usd: number) => string): Reply
       };
     case 'What AI video services are available?':
       return {
-        text: `Individual AI videos: ${aiVideoSinglePricing.map((v) => `${v.tier} ${format(v.priceUSD)}`).join(', ')}. Monthly packages of 10, 20, or 30 videos offer up to 24% in savings.`,
+        text: `Individual AI videos: ${aiVideoSinglePricing.map((v) => `${v.tier} ${format(v.priceUSD)}`).join(', ')}. Monthly packages of 10, 20, or 30 videos offer up to 24% in savings. AI static posts: ${aiPostSinglePricing.map((p) => `${p.tier} ${format(p.priceUSD)}`).join(', ')} per post.`,
         action: { label: 'View Video Pricing Matrix', path: '/pricing' }
       };
     default:

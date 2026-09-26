@@ -3,12 +3,14 @@ import { useNavigation } from '../context/NavigationContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { useInquiry } from '../context/InquiryContext';
 import {
+  aiPostSinglePricing,
   aiVideoSinglePricing,
+  postMonthlyBundles,
   videoMonthlyBundles
 } from '../data/pricingData';
 import { servicesData } from '../data/servicesData';
 import { ServiceMedia } from '../components/media/ServiceMedia';
-import { serviceOptions, videoBundleOptions, videoTierOptions } from '../data/inquiryOptions';
+import { postBundleOptions, postTierOptions, serviceOptions, videoBundleOptions, videoTierOptions } from '../data/inquiryOptions';
 import {
   ArrowRight,
   Check
@@ -376,6 +378,126 @@ export const AiContentPage: React.FC = () => {
                 </div>
               </div>
             ))}
+          </div>
+        </section>
+
+        {/* AI static posts: single designed images at half the per-video rates */}
+        <section className="space-y-12">
+          <div className="space-y-3">
+            <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#A68BFF]">
+              AI Static Posts
+            </span>
+            <h2 className="font-serif text-3xl md:text-4xl text-[#FAF8F5] font-semibold">
+              Scroll-Stopping Posts, Designed with AI
+            </h2>
+            <p className="text-sm text-[#8E8D88] max-w-2xl">
+              Single static posts for Instagram, Facebook, LinkedIn and ads: property showcases, product shots, launches and offers,
+              with caption and hashtags ready to publish. Half the price of a video. Displayed in {currency}.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {aiPostSinglePricing.map((tier) => (
+              <div
+                key={tier.tier}
+                className={`p-8 bg-[#0C0C10] border flex flex-col justify-between space-y-6 ${
+                  tier.tier === 'Professional' ? 'border-[#A68BFF] relative' : 'border-[#1E1E24]'
+                }`}
+              >
+                {tier.tier === 'Professional' && (
+                  <div className="absolute -top-3 left-6 px-3 py-0.5 bg-[#A68BFF] text-[#0A0A0C] text-[10px] font-mono uppercase tracking-widest font-bold">
+                    Campaign Grade
+                  </div>
+                )}
+
+                <div className="space-y-4">
+                  <div className="text-xs font-mono uppercase tracking-widest text-[#71717A]">{tier.tier} Post</div>
+                  <div className="text-4xl font-serif font-bold text-[#FAF8F5]">
+                    {format(tier.priceUSD)}
+                    <span className="text-xs font-mono font-normal text-[#71717A] ml-2">/ post</span>
+                  </div>
+                  <p className="text-xs text-[#A1A1AA] leading-relaxed">{tier.description}</p>
+                </div>
+
+                <div className="pt-4 border-t border-[#1C1C22]">
+                  <button
+                    onClick={() =>
+                      openInquiry({
+                        title: `${tier.tier} Tier AI Static Post`,
+                        division: 'ai-content',
+                        priceUSD: tier.priceUSD,
+                        billingFrequency: '/ post',
+                        kicker: `${tier.tier} Static Post`,
+                        features: [tier.description, 'Caption and hashtags included', 'High-resolution files for every platform'],
+                        options: postTierOptions(),
+                        selectedOptionId: tier.tier
+                      })
+                    }
+                    className="w-full py-3 text-xs font-semibold uppercase tracking-[0.16em] border border-[#27272A] hover:border-[#A68BFF] text-[#FAF8F5] transition-colors cursor-pointer"
+                  >
+                    Order Post
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="space-y-6">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-4 border-b border-[#1E1E24]">
+              <h3 className="font-serif text-2xl text-[#FAF8F5] font-semibold">Monthly Post Bundles</h3>
+              <p className="text-xs font-mono text-[#A68BFF]">Save up to 24% compared to ordering individual posts.</p>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {postMonthlyBundles.map((bundle) => (
+                <div key={bundle.quantity} className="p-8 bg-[#0B0B0E] border border-[#1E1E24] space-y-6 flex flex-col justify-between">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-2xl font-serif font-bold text-[#FAF8F5]">{bundle.quantity} Posts / Month</span>
+                      <span className="text-[10px] font-mono uppercase px-2 py-0.5 bg-[#1F1F26] text-[#A68BFF] border border-[#A68BFF]/30 text-right">
+                        {bundle.savingsLabel}
+                      </span>
+                    </div>
+                    <div className="space-y-3 pt-3 border-t border-[#1C1C22]">
+                      {(
+                        [
+                          ['Starter', bundle.starter.usd],
+                          ['Standard', bundle.standard.usd],
+                          ['Professional', bundle.professional.usd]
+                        ] as const
+                      ).map(([name, usd]) => (
+                        <div key={name} className="flex items-center justify-between text-xs font-mono">
+                          <span className={name === 'Professional' ? 'text-[#A68BFF] font-medium' : 'text-[#A1A1AA]'}>{name}:</span>
+                          <span className="text-[#FAF8F5] font-semibold">{format(usd)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="pt-4 border-t border-[#1C1C22]">
+                    <button
+                      onClick={() =>
+                        openInquiry({
+                          title: `${bundle.quantity}-Post Monthly Retainer`,
+                          division: 'ai-content',
+                          priceUSD: bundle.standard.usd,
+                          billingFrequency: '/ month',
+                          kicker: bundle.savingsLabel,
+                          options: postBundleOptions(bundle.quantity),
+                          selectedOptionId: 'Standard',
+                          features: [
+                            `${bundle.quantity} static posts delivered every month`,
+                            'Monthly content calendar and captions',
+                            'Feed, story and ad sizes included'
+                          ]
+                        })
+                      }
+                      className="w-full py-3 text-xs font-semibold uppercase tracking-[0.16em] bg-[#A68BFF] text-[#0A0A0C] hover:bg-[#BBA6FF] transition-all cursor-pointer"
+                    >
+                      Order {bundle.quantity}-Post Package
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 

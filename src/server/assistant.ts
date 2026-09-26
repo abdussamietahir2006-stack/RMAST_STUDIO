@@ -8,6 +8,8 @@ import {
   completeBusinessPackages,
   aiVideoSinglePricing,
   videoMonthlyBundles,
+  aiPostSinglePricing,
+  postMonthlyBundles,
   USD_TO_AED_RATE,
   formatHourlyRate
 } from '../data/pricingData.js';
@@ -45,6 +47,10 @@ function buildSystemInstruction(currency: 'USD' | 'AED'): string {
     .join('\n');
 
   const videos = aiVideoSinglePricing.map((v) => `${v.tier} ${money(v.priceUSD)}`).join(', ');
+  const posts = aiPostSinglePricing.map((p) => `${p.tier} ${money(p.priceUSD)}`).join(', ');
+  const postBundles = postMonthlyBundles
+    .map((b) => `${b.quantity} posts/month: Starter ${money(b.starter.usd)}, Standard ${money(b.standard.usd)}, Professional ${money(b.professional.usd)}`)
+    .join('\n');
   const bundles = videoMonthlyBundles
     .map(
       (b) =>
@@ -73,7 +79,11 @@ ${packages}
 
 Individual AI videos: ${videos}.
 Monthly video bundles:
-${bundles}`;
+${bundles}
+
+AI static posts (designed single images for feeds and ads, with caption and hashtags; half the price of a video): ${posts} per post.
+Monthly post bundles:
+${postBundles}`;
 }
 
 // Overload / rate-limit responses from Gemini are worth retrying, possibly on another model
