@@ -9,7 +9,9 @@ import { STYLE_NAMES, STYLES } from './video/themes';
 import { loadSlideFonts } from './social/slideRenderer';
 import { fileSlug, fullCaption, saveBlob, STATUS_STYLE } from './social/shared';
 
-const LENGTHS = [30, 35, 40] as const;
+// Reel length in whole seconds
+const MIN_SECONDS = 10;
+const MAX_SECONDS = 60;
 const MAX_IDEA_LENGTH = 5000;
 const PREVIEW_SCALE = 0.5; // preview canvas is 540x960, shown at 270x480 (sharp on high-DPI screens)
 
@@ -382,7 +384,7 @@ const VideoCard: React.FC<{
 
 const VideoComposer: React.FC<{ onCreated: (v: SocialVideo) => void; onError: (err: unknown) => void }> = ({ onCreated, onError }) => {
   const [brief, setBrief] = useState('');
-  const [seconds, setSeconds] = useState<(typeof LENGTHS)[number]>(35);
+  const [seconds, setSeconds] = useState(30);
   const [look, setLook] = useState<VideoStyle | 'surprise'>('surprise');
   const [music, setMusic] = useState<MusicMood>('uplifting');
   const [busy, setBusy] = useState(false);
@@ -430,13 +432,18 @@ const VideoComposer: React.FC<{ onCreated: (v: SocialVideo) => void; onError: (e
           <div className="flex flex-wrap items-center gap-3">
             <label className="flex items-center gap-2 text-xs text-[#A6A8B3]">
               Length
-              <select value={seconds} onChange={(e) => setSeconds(Number(e.target.value) as (typeof LENGTHS)[number])} disabled={busy} className={selectClass}>
-                {LENGTHS.map((l) => (
-                  <option key={l} value={l}>
-                    {l} seconds
-                  </option>
-                ))}
-              </select>
+              <input
+                type="range"
+                min={MIN_SECONDS}
+                max={MAX_SECONDS}
+                step={1}
+                value={seconds}
+                onChange={(e) => setSeconds(Number(e.target.value))}
+                disabled={busy}
+                aria-label="Length in seconds"
+                className="w-32 accent-[#C9A96E]"
+              />
+              <span className="w-12 tabular-nums text-[#ECEAE5]">{seconds} s</span>
             </label>
             <label className="flex items-center gap-2 text-xs text-[#A6A8B3]">
               Look
@@ -525,7 +532,7 @@ export const VideosPage: React.FC = () => {
     <div>
       <PageHeader
         title="Social videos"
-        subtitle="30–40 second motion-graphics reels (1080×1920) with original music, made from your idea. Pick a look, preview, export the MP4, post."
+        subtitle="10–60 second motion-graphics reels (1080×1920) with original music, made from your idea. Pick a look, preview, export the MP4, post."
       />
       <ErrorNote message={error} />
       {!ready && (

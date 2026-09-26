@@ -224,7 +224,7 @@ export interface SocialPost {
   pillar: string; // content angle used for the idea
   title: string; // internal name for the idea
   angle: string; // why this idea is worth posting
-  slides: SocialSlide[]; // 4 to 10: cover, content slides, call to action
+  slides: SocialSlide[]; // 1 (single post) to 20: cover, content slides, call to action
   caption: string;
   hashtags: string[];
   style: VideoStyle; // visual look of the slides (same looks as the reels)
@@ -233,7 +233,7 @@ export interface SocialPost {
 }
 
 // ---------------------------------------------------------------------------
-// Social video manager (dashboard): 30-40 second motion-graphics reels made from the founder's idea
+// Social video manager (dashboard): 10-60 second motion-graphics reels made from the founder's idea
 // ---------------------------------------------------------------------------
 
 // How a scene animates (see src/admin/video/engine.ts)

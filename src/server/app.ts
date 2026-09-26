@@ -47,7 +47,7 @@ import {
   MIN_SLIDES,
   SOCIAL_STATUSES
 } from './social.js';
-import { createVideo, listVideos, MAX_VIDEO_BRIEF, MUSIC_MOODS, VIDEO_SECONDS, VIDEO_STYLES } from './socialVideo.js';
+import { createVideo, listVideos, MAX_VIDEO_BRIEF, MAX_VIDEO_SECONDS, MIN_VIDEO_SECONDS, MUSIC_MOODS, VIDEO_STYLES } from './socialVideo.js';
 
 const LOGIN_WINDOW_MS = 15 * 60 * 1000;
 const MAX_FAILED_LOGINS_PER_EMAIL = 5;
@@ -476,8 +476,8 @@ export function createApp(): Express {
         return;
       }
       const seconds = Number(req.body?.seconds);
-      if (!(VIDEO_SECONDS as readonly number[]).includes(seconds)) {
-        res.status(400).json({ error: `Choose a length of ${VIDEO_SECONDS.join(', ')} seconds.` });
+      if (!(Number.isInteger(seconds) && seconds >= MIN_VIDEO_SECONDS && seconds <= MAX_VIDEO_SECONDS)) {
+        res.status(400).json({ error: `Choose a length from ${MIN_VIDEO_SECONDS} to ${MAX_VIDEO_SECONDS} seconds.` });
         return;
       }
       const look = req.body?.style ?? 'surprise';

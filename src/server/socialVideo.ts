@@ -1,13 +1,22 @@
-// Social video manager: turns a founder's idea into a 30-40 second motion-graphics reel script.
+// Social video manager: turns a founder's idea into a 10-60 second motion-graphics reel script.
 // Only runs on request (no automatic videos). Gemini writes the scenes as structured JSON; the
 // dashboard animates them (src/admin/video/engine.ts) and exports an MP4 in the browser.
 import { randomUUID } from 'node:crypto';
 import { Type } from '@google/genai';
 import type { MusicMood, SocialPostStatus, SocialVideo, VideoScene, VideoSceneType, VideoStyle, VideoTransition } from '../types/index.js';
 import { collections, type SocialVideoDoc } from './db.js';
-import { clipText, CREATIVE_STANDARD, generateJson, MARKS, randomSeed, randomStyle, studioDay, studioFacts, VIDEO_STYLES } from './social.js';
+import { arrayLimits, clipText, CREATIVE_STANDARD, generateJson, MARKS, randomSeed, randomStyle, studioDay, studioFacts, VIDEO_STYLES } from './social.js';
 
-export const VIDEO_SECONDS = [30, 35, 40] as const;
+// Reels can be any whole number of seconds in this range
+export const MIN_VIDEO_SECONDS = 10;
+export const MAX_VIDEO_SECONDS = 60;
+
+// How many scenes suit a length: about 3.5-6 seconds each (a 10 s reel is 2-3 scenes, 60 s is 10-16)
+export function sceneRange(seconds: number): [number, number] {
+  const min = Math.max(2, Math.round(seconds / 6));
+  const max = Math.max(3, Math.min(16, Math.round(seconds / 3.5)));
+  return [min, max];
+}
 export const MAX_VIDEO_BRIEF = 5000;
 export const MUSIC_MOODS: MusicMood[] = ['none', 'peaceful', 'uplifting', 'blazing'];
 export { VIDEO_STYLES, randomSeed };
@@ -38,19 +47,20 @@ const SCENE_SCHEMA = {
   required: ['type', 'duration', 'transition', 'kicker', 'headline', 'highlight', 'body', 'items', 'statValue', 'statPrefix', 'statSuffix', 'before', 'after']
 };
 
-const VIDEO_SCHEMA = {
+const videoSchema = ([min, max]: [number, number]) => ({
   type: Type.OBJECT,
   properties: {
     title: { type: Type.STRING },
     angle: { type: Type.STRING },
-    scenes: { type: Type.ARRAY, items: SCENE_SCHEMA, minItems: '5', maxItems: '10' },
+    scenes: { type: Type.ARRAY, items: SCENE_SCHEMA, ...arrayLimits(min, max) },
     caption: { type: Type.STRING },
     hashtags: { type: Type.ARRAY, items: { type: Type.STRING } }
   },
   required: ['title', 'angle', 'scenes', 'caption', 'hashtags']
-};
+});
 
 function instructions(brief: string, seconds: number): string {
+  const [minScenes, maxScenes] = sceneRange(seconds);
   return `You are the creative director of RMAST Studio's motion-graphics reels. Turn the founder's idea into ONE vertical Instagram Reel of about ${seconds} seconds: animated typography, numbers and cards over our dark aurora background (glowing orb, light, particles), with a cinematic transition between every scene. There is no footage and no voice-over: the on-screen text carries the whole story, so it must be sharp and quick to read.
 
 FOUNDER'S IDEA / SCRIPT (between the markers):
@@ -69,7 +79,11 @@ HOW TO USE THE FOUNDER'S INPUT (most important):
 ${CREATIVE_STANDARD}
 
 PACING (a reel is watched, not read):
-- 6 to 9 scenes whose durations add up to ${seconds} seconds (each 2.5 to 6 seconds; the hook 2.5-3.5 s; the final call to action 4-5 s).
+- ${minScenes} to ${maxScenes} scenes whose durations add up to ${seconds} seconds (each 2.5 to 6 seconds; the hook 2.5-3.5 s; the final call to action 4-5 s).${
+     maxScenes <= 3
+       ? ' A reel this short is just the hook, at most one middle scene, and the call to action.'
+       : ` Count the scenes before answering: fewer than ${minScenes} makes each scene drag, so add more middle scenes (new points, numbers, examples) rather than stretching a few.`
+   }
 - Give each scene enough time to read: about 0.35 s per word on screen plus 1 s.
 - The hook must land in the first 2 seconds. Each scene makes ONE point. Build tension, then pay it off.
 
@@ -125,8 +139,9 @@ function cleanScene(raw: unknown, forced?: VideoSceneType): VideoScene {
 
 function cleanVideo(raw: unknown, seconds: number): Pick<SocialVideo, 'title' | 'angle' | 'scenes' | 'caption' | 'hashtags'> {
   const r = (raw ?? {}) as Record<string, unknown>;
-  const list = (Array.isArray(r.scenes) ? r.scenes : []).slice(0, 10);
-  if (list.length < 4) throw new Error('The video script came back incomplete. Please try again.');
+  const [, maxScenes] = sceneRange(seconds);
+  const list = (Array.isArray(r.scenes) ? r.scenes : []).slice(0, maxScenes);
+  if (list.length < 2) throw new Error('The video script came back incomplete. Please try again.');
   const last = list.length - 1;
   const scenes = list.map((s, i) => cleanScene(s, i === 0 ? 'hook' : i === last ? 'cta' : undefined));
 
@@ -143,7 +158,9 @@ function cleanVideo(raw: unknown, seconds: number): Pick<SocialVideo, 'title' | 
   for (const s of scenes) s.duration = Math.min(7, Math.max(2.5, s.duration));
   const total = scenes.reduce((n, s) => n + s.duration, 0);
   const k = seconds / total;
-  for (const s of scenes) s.duration = Math.round(Math.min(8, Math.max(2.2, s.duration * k)) * 10) / 10;
+  // Long reels with few scenes may hold each scene a little longer
+  const cap = Math.max(8, (seconds / scenes.length) * 1.4);
+  for (const s of scenes) s.duration = Math.round(Math.min(cap, Math.max(2.2, s.duration * k)) * 10) / 10;
   // Round-off lands on the final scene
   const drift = seconds - scenes.reduce((n, s) => n + s.duration, 0);
   scenes[last].duration = Math.round(Math.max(3, scenes[last].duration + drift) * 10) / 10;
@@ -176,7 +193,7 @@ export const toSocialVideo = (d: SocialVideoDoc): SocialVideo => ({
 
 // Writes a video script without saving it
 export async function draftVideo(brief: string, seconds: number, look: VideoStyle | 'surprise' = 'surprise', music: MusicMood = 'uplifting'): Promise<SocialVideoDoc> {
-  const raw = await generateJson(instructions(brief, seconds), VIDEO_SCHEMA, { temperature: 0.8, label: 'Social video' });
+  const raw = await generateJson(instructions(brief, seconds), videoSchema(sceneRange(seconds)), { temperature: 0.8, label: 'Social video' });
   return {
     _id: randomUUID(),
     createdAt: new Date(),

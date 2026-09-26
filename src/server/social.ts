@@ -1,4 +1,4 @@
-// Social media manager: writes creative Instagram carousels (4-10 slides + caption).
+// Social media manager: writes creative Instagram posts: a single slide or a carousel of up to 20 (+ caption).
 // One idea is written automatically each day; founders can also ask for extra ideas or turn their
 // own idea (or ready-written slide text) into a post. Gemini writes the copy as structured JSON; the
 // dashboard draws the slides in the studio's visual style (src/admin/social/slideRenderer.ts).
@@ -37,8 +37,12 @@ export function parsePostSize(raw: unknown): PostSize | null {
   return r && ok(r.width) && ok(r.height) ? { width: r.width, height: r.height } : null;
 }
 
-export const MIN_SLIDES = 4;
-export const MAX_SLIDES = 10;
+// 1 = a single static post; Instagram carousels hold up to 20 slides
+export const MIN_SLIDES = 1;
+export const MAX_SLIDES = 20;
+// Daily and extra ideas are always carousels of this range
+const IDEA_MIN_SLIDES = 4;
+const IDEA_MAX_SLIDES = 8;
 export const MAX_BRIEF_LENGTH = 5000;
 
 // "Today" follows the studio's clock, so the cron and the dashboard agree on the date
@@ -113,12 +117,18 @@ const SLIDE_SCHEMA = {
   required: ['layout', 'kicker', 'headline', 'highlight', 'body', 'items', 'points', 'before', 'after']
 };
 
+// Array length limits for a structured-output schema. Gemini rejects long limits on arrays of
+// rich objects ("too many states"), so above 10 the count is left to the written instructions
+// and checked in code afterwards.
+export const arrayLimits = (min: number, max: number) =>
+  max <= 10 ? { minItems: String(min), maxItems: String(max) } : { minItems: String(Math.min(min, 4)) };
+
 const postSchema = (min: number, max: number) => ({
   type: Type.OBJECT,
   properties: {
     title: { type: Type.STRING },
     angle: { type: Type.STRING },
-    slides: { type: Type.ARRAY, items: SLIDE_SCHEMA, minItems: String(min), maxItems: String(max) },
+    slides: { type: Type.ARRAY, items: SLIDE_SCHEMA, ...arrayLimits(min, max) },
     caption: { type: Type.STRING },
     hashtags: { type: Type.ARRAY, items: { type: Type.STRING } }
   },
@@ -145,6 +155,8 @@ FOUNDER'S TEXT COMES FIRST: for any slide taken from the founder's draft, split 
       : ''
   }
 The headline (white) and highlight (gradient) of a slide are read together as ONE natural phrase: the headline is the opening, the highlight is the punchy ending. Each must be a complete chunk of words, never a single stray article or preposition. A slide may leave highlight empty.
+- A post of exactly 1 slide is a single static post: one slide with layout "cover" that carries the whole message on its own: kicker, headline, highlight, and a body that ends with what to do next (max 30 words).
+- A post of exactly 2 slides is a "cover" slide and a "cta" slide.
 - First slide: layout "cover": kicker (2-4 words), headline, highlight, body (one sentence, max 18 words).
 - Middle slides: choose the best layout for each and vary them:
    - "statement": one powerful line: headline (max 80 chars) + highlight (max 50 chars, the punchline), body optional (max 20 words).
@@ -260,6 +272,7 @@ function cleanSlide(raw: unknown, forced?: SocialSlideLayout): SocialSlide {
 function cleanPost(raw: unknown): Pick<SocialPost, 'title' | 'angle' | 'slides' | 'caption' | 'hashtags'> {
   const r = (raw ?? {}) as Record<string, unknown>;
   const slides = (Array.isArray(r.slides) ? r.slides : []).slice(0, MAX_SLIDES);
+  // A single slide is a standalone post: it keeps the cover layout (i is both first and last)
   if (slides.length < MIN_SLIDES) throw new Error('The post came back incomplete. Please try again.');
   const last = slides.length - 1;
   const cleaned = slides.map((s, i) => cleanSlide(s, i === 0 ? 'cover' : i === last ? 'cta' : undefined));
@@ -361,7 +374,7 @@ export const toSocialPost = (d: SocialPostDoc): SocialPost => ({
 
 export interface DraftOptions {
   brief?: string; // the founder's own idea or draft
-  slides?: number; // exact number of slides (4-10); otherwise the model decides
+  slides?: number; // exact number of slides (1-20); otherwise the model decides
   look?: LookChoice;
   size?: PostSize;
 }
@@ -382,12 +395,14 @@ export async function draftPost(recent: SocialPostDoc[], auto: boolean, opts: Dr
   const brief = opts.brief?.trim();
   const exact = opts.slides && opts.slides >= MIN_SLIDES && opts.slides <= MAX_SLIDES ? opts.slides : undefined;
 
-  const [min, max] = exact ? [exact, exact] : brief ? [MIN_SLIDES, MAX_SLIDES] : [MIN_SLIDES, 8];
+  const [min, max] = exact ? [exact, exact] : brief ? [MIN_SLIDES, MAX_SLIDES] : [IDEA_MIN_SLIDES, IDEA_MAX_SLIDES];
   const slideRule = exact
-    ? `exactly ${exact} slides`
+    ? exact === 1
+      ? 'exactly 1 slide: a single static post'
+      : `exactly ${exact} slides`
     : brief
     ? `between ${MIN_SLIDES} and ${MAX_SLIDES} slides: if the draft lists slides, use exactly that many; otherwise as many as the idea needs`
-    : `between ${MIN_SLIDES} and 8 slides, as many as the idea needs (most ideas need 5 to 7)`;
+    : `between ${IDEA_MIN_SLIDES} and ${IDEA_MAX_SLIDES} slides, as many as the idea needs (most ideas need 5 to 7)`;
 
   const pillar = brief ? null : pickPillar(recent);
   const prompt = brief ? briefInstructions(brief, day, slideRule) : dailyInstructions(pillar!, recent, day, slideRule);
@@ -395,7 +410,9 @@ export async function draftPost(recent: SocialPostDoc[], auto: boolean, opts: Dr
   const raw = await generateJson(prompt, postSchema(min, max), {
     // The founder's wording should be kept, so their posts get a steadier hand
     temperature: brief ? 0.6 : 1,
-    label: 'Social post'
+    label: 'Social post',
+    // Room for up to 20 slides plus the caption
+    maxOutputTokens: max > 10 ? 14000 : 8000
   });
   const post = cleanPost(raw);
   return {

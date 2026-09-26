@@ -443,7 +443,7 @@ function roundRect(ctx: Ctx, x: number, y: number, w: number, h: number, r: numb
 // Layouts. Each returns how far its content overflows its space (<= 0 means it fits).
 // ---------------------------------------------------------------------------
 
-function cover(p: Pen, slide: SocialSlide) {
+function cover(p: Pen, slide: SocialSlide, total: number) {
   const { ctx, pal } = p;
   const face = pal.display;
   group(p, () => {
@@ -484,7 +484,8 @@ function cover(p: Pen, slide: SocialSlide) {
     setFont(ctx, 700, 24, SANS);
     setSpacing(ctx, 5);
     ctx.textAlign = 'right';
-    ctx.fillText('SWIPE  →', W - PAD, H - 120);
+    // A single-slide post has nothing to swipe to, so it points to the bio link instead
+    ctx.fillText(total > 1 ? 'SWIPE  →' : 'LINK IN BIO  ↗', W - PAD, H - 120);
   }, 12);
   return y - (H - 200);
 }
@@ -719,7 +720,7 @@ function compare(p: Pen, slide: SocialSlide, index: number, total: number) {
 function drawLayout(p: Pen, slide: SocialSlide, index: number, total: number): number {
   switch (slide.layout) {
     case 'cover':
-      return cover(p, slide);
+      return cover(p, slide, total);
     case 'list':
       return list(p, slide, index, total);
     case 'points':

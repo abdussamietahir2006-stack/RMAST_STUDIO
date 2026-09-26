@@ -548,7 +548,7 @@ const PostCard: React.FC<{
   );
 };
 
-const SLIDE_CHOICES = ['auto', 4, 5, 6, 7, 8, 9, 10] as const;
+const SLIDE_CHOICES = ['auto', ...Array.from({ length: 20 }, (_, i) => i + 1)] as const;
 const MAX_IDEA_LENGTH = 5000;
 
 // The founder's own idea (or ready-written slide text and caption) turned into a post
@@ -613,7 +613,7 @@ const IdeaComposer: React.FC<{
             >
               {SLIDE_CHOICES.map((c) => (
                 <option key={c} value={String(c)}>
-                  {c === 'auto' ? 'Auto (fits the idea)' : `${c} slides`}
+                  {c === 'auto' ? 'Auto (fits the idea)' : c === 1 ? '1 slide (single post)' : `${c} slides`}
                 </option>
               ))}
             </select>
