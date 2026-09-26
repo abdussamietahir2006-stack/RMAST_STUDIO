@@ -1,5 +1,5 @@
 import express, { type ErrorRequestHandler, type Express, type RequestHandler } from 'express';
-import type { InquiryStatus, MusicMood, SocialPostStatus, VideoStyle } from '../types/index.js';
+import type { InquiryStatus, MusicMood, PostSize, SocialPostStatus, VideoStyle } from '../types/index.js';
 import { collections, isDbConfigured } from './db.js';
 import {
   ah,
@@ -38,6 +38,9 @@ import {
   isSocialConfigured,
   listSocialPosts,
   setAutoPost,
+  parsePostSize,
+  MAX_POST_SIDE,
+  MIN_POST_SIDE,
   type LookChoice,
   MAX_BRIEF_LENGTH,
   MAX_SLIDES,
@@ -405,7 +408,12 @@ export function createApp(): Express {
         res.status(400).json({ error: 'Unknown look' });
         return;
       }
-      res.status(201).json(await createPostFromBrief(brief, slides, look as LookChoice));
+      const size = req.body?.size === undefined ? undefined : parsePostSize(req.body.size);
+      if (size === null) {
+        res.status(400).json({ error: `Width and height must be whole numbers from ${MIN_POST_SIDE} to ${MAX_POST_SIDE} pixels.` });
+        return;
+      }
+      res.status(201).json(await createPostFromBrief(brief, slides, look as LookChoice, size));
     })
   );
 
@@ -414,7 +422,7 @@ export function createApp(): Express {
     ah(async (req, res) => {
       // Status, look and variation can each be changed
       const b = req.body ?? {};
-      const update: { status?: SocialPostStatus; style?: VideoStyle; seed?: number } = {};
+      const update: { status?: SocialPostStatus; style?: VideoStyle; seed?: number; size?: PostSize } = {};
       if (b.status !== undefined) {
         if (!SOCIAL_STATUSES.includes(b.status)) return void res.status(400).json({ error: 'Invalid status' });
         update.status = b.status;
@@ -426,6 +434,11 @@ export function createApp(): Express {
       if (b.seed !== undefined) {
         if (!(Number.isInteger(b.seed) && b.seed > 0 && b.seed < 2 ** 31)) return void res.status(400).json({ error: 'Invalid variation' });
         update.seed = b.seed;
+      }
+      if (b.size !== undefined) {
+        const size = parsePostSize(b.size);
+        if (!size) return void res.status(400).json({ error: `Width and height must be whole numbers from ${MIN_POST_SIDE} to ${MAX_POST_SIDE} pixels.` });
+        update.size = size;
       }
       if (!Object.keys(update).length) return void res.status(400).json({ error: 'Nothing to update' });
       const result = await (await collections.socialPosts()).updateOne({ _id: String(req.params.id) }, { $set: update });

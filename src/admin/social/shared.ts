@@ -28,3 +28,16 @@ export const fileSlug = (text: string) =>
 
 // A fresh random variation of a look
 export const newSeed = () => 1 + Math.floor(Math.random() * 2_000_000_000);
+
+// Common post sizes; any exact width x height can also be entered
+export const POST_SIZE_PRESETS = [
+  { id: 'portrait', label: 'Instagram portrait 4:5', width: 1080, height: 1350 },
+  { id: 'square', label: 'Square 1:1', width: 1080, height: 1080 },
+  { id: 'story', label: 'Story / Reel 9:16', width: 1080, height: 1920 },
+  { id: 'landscape', label: 'LinkedIn / Facebook 1.91:1', width: 1200, height: 628 },
+  { id: 'wide', label: 'X / YouTube 16:9', width: 1600, height: 900 }
+] as const;
+export const MIN_POST_SIDE = 200;
+export const MAX_POST_SIDE = 4096;
+export const presetFor = (size: { width: number; height: number }) =>
+  POST_SIZE_PRESETS.find((p) => p.width === size.width && p.height === size.height)?.id ?? 'custom';

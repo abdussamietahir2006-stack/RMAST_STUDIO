@@ -11,6 +11,7 @@ import {
   Palette,
   PenLine,
   Play,
+  Ruler,
   Shuffle,
   SkipForward,
   Sparkles,
@@ -18,16 +19,16 @@ import {
   Trash2,
   X
 } from 'lucide-react';
-import { SocialPost, SocialPostStatus, VideoStyle } from '../types';
+import { PostSize, SocialPost, SocialPostStatus, VideoStyle } from '../types';
 import { adminApi } from './api';
 import { useAdmin } from './AdminApp';
 import { Button, Card, ErrorNote, PageHeader, Spinner } from './ui';
-import { loadSlideFonts, prepareSlide, renderSlide, SLIDE_H, SLIDE_SECONDS, SLIDE_W, slideToBlob } from './social/slideRenderer';
+import { DEFAULT_SIZE, loadSlideFonts, prepareSlide, renderSlide, SLIDE_SECONDS, slideToBlob } from './social/slideRenderer';
 import { makeZip } from './social/zip';
-import { fullCaption, newSeed, saveBlob, STATUS_STYLE } from './social/shared';
+import { fullCaption, MAX_POST_SIDE, MIN_POST_SIDE, newSeed, POST_SIZE_PRESETS, presetFor, saveBlob, STATUS_STYLE } from './social/shared';
 import { STYLE_NAMES, STYLES } from './video/themes';
 
-type PostPatch = Partial<Pick<SocialPost, 'status' | 'style' | 'seed'>>;
+type PostPatch = Partial<Pick<SocialPost, 'status' | 'style' | 'seed' | 'size'>>;
 const lookOf = (post: SocialPost) => ({ style: post.style, seed: post.seed });
 
 const selectClass =
@@ -51,7 +52,7 @@ function useSlideImages(post: SocialPost, visible: boolean) {
     (async () => {
       await loadSlideFonts();
       for (const [i, slide] of post.slides.entries()) {
-        const blob = await slideToBlob(slide, i, post.slides.length, lookOf(post));
+        const blob = await slideToBlob(slide, i, post.slides.length, lookOf(post), post.size);
         if (cancelled) return;
         made.push(URL.createObjectURL(blob));
         setUrls([...made]);
@@ -65,6 +66,89 @@ function useSlideImages(post: SocialPost, visible: boolean) {
   return urls;
 }
 
+// Picks the exact slide size: a common preset or any width x height in pixels.
+// "live" applies custom numbers as they are typed (the idea form); otherwise an Apply button saves them.
+const SizePicker: React.FC<{ value: PostSize; onChange: (size: PostSize) => void; disabled?: boolean; live?: boolean }> = ({
+  value,
+  onChange,
+  disabled,
+  live
+}) => {
+  const [custom, setCustom] = useState(presetFor(value) === 'custom');
+  const [w, setW] = useState(String(value.width));
+  const [h, setH] = useState(String(value.height));
+  useEffect(() => {
+    setW(String(value.width));
+    setH(String(value.height));
+  }, [value.width, value.height]);
+
+  const valid = (n: string) => /^\d+$/.test(n) && Number(n) >= MIN_POST_SIDE && Number(n) <= MAX_POST_SIDE;
+  const ok = valid(w) && valid(h);
+  const changed = Number(w) !== value.width || Number(h) !== value.height;
+  const type = (nextW: string, nextH: string) => {
+    setW(nextW);
+    setH(nextH);
+    if (live && valid(nextW) && valid(nextH)) onChange({ width: Number(nextW), height: Number(nextH) });
+  };
+  const inputClass =
+    'w-20 px-2 py-1.5 text-sm bg-[#0B0C10] border rounded-md text-[#ECEAE5] outline-none focus:border-[#C9A96E] disabled:opacity-50';
+
+  return (
+    <div className="flex flex-wrap items-center gap-2 text-xs text-[#A6A8B3]">
+      <label className="flex items-center gap-2">
+        <Ruler className="w-3.5 h-3.5" />
+        <select
+          value={custom ? 'custom' : presetFor(value)}
+          disabled={disabled}
+          aria-label="Size"
+          className={selectClass}
+          onChange={(e) => {
+            if (e.target.value === 'custom') return setCustom(true);
+            setCustom(false);
+            const p = POST_SIZE_PRESETS.find((x) => x.id === e.target.value);
+            if (p) onChange({ width: p.width, height: p.height });
+          }}
+        >
+          {POST_SIZE_PRESETS.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.label} · {p.width}×{p.height}
+            </option>
+          ))}
+          <option value="custom">Custom size…</option>
+        </select>
+      </label>
+      {custom && (
+        <span className="flex items-center gap-1.5">
+          <input
+            inputMode="numeric"
+            value={w}
+            disabled={disabled}
+            onChange={(e) => type(e.target.value.trim(), h)}
+            aria-label="Width in pixels"
+            className={`${inputClass} ${valid(w) ? 'border-[#2E3040]' : 'border-[#F87171]'}`}
+          />
+          ×
+          <input
+            inputMode="numeric"
+            value={h}
+            disabled={disabled}
+            onChange={(e) => type(w, e.target.value.trim())}
+            aria-label="Height in pixels"
+            className={`${inputClass} ${valid(h) ? 'border-[#2E3040]' : 'border-[#F87171]'}`}
+          />
+          px
+          {!live && (
+            <Button variant="ghost" disabled={disabled || !ok || !changed} onClick={() => onChange({ width: Number(w), height: Number(h) })}>
+              Apply
+            </Button>
+          )}
+          {!ok && <span className="text-[#F87171]">{MIN_POST_SIDE}–{MAX_POST_SIDE} px</span>}
+        </span>
+      )}
+    </div>
+  );
+};
+
 // Live preview of the animated slides: small canvases looping the same animation as the MP4s,
 // with the music looping in step when it is on
 const AnimatedSlides: React.FC<{ post: SocialPost; music: boolean }> = ({ post, music }) => {
@@ -73,7 +157,7 @@ const AnimatedSlides: React.FC<{ post: SocialPost; music: boolean }> = ({ post, 
     let frame = 0;
     let cancelled = false;
     let audio: AudioContext | null = null;
-    const scale = 0.4;
+    const scale = 432 / post.size.width; // light preview resolution
     (async () => {
       await loadSlideFonts();
       const buffer = music ? await import('./social/slideMusic').then((m) => m.slideMusic(post.seed)) : null;
@@ -90,10 +174,10 @@ const AnimatedSlides: React.FC<{ post: SocialPost; music: boolean }> = ({ post, 
         const canvas = refs.current[i];
         const ctx = canvas?.getContext('2d');
         if (!canvas || !ctx) return null;
-        canvas.width = Math.round(SLIDE_W * scale);
-        canvas.height = Math.round(SLIDE_H * scale);
+        canvas.width = Math.round(post.size.width * scale);
+        canvas.height = Math.round(post.size.height * scale);
         ctx.setTransform(scale, 0, 0, scale, 0, 0);
-        return prepareSlide(ctx, slide, i, post.slides.length, lookOf(post));
+        return prepareSlide(ctx, slide, i, post.slides.length, lookOf(post), post.size);
       });
       const start = performance.now();
       const tick = (now: number) => {
@@ -113,7 +197,7 @@ const AnimatedSlides: React.FC<{ post: SocialPost; music: boolean }> = ({ post, 
   return (
     <>
       {post.slides.map((_, i) => (
-        <div key={i} className="aspect-[4/5] rounded-md overflow-hidden bg-black border border-[#22232D]">
+        <div key={i} className="rounded-md overflow-hidden bg-black border border-[#22232D]" style={{ aspectRatio: `${post.size.width} / ${post.size.height}` }}>
           <canvas
             ref={(el) => {
               refs.current[i] = el;
@@ -170,7 +254,7 @@ const PostCard: React.FC<{
 
   const downloadSlide = async (i: number) => {
     await loadSlideFonts();
-    saveBlob(await slideToBlob(post.slides[i], i, post.slides.length, lookOf(post)), `${fileBase}-slide-${i + 1}.png`);
+    saveBlob(await slideToBlob(post.slides[i], i, post.slides.length, lookOf(post), post.size), `${fileBase}-slide-${i + 1}.png`);
     markDownloaded();
   };
 
@@ -181,13 +265,15 @@ const PostCard: React.FC<{
     try {
       await loadSlideFonts();
       const { jsPDF } = await import('jspdf');
-      const size: [number, number] = [540, 675]; // points; each page holds the full 1080x1350 slide
-      const doc = new jsPDF({ unit: 'pt', format: size, compress: true });
+      // Half a point per pixel keeps the page shape; each page holds the full-resolution slide
+      const size: [number, number] = [post.size.width / 2, post.size.height / 2];
+      const orientation = size[0] > size[1] ? 'landscape' : 'portrait';
+      const doc = new jsPDF({ unit: 'pt', format: size, orientation, compress: true });
       doc.setProperties({ title: post.title, author: 'RMAST Studio' });
       const canvas = document.createElement('canvas');
       for (const [i, slide] of post.slides.entries()) {
-        renderSlide(canvas, slide, i, post.slides.length, lookOf(post));
-        if (i > 0) doc.addPage(size);
+        renderSlide(canvas, slide, i, post.slides.length, lookOf(post), post.size);
+        if (i > 0) doc.addPage(size, orientation);
         doc.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, size[0], size[1]);
       }
       saveBlob(doc.output('blob'), `${fileBase}.pdf`);
@@ -203,7 +289,7 @@ const PostCard: React.FC<{
       await loadSlideFonts();
       const entries = [];
       for (const [i, slide] of post.slides.entries()) {
-        const blob = await slideToBlob(slide, i, post.slides.length, lookOf(post));
+        const blob = await slideToBlob(slide, i, post.slides.length, lookOf(post), post.size);
         entries.push({
           name: `slide-${i + 1}.png`,
           data: new Uint8Array(await blob.arrayBuffer())
@@ -235,7 +321,10 @@ const PostCard: React.FC<{
         const label = indexes.length > 1 ? `Animating slide ${n + 1} of ${indexes.length}` : `Animating slide ${i + 1}`;
         const report = (f: number) => setVideoJob({ label, fraction: (n + f) / indexes.length });
         report(0);
-        const { blob, withMusic } = await slideToMp4(post.slides[i], i, post.slides.length, lookOf(post), music, report, controller.signal);
+        const { blob, withMusic, size } = await slideToMp4(post.slides[i], i, post.slides.length, lookOf(post), music, post.size, report, controller.signal);
+        if (size.width !== post.size.width || size.height !== post.size.height) {
+          setVideoNote(`MP4 video needs even numbers, so the animated slides were made at ${size.width}×${size.height}. Images and PDF are exactly ${post.size.width}×${post.size.height}.`);
+        }
         if (music && !withMusic) setVideoNote('This browser could not add the music, so the slides were saved without it. Chrome or Edge on a computer includes it.');
         if (which !== 'all') saveBlob(blob, `${fileBase}-slide-${i + 1}.mp4`);
         else
@@ -292,6 +381,9 @@ const PostCard: React.FC<{
               <span className={`px-2 py-0.5 rounded-full border ${status.className}`}>{status.label}</span>
               <span className="px-2 py-0.5 rounded-full border border-[#2E3040] text-[#A6A8B3]">{post.pillar}</span>
               <span className="px-2 py-0.5 rounded-full border border-[#2E3040] text-[#8B8D98]">{post.slides.length} slides</span>
+              <span className="px-2 py-0.5 rounded-full border border-[#2E3040] text-[#8B8D98]">
+                {post.size.width}×{post.size.height}px
+              </span>
               {!post.auto && !post.brief && (
                 <span className="px-2 py-0.5 rounded-full border border-[#2E3040] text-[#8B8D98]">Extra idea</span>
               )}
@@ -344,8 +436,9 @@ const PostCard: React.FC<{
           </div>
         </div>
 
-        {/* Look and animation: change any time without rewriting the post */}
+        {/* Size, look and animation: change any time without rewriting the post */}
         <div className="flex flex-wrap items-center gap-2">
+          <SizePicker value={post.size} disabled={videoJob !== null} onChange={(size) => onChange(post.id, { size })} />
           <label className="flex items-center gap-2 text-xs text-[#A6A8B3]">
             <Palette className="w-3.5 h-3.5" />
             <select
@@ -406,7 +499,7 @@ const PostCard: React.FC<{
           ) : (
             post.slides.map((_, i) => (
               <div key={i} className="space-y-2">
-                <div className="aspect-[4/5] rounded-md overflow-hidden bg-black border border-[#22232D]">
+                <div className="rounded-md overflow-hidden bg-black border border-[#22232D]" style={{ aspectRatio: `${post.size.width} / ${post.size.height}` }}>
                   {urls[i] ? (
                     <img src={urls[i]} alt={`Slide ${i + 1}`} className="w-full h-full object-cover" />
                   ) : (
@@ -467,6 +560,7 @@ const IdeaComposer: React.FC<{
   const [brief, setBrief] = useState('');
   const [slides, setSlides] = useState<(typeof SLIDE_CHOICES)[number]>('auto');
   const [look, setLook] = useState<VideoStyle | 'surprise'>('surprise');
+  const [size, setSize] = useState<PostSize>(DEFAULT_SIZE);
   const [busy, setBusy] = useState(false);
 
   const create = async (e: React.FormEvent) => {
@@ -474,7 +568,7 @@ const IdeaComposer: React.FC<{
     if (brief.trim().length < 10 || busy) return;
     setBusy(true);
     try {
-      onCreated(await adminApi.socialFromIdea(brief.trim(), slides, look));
+      onCreated(await adminApi.socialFromIdea(brief.trim(), slides, look, size));
       setBrief('');
     } catch (err) {
       onError(err);
@@ -540,6 +634,7 @@ const IdeaComposer: React.FC<{
               ))}
             </select>
           </label>
+          <SizePicker value={size} onChange={setSize} disabled={disabled || busy} live />
           <div className="flex items-center gap-3 ml-auto">
             <span className="text-xs text-[#6E7180]">
               {busy ? 'Creating your post… up to 30 seconds' : `${brief.length.toLocaleString()} / ${MAX_IDEA_LENGTH.toLocaleString()}`}

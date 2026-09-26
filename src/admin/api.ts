@@ -1,5 +1,5 @@
 import { request } from '../lib/api';
-import { AdminUser, InquiryStatus, LeadStats, MediaAsset, SocialPost, SocialVideo, StoredInquiry, VideoStyle, MusicMood } from '../types';
+import { AdminUser, InquiryStatus, LeadStats, MediaAsset, PostSize, SocialPost, SocialVideo, StoredInquiry, VideoStyle, MusicMood } from '../types';
 
 export { ApiError } from '../lib/api';
 
@@ -33,9 +33,9 @@ export const adminApi = {
   socialToday: () => request<SocialPost>('/api/admin/social/today', { method: 'POST' }),
   socialExtra: () => request<SocialPost>('/api/admin/social/extra', { method: 'POST' }),
   // The founder's own idea (or ready-written slides) turned into a post; slides: 4-10 or 'auto'
-  socialFromIdea: (brief: string, slides: number | 'auto', style: VideoStyle | 'surprise') =>
-    request<SocialPost>('/api/admin/social/custom', { method: 'POST', body: JSON.stringify({ brief, slides, style }) }),
-  updateSocialPost: (id: string, patch: Partial<Pick<SocialPost, 'status' | 'style' | 'seed'>>) =>
+  socialFromIdea: (brief: string, slides: number | 'auto', style: VideoStyle | 'surprise', size: PostSize) =>
+    request<SocialPost>('/api/admin/social/custom', { method: 'POST', body: JSON.stringify({ brief, slides, style, size }) }),
+  updateSocialPost: (id: string, patch: Partial<Pick<SocialPost, 'status' | 'style' | 'seed' | 'size'>>) =>
     request<void>(`/api/admin/social/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify(patch) }),
   deleteSocialPost: (id: string) => request<void>(`/api/admin/social/${encodeURIComponent(id)}`, { method: 'DELETE' }),
 

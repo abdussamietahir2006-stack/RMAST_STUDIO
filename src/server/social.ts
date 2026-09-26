@@ -4,7 +4,7 @@
 // dashboard draws the slides in the studio's visual style (src/admin/social/slideRenderer.ts).
 import { randomUUID } from 'node:crypto';
 import { GoogleGenAI, Type } from '@google/genai';
-import type { SocialPost, SocialPostStatus, SocialSlide, SocialSlideLayout, VideoStyle } from '../types/index.js';
+import type { PostSize, SocialPost, SocialPostStatus, SocialSlide, SocialSlideLayout, VideoStyle } from '../types/index.js';
 import { collections, type SocialPostDoc } from './db.js';
 import { CONTACT } from '../config/contact.js';
 import { servicesData } from '../data/servicesData.js';
@@ -26,6 +26,16 @@ export const VIDEO_STYLES: VideoStyle[] = ['aurora', 'editorial', 'neon', 'bold'
 export const randomSeed = () => 1 + Math.floor(Math.random() * 2_000_000_000);
 export const randomStyle = () => VIDEO_STYLES[Math.floor(Math.random() * VIDEO_STYLES.length)];
 export type LookChoice = VideoStyle | 'surprise';
+
+// Slide sizes in pixels: any exact size within these bounds (Instagram portrait by default)
+export const DEFAULT_POST_SIZE: PostSize = { width: 1080, height: 1350 };
+export const MIN_POST_SIDE = 200;
+export const MAX_POST_SIDE = 4096;
+export function parsePostSize(raw: unknown): PostSize | null {
+  const r = raw as { width?: unknown; height?: unknown } | null;
+  const ok = (n: unknown): n is number => Number.isInteger(n) && (n as number) >= MIN_POST_SIDE && (n as number) <= MAX_POST_SIDE;
+  return r && ok(r.width) && ok(r.height) ? { width: r.width, height: r.height } : null;
+}
 
 export const MIN_SLIDES = 4;
 export const MAX_SLIDES = 10;
@@ -345,13 +355,15 @@ export const toSocialPost = (d: SocialPostDoc): SocialPost => ({
   hashtags: d.hashtags,
   // Posts made before looks existed keep the original aurora design
   style: d.style ?? 'aurora',
-  seed: d.seed ?? 1
+  seed: d.seed ?? 1,
+  size: d.size ?? DEFAULT_POST_SIZE
 });
 
 export interface DraftOptions {
   brief?: string; // the founder's own idea or draft
   slides?: number; // exact number of slides (4-10); otherwise the model decides
   look?: LookChoice;
+  size?: PostSize;
 }
 
 async function recentPosts(): Promise<SocialPostDoc[]> {
@@ -396,6 +408,7 @@ export async function draftPost(recent: SocialPostDoc[], auto: boolean, opts: Dr
     pillar: pillar?.name ?? OWN_IDEA,
     style: !opts.look || opts.look === 'surprise' ? randomStyle() : opts.look,
     seed: randomSeed(),
+    size: opts.size ?? DEFAULT_POST_SIZE,
     ...post
   };
 }
@@ -427,8 +440,8 @@ export async function createExtraPost(): Promise<SocialPost> {
 }
 
 // The founder's own idea (or ready-written slides) turned into a post
-export async function createPostFromBrief(brief: string, slides?: number, look: LookChoice = 'surprise'): Promise<SocialPost> {
-  const doc = await draftPost([], false, { brief, slides, look });
+export async function createPostFromBrief(brief: string, slides?: number, look: LookChoice = 'surprise', size?: PostSize): Promise<SocialPost> {
+  const doc = await draftPost([], false, { brief, slides, look, size });
   await (await collections.socialPosts()).insertOne(doc);
   return toSocialPost(doc);
 }

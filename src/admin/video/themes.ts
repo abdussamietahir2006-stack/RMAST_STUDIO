@@ -338,7 +338,8 @@ const neon: Theme = {
     const post = H < VIDEO_H;
     const horizonAt = post ? 0.93 : 0.79;
     const horizon = H * horizonAt;
-    const cx = W / 2;
+    // On wide banners the sun sits to the right, clear of the text column
+    const cx = W > H * 1.3 ? W * 0.8 : W / 2;
     const r = post ? 250 : 330;
     glow(ctx, cx, horizon - 60, 700, '255,92,170', 0.35);
     ctx.save();

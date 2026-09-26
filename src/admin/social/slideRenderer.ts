@@ -1,15 +1,35 @@
-// Draws one Instagram carousel slide (1080x1350) on a canvas, in any of the reel looks
+// Draws one carousel slide at any size (1080x1350 by default) on a canvas, in any of the reel looks
 // (src/admin/video/themes.ts). The same drawing runs as a still image or animated: in the animated
 // version every line of text rises into place within the first two seconds.
 // Canvas (not HTML screenshots) keeps export exact and works under the site's strict CSP.
-import type { SocialSlide, VideoStyle } from '../../types';
+import type { PostSize, SocialSlide, VideoStyle } from '../../types';
 import { CONTACT } from '../../config/contact';
 import { clamp01, makeVariation, SANS, SERIF, THEMES, type Variation } from '../video/themes';
 
 export const SLIDE_W = 1080;
 export const SLIDE_H = 1350;
+export const DEFAULT_SIZE: PostSize = { width: SLIDE_W, height: SLIDE_H };
 const PAD = 88;
-const TEXT_W = SLIDE_W - PAD * 2;
+
+// Layouts are designed on a canvas whose short side is 1080 units; the long side follows the
+// chosen size (1350 for 4:5, 1920 for a story, 2064 wide for a 1200x628 banner). The finished
+// drawing is then scaled to the exact pixel size. These hold the design frame of the slide being
+// drawn; drawing is synchronous, so each measure or draw sets them first.
+let W = SLIDE_W;
+let H = SLIDE_H;
+let TW = SLIDE_W - PAD * 2; // text column width (capped on wide banners so lines stay readable)
+
+export function designFrame(size: PostSize) {
+  const landscape = size.width >= size.height;
+  const w = landscape ? Math.round((1080 * size.width) / size.height) : 1080;
+  const h = landscape ? 1080 : Math.round((1080 * size.height) / size.width);
+  return { w, h, scale: size.width / w };
+}
+const useFrame = (frame: { w: number; h: number }) => {
+  W = frame.w;
+  H = frame.h;
+  TW = Math.min(W - PAD * 2, 1300);
+};
 
 // Animated slides: text starts after a beat and every element has landed by TEXT_DONE seconds
 export const SLIDE_SECONDS = 8;
@@ -274,41 +294,41 @@ function auroraBackground(ctx: Ctx, slide: SocialSlide, t: number) {
   const dx = Math.sin(t * 0.4) * 40;
   const dy = Math.cos(t * 0.33) * 30 - 30;
   ctx.fillStyle = '#000';
-  ctx.fillRect(0, 0, SLIDE_W, SLIDE_H);
+  ctx.fillRect(0, 0, W, H);
   switch (slide.layout) {
     case 'cover':
-      glow(ctx, 160 + dx, 1150 + dy, 520, '255,92,170', 0.22);
-      orb(ctx, 970, 490, 280, t);
+      glow(ctx, 160 + dx, H - 200 + dy, 520, '255,92,170', 0.22);
+      orb(ctx, W - 110, H * 0.363, 280, t);
       break;
     case 'list':
     case 'compare':
-      glow(ctx, 1040 - dx, 120 - dy, 560, '166,139,255', 0.3);
+      glow(ctx, W - 40 - dx, 120 - dy, 560, '166,139,255', 0.3);
       break;
     case 'points':
     case 'tags':
       glow(ctx, 60 + dx, 160 - dy, 520, '255,92,170', 0.22);
       break;
     case 'statement':
-      glow(ctx, 1000 - dx, 1120 + dy, 560, '166,139,255', 0.28);
+      glow(ctx, W - 80 - dx, H - 230 + dy, 560, '166,139,255', 0.28);
       // Tucked into the corner so long statements never run into it
-      orb(ctx, 1050, 1230, 150, t);
+      orb(ctx, W - 30, H - 120, 150, t);
       break;
     case 'cta':
-      glow(ctx, 1000 - dx, 1180 + dy, 640, '166,139,255', 0.34);
+      glow(ctx, W - 80 - dx, H - 170 + dy, 640, '166,139,255', 0.34);
       break;
   }
 }
 
 function background(ctx: Ctx, slide: SocialSlide, index: number, look: SlideLook, v: Variation, t: number) {
   if (look.style === 'aurora') auroraBackground(ctx, slide, t);
-  else THEMES[look.style].background(ctx, t, index, v, SLIDE_W, SLIDE_H);
+  else THEMES[look.style].background(ctx, t, index, v, W, H);
 }
 
 function stripe(ctx: Ctx, pal: Palette) {
-  const w = SLIDE_W / pal.fill.length;
+  const w = W / pal.fill.length;
   pal.fill.forEach((c, i) => {
     ctx.fillStyle = c;
-    ctx.fillRect(w * i, SLIDE_H - 10, w + 1, 10);
+    ctx.fillRect(w * i, H - 10, w + 1, 10);
   });
 }
 
@@ -345,7 +365,7 @@ function pageLabel(p: Pen, index: number, total: number) {
     setSpacing(ctx, 4);
     ctx.fillStyle = p.pal.page;
     ctx.textAlign = 'right';
-    ctx.fillText(`${String(index + 1).padStart(2, '0')} / ${String(total).padStart(2, '0')}`, SLIDE_W - PAD, 118);
+    ctx.fillText(`${String(index + 1).padStart(2, '0')} / ${String(total).padStart(2, '0')}`, W - PAD, 118);
   }, 12);
 }
 
@@ -362,7 +382,7 @@ function lines(p: Pen, rows: string[], y: number, size: number, lineH: number, f
       const top = base - size * 1.08;
       const bottom = base + size * 0.34;
       ctx.beginPath();
-      ctx.rect(0, top, SLIDE_W, bottom - top);
+      ctx.rect(0, top, W, bottom - top);
       ctx.clip();
       ctx.globalAlpha *= Math.min(1, e * 1.5);
       ctx.translate(0, (1 - e) * (bottom - top));
@@ -385,14 +405,14 @@ function lines(p: Pen, rows: string[], y: number, size: number, lineH: number, f
   return y;
 }
 
-function paragraph(p: Pen, text: string, y: number, size: number, colour: string, maxW = TEXT_W, weight = 500, lineH = 1.42) {
+function paragraph(p: Pen, text: string, y: number, size: number, colour: string, maxW = TW, weight = 500, lineH = 1.42) {
   if (!text) return y;
   setFont(p.ctx, weight, size, SANS);
   return lines(p, wrap(p.ctx, text, maxW), y, size, lineH, colour, sans(weight));
 }
 
 // Headline in the text colour with the accent highlight underneath
-function title(p: Pen, slide: SocialSlide, y: number, max: number, min: number, maxW = TEXT_W, maxLines = 3) {
+function title(p: Pen, slide: SocialSlide, y: number, max: number, min: number, maxW = TW, maxLines = 3) {
   const face = p.pal.display;
   if (slide.headline) {
     const h = fit(p.ctx, cased(face, slide.headline), face, max * p.s, min, maxW, maxLines);
@@ -410,7 +430,7 @@ function rule(p: Pen, y: number) {
   const e = progress(p);
   if (p.dry) return;
   p.ctx.fillStyle = p.pal.rule;
-  p.ctx.fillRect(PAD, y, TEXT_W * e, 1.5);
+  p.ctx.fillRect(PAD, y, TW * e, 1.5);
 }
 
 function roundRect(ctx: Ctx, x: number, y: number, w: number, h: number, r: number) {
@@ -437,7 +457,7 @@ function cover(p: Pen, slide: SocialSlide) {
     ctx.fillStyle = pal.brandAccent;
     ctx.fillText('Studio', PAD + w + 18, 140);
   }, 12);
-  let y = 390;
+  let y = Math.round(H * 0.29);
   kicker(p, slide.kicker, y);
   y += 28;
   ctx.save();
@@ -446,27 +466,27 @@ function cover(p: Pen, slide: SocialSlide) {
     ctx.shadowBlur = 36;
   }
   if (slide.headline) {
-    const h = fit(ctx, cased(face, slide.headline), face, 168 * p.s, 76, TEXT_W, 2);
+    const h = fit(ctx, cased(face, slide.headline), face, 168 * p.s, 76, TW, 2);
     y = lines(p, h.lines, y, h.size, 0.98, pal.text, face, PAD, true);
   }
   if (slide.highlight) {
-    const h = fit(ctx, cased(face, slide.highlight), face, 200 * p.s, 84, TEXT_W, 2);
+    const h = fit(ctx, cased(face, slide.highlight), face, 200 * p.s, 84, TW, 2);
     y = lines(p, h.lines, y + 8, h.size, 0.98, 'accent', face, PAD, true);
   }
-  y = paragraph(p, slide.body, y + 36, 34 * p.s, pal.lead, 780);
+  y = paragraph(p, slide.body, y + 36, 34 * p.s, pal.lead, Math.min(780, TW));
   ctx.restore();
 
   group(p, () => {
     if (p.dry) return;
     setFont(ctx, 600, 26, SANS);
     ctx.fillStyle = pal.muted;
-    ctx.fillText(`@${CONTACT.instagramHandle}`, PAD, 1230);
+    ctx.fillText(`@${CONTACT.instagramHandle}`, PAD, H - 120);
     setFont(ctx, 700, 24, SANS);
     setSpacing(ctx, 5);
     ctx.textAlign = 'right';
-    ctx.fillText('SWIPE  →', SLIDE_W - PAD, 1230);
+    ctx.fillText('SWIPE  →', W - PAD, H - 120);
   }, 12);
-  return y - 1150;
+  return y - (H - 200);
 }
 
 function list(p: Pen, slide: SocialSlide, index: number, total: number) {
@@ -485,21 +505,21 @@ function list(p: Pen, slide: SocialSlide, index: number, total: number) {
       const valueSize = 34 * p.s;
       setFont(ctx, 700, valueSize, SANS);
       const valueW = ctx.measureText(item.value).width;
-      const label = fit(ctx, item.label, sans(600), 34 * p.s, 22, TEXT_W - valueW - 40, 1);
+      const label = fit(ctx, item.label, sans(600), 34 * p.s, 22, TW - valueW - 40, 1);
       const base = top + rowH / 2 + label.size * 0.35;
       if (p.dry) return;
       setFont(ctx, 600, label.size, SANS);
       ctx.fillStyle = pal.text;
       ctx.fillText(label.lines[0] ?? '', PAD, base);
       setFont(ctx, 700, valueSize, SANS);
-      ctx.fillStyle = gradient(ctx, SLIDE_W - PAD - valueW, valueW, pal.accent);
+      ctx.fillStyle = gradient(ctx, PAD + TW - valueW, valueW, pal.accent);
       ctx.textAlign = 'right';
-      ctx.fillText(item.value, SLIDE_W - PAD, base);
+      ctx.fillText(item.value, PAD + TW, base);
     });
     y += rowH;
     rule(p, y);
   }
-  return y - 1220;
+  return y - (H - 130);
 }
 
 function points(p: Pen, slide: SocialSlide, index: number, total: number) {
@@ -516,15 +536,15 @@ function points(p: Pen, slide: SocialSlide, index: number, total: number) {
     const top = y + 30;
     y = group(p, () => {
       lines(p, [String(i + 1).padStart(2, '0')], top - 6, 46 * p.s, 0.9, 'accent', { ...pal.display, weight: pal.display.family === SERIF ? 900 : 700 });
-      const t = fit(p.ctx, pt.title, sans(700), 36 * p.s, 24, TEXT_W - 98, 2);
+      const t = fit(p.ctx, pt.title, sans(700), 36 * p.s, 24, TW - 98, 2);
       let yy = lines(p, t.lines, top - 8, t.size, 1.12, pal.text, sans(700), textX);
       setFont(p.ctx, 400, 26 * p.s, SANS);
-      yy = lines(p, wrap(p.ctx, pt.text, TEXT_W - 98), yy + 4, 26 * p.s, 1.4, pal.soft, sans(400), textX);
+      yy = lines(p, wrap(p.ctx, pt.text, TW - 98), yy + 4, 26 * p.s, 1.4, pal.soft, sans(400), textX);
       return yy + 30;
     });
   });
   rule(p, y);
-  return y - 1220;
+  return y - (H - 130);
 }
 
 function statement(p: Pen, slide: SocialSlide, index: number, total: number) {
@@ -540,15 +560,15 @@ function statement(p: Pen, slide: SocialSlide, index: number, total: number) {
   let high: string[] = [];
   for (; size > 52; size -= 4) {
     setFace(ctx, face, size);
-    head = slide.headline ? wrap(ctx, cased(face, slide.headline), TEXT_W) : [];
-    high = slide.highlight ? wrap(ctx, cased(face, slide.highlight), TEXT_W) : [];
+    head = slide.headline ? wrap(ctx, cased(face, slide.headline), TW) : [];
+    high = slide.highlight ? wrap(ctx, cased(face, slide.highlight), TW) : [];
     const widest = Math.max(0, ...[...head, ...high].map((l) => ctx.measureText(l).width));
-    if (head.length + high.length <= 7 && widest <= TEXT_W) break;
+    if (head.length + high.length <= 7 && widest <= TW) break;
   }
   y = lines(p, head, y, size, 1.04, pal.text, face, PAD, true);
   y = lines(p, high, y + 6, size, 1.04, 'accent', face, PAD, true);
-  y = paragraph(p, slide.body, y + 44, 30 * p.s, pal.lead, 800);
-  return y - 1180;
+  y = paragraph(p, slide.body, y + 44, 30 * p.s, pal.lead, Math.min(800, TW));
+  return y - (H - 170);
 }
 
 function cta(p: Pen, slide: SocialSlide, index: number, total: number) {
@@ -556,8 +576,8 @@ function cta(p: Pen, slide: SocialSlide, index: number, total: number) {
   pageLabel(p, index, total);
   let y = 110;
   kicker(p, slide.kicker, y);
-  y = title(p, slide, y + 24, 96, 56, TEXT_W, 3);
-  y = paragraph(p, slide.body, y + 30, 32 * p.s, pal.lead, 860);
+  y = title(p, slide, y + 24, 96, 56, TW, 3);
+  y = paragraph(p, slide.body, y + 30, 32 * p.s, pal.lead, Math.min(860, TW));
 
   group(p, () => {
     if (p.dry) return;
@@ -565,7 +585,7 @@ function cta(p: Pen, slide: SocialSlide, index: number, total: number) {
     setSpacing(ctx, 4);
     const label = 'LINK IN BIO  ↗';
     const bw = ctx.measureText(label).width + 80;
-    const by = 1090;
+    const by = H - 260;
     ctx.save();
     ctx.shadowColor = pal.shadow;
     ctx.shadowBlur = 60;
@@ -580,12 +600,12 @@ function cta(p: Pen, slide: SocialSlide, index: number, total: number) {
   group(p, () => {
     if (p.dry) return;
     const contact = `DM us  ·  WhatsApp ${CONTACT.whatsappDisplay}  ·  ${CONTACT.email}`;
-    const c = fit(ctx, contact, sans(500), 24, 16, TEXT_W, 1);
+    const c = fit(ctx, contact, sans(500), 24, 16, TW, 1);
     setFont(ctx, 500, c.size, SANS);
     ctx.fillStyle = pal.muted;
-    ctx.fillText(contact, PAD, 1240);
+    ctx.fillText(contact, PAD, H - 110);
   }, 12);
-  return y - 1050;
+  return y - (H - 300);
 }
 
 // Short labels as pills, wrapped across rows ("Price", "Commute", "Schools")
@@ -604,8 +624,8 @@ function tags(p: Pen, slide: SocialSlide, index: number, total: number) {
   let x = PAD;
   for (const item of slide.items) {
     setFont(ctx, 700, size, SANS);
-    const w = Math.min(ctx.measureText(item.label).width + padX * 2, TEXT_W);
-    if (x > PAD && x + w > SLIDE_W - PAD) {
+    const w = Math.min(ctx.measureText(item.label).width + padX * 2, TW);
+    if (x > PAD && x + w > PAD + TW) {
       x = PAD;
       y += h + gap;
     }
@@ -624,7 +644,7 @@ function tags(p: Pen, slide: SocialSlide, index: number, total: number) {
     }, 20);
     x += w + gap;
   }
-  return y + h - 1220;
+  return y + h - (H - 130);
 }
 
 // The weak version crossed out, then the better version in a gradient-bordered card
@@ -639,7 +659,7 @@ function compare(p: Pen, slide: SocialSlide, index: number, total: number) {
   const size = 46 * p.s;
   const pad = 44 * p.s;
   const markW = 70 * p.s;
-  const textW = TEXT_W - pad * 2 - markW;
+  const textW = TW - pad * 2 - markW;
   const lineH = size * 1.3;
 
   const card = (text: string, good: boolean) =>
@@ -653,16 +673,16 @@ function compare(p: Pen, slide: SocialSlide, index: number, total: number) {
           ctx.shadowColor = pal.shadow;
           ctx.shadowBlur = 70;
           ctx.shadowOffsetY = 24;
-          roundRect(ctx, PAD, y, TEXT_W, h, 22);
-          ctx.fillStyle = gradient(ctx, PAD, TEXT_W, pal.fill);
+          roundRect(ctx, PAD, y, TW, h, 22);
+          ctx.fillStyle = gradient(ctx, PAD, TW, pal.fill);
           ctx.fill();
           ctx.restore();
           ctx.save();
-          roundRect(ctx, PAD + 3, y + 3, TEXT_W - 6, h - 6, 19);
+          roundRect(ctx, PAD + 3, y + 3, TW - 6, h - 6, 19);
           ctx.fillStyle = pal.goodInner;
           ctx.fill();
         } else {
-          roundRect(ctx, PAD, y, TEXT_W, h, 22);
+          roundRect(ctx, PAD, y, TW, h, 22);
           ctx.fillStyle = pal.bad;
           ctx.fill();
           ctx.lineWidth = 2;
@@ -693,7 +713,7 @@ function compare(p: Pen, slide: SocialSlide, index: number, total: number) {
   if (slide.before) card(slide.before, false);
   y += 28;
   if (slide.after) card(slide.after, true);
-  return y - 1220;
+  return y - (H - 130);
 }
 
 function drawLayout(p: Pen, slide: SocialSlide, index: number, total: number): number {
@@ -717,7 +737,10 @@ function drawLayout(p: Pen, slide: SocialSlide, index: number, total: number): n
 
 // Measures the slide once and returns a function that draws it at any moment:
 // t = seconds into the animation, or null for the finished still image.
-export function prepareSlide(ctx: Ctx, slide: SocialSlide, index: number, total: number, look: SlideLook = DEFAULT_LOOK) {
+// The caller's canvas transform maps the chosen pixel size (renderSlide sets it; previews scale it down).
+export function prepareSlide(ctx: Ctx, slide: SocialSlide, index: number, total: number, look: SlideLook = DEFAULT_LOOK, size: PostSize = DEFAULT_SIZE) {
+  const frame = designFrame(size);
+  useFrame(frame);
   const pal = palette(look.style);
   const v = makeVariation(look.seed);
   const pen = (s: number, dry: boolean, t: number | null, step = 0): Pen => ({ ctx, dry, s, pal, t, k: 0, step, inGroup: false });
@@ -728,7 +751,8 @@ export function prepareSlide(ctx: Ctx, slide: SocialSlide, index: number, total:
   const overflow = (scale: number) => drawLayout(pen(scale, true, null), slide, index, total);
   let s = 1;
   if (overflow(1) > 0) {
-    for (let i = 0; i < 8 && overflow(s) > 0; i++) s -= 0.07;
+    // Shorter formats (square, banners) have less room, so they may shrink further
+    for (let i = 0; i < 10 && overflow(s) > 0; i++) s -= 0.06;
   } else if (slide.layout !== 'cover') {
     for (let grow = 1.05; grow <= 1.4 && overflow(grow) <= -40; grow += 0.05) s = grow;
   }
@@ -740,7 +764,9 @@ export function prepareSlide(ctx: Ctx, slide: SocialSlide, index: number, total:
   const stillT = look.style === 'aurora' ? 0 : STILL_T;
 
   return (t: number | null) => {
+    useFrame(frame);
     ctx.save();
+    ctx.scale(frame.scale, frame.scale);
     ctx.textAlign = 'left';
     ctx.textBaseline = 'alphabetic';
     background(ctx, slide, index, look, v, t ?? stillT);
@@ -750,17 +776,18 @@ export function prepareSlide(ctx: Ctx, slide: SocialSlide, index: number, total:
   };
 }
 
-export function renderSlide(canvas: HTMLCanvasElement, slide: SocialSlide, index: number, total: number, look?: SlideLook): void {
-  canvas.width = SLIDE_W;
-  canvas.height = SLIDE_H;
+// Draws the finished slide at exactly size.width x size.height pixels
+export function renderSlide(canvas: HTMLCanvasElement, slide: SocialSlide, index: number, total: number, look?: SlideLook, size: PostSize = DEFAULT_SIZE): void {
+  canvas.width = size.width;
+  canvas.height = size.height;
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
-  prepareSlide(ctx, slide, index, total, look)(null);
+  prepareSlide(ctx, slide, index, total, look, size)(null);
 }
 
-export function slideToBlob(slide: SocialSlide, index: number, total: number, look?: SlideLook): Promise<Blob> {
+export function slideToBlob(slide: SocialSlide, index: number, total: number, look?: SlideLook, size?: PostSize): Promise<Blob> {
   const canvas = document.createElement('canvas');
-  renderSlide(canvas, slide, index, total, look);
+  renderSlide(canvas, slide, index, total, look, size);
   return new Promise((resolve, reject) =>
     canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('Could not create the image'))), 'image/png')
   );

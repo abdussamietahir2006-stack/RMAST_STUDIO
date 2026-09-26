@@ -1,5 +1,5 @@
 import { MongoClient, type Db } from 'mongodb';
-import type { InquiryStatus, LeadCategory, MediaKind, AdminUser, SocialPost, SocialVideo, VideoStyle } from '../types/index.js';
+import type { InquiryStatus, LeadCategory, MediaKind, AdminUser, PostSize, SocialPost, SocialVideo, VideoStyle } from '../types/index.js';
 
 // ---------------------------------------------------------------------------
 // Document shapes
@@ -60,11 +60,12 @@ export interface MediaDoc {
 }
 
 // A generated Instagram carousel (dates stored as Date, returned to the dashboard as strings)
-export interface SocialPostDoc extends Omit<SocialPost, 'id' | 'createdAt' | 'style' | 'seed'> {
+export interface SocialPostDoc extends Omit<SocialPost, 'id' | 'createdAt' | 'style' | 'seed' | 'size'> {
   _id: string;
   createdAt: Date;
   style?: VideoStyle; // missing on posts made before looks existed
   seed?: number;
+  size?: PostSize; // missing on posts made before sizes existed (1080x1350)
 }
 
 // Dashboard switches (one document per area, e.g. _id "social")

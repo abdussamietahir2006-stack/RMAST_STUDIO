@@ -208,6 +208,12 @@ export interface SocialSlide {
 
 export type SocialPostStatus = 'new' | 'downloaded' | 'posted' | 'skipped';
 
+// Exact pixel size the slides are created at (e.g. 1080x1350 Instagram portrait, 1200x628 banner)
+export interface PostSize {
+  width: number;
+  height: number;
+}
+
 export interface SocialPost {
   id: string;
   day: string; // YYYY-MM-DD in the studio's time zone
@@ -223,6 +229,7 @@ export interface SocialPost {
   hashtags: string[];
   style: VideoStyle; // visual look of the slides (same looks as the reels)
   seed: number; // varies details within the look
+  size: PostSize;
 }
 
 // ---------------------------------------------------------------------------
