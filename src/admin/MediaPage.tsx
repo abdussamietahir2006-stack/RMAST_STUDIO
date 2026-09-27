@@ -7,6 +7,7 @@ import { MediaAsset } from '../types';
 import { adminApi } from './api';
 import { useAdmin } from './AdminApp';
 import { Button, Card, ErrorNote, PageHeader, Spinner, formatBytes, relativeTime } from './ui';
+import { webVideoWarnings } from './videoCheck';
 
 // What the website shows for a slot when nothing has been uploaded
 function defaultPreview(slot: MediaSlot): string | undefined {
@@ -91,11 +92,13 @@ const MediaSlotCard: React.FC<{
       setError(`That file is ${formatBytes(file.size)}. The limit is ${formatBytes(limits.maxBytes)}.`);
       return;
     }
-    if (slot.kind === 'video' && slot.group === 'ai-content') {
+    if (slot.kind === 'video') {
       const seconds = await readVideoDuration(file);
-      if (seconds !== null && (seconds < 8 || seconds > 25)) {
-        setWarning(`This clip is ${Math.round(seconds)} seconds. 10–20 seconds works best for these cards.`);
+      const notes = await webVideoWarnings(file, seconds);
+      if (slot.group === 'ai-content' && seconds !== null && (seconds < 8 || seconds > 25)) {
+        notes.push(`This clip is ${Math.round(seconds)} seconds. 10–20 seconds works best for these cards.`);
       }
+      if (notes.length) setWarning(notes.join(' '));
     }
 
     const preview = URL.createObjectURL(file);
