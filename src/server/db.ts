@@ -77,10 +77,11 @@ export interface SettingsDoc {
 }
 
 // A motion-graphics reel script made from the founder's idea (the MP4 is rendered in the browser)
-export interface SocialVideoDoc extends Omit<SocialVideo, 'id' | 'createdAt'> {
+export interface SocialVideoDoc extends Omit<SocialVideo, 'id' | 'createdAt' | 'size'> {
   _id: string;
   createdAt: Date;
   day: string;
+  size?: PostSize; // missing on videos made before sizes existed (1080x1920)
 }
 
 // ---------------------------------------------------------------------------

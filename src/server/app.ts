@@ -490,7 +490,12 @@ export function createApp(): Express {
         res.status(400).json({ error: 'Unknown music' });
         return;
       }
-      res.status(201).json(await createVideo(brief, seconds, look as VideoStyle | 'surprise', music as MusicMood));
+      const size = req.body?.size === undefined ? undefined : parsePostSize(req.body.size);
+      if (size === null) {
+        res.status(400).json({ error: `Width and height must be whole numbers from ${MIN_POST_SIDE} to ${MAX_POST_SIDE} pixels.` });
+        return;
+      }
+      res.status(201).json(await createVideo(brief, seconds, look as VideoStyle | 'surprise', music as MusicMood, size));
     })
   );
 
@@ -499,7 +504,7 @@ export function createApp(): Express {
     '/videos/:id',
     ah(async (req, res) => {
       const b = req.body ?? {};
-      const update: { status?: SocialPostStatus; style?: VideoStyle; seed?: number; music?: MusicMood } = {};
+      const update: { status?: SocialPostStatus; style?: VideoStyle; seed?: number; music?: MusicMood; size?: PostSize } = {};
       if (b.status !== undefined) {
         if (!SOCIAL_STATUSES.includes(b.status)) return void res.status(400).json({ error: 'Invalid status' });
         update.status = b.status;
@@ -515,6 +520,11 @@ export function createApp(): Express {
       if (b.music !== undefined) {
         if (!MUSIC_MOODS.includes(b.music)) return void res.status(400).json({ error: 'Unknown music' });
         update.music = b.music;
+      }
+      if (b.size !== undefined) {
+        const size = parsePostSize(b.size);
+        if (!size) return void res.status(400).json({ error: `Width and height must be whole numbers from ${MIN_POST_SIDE} to ${MAX_POST_SIDE} pixels.` });
+        update.size = size;
       }
       if (!Object.keys(update).length) return void res.status(400).json({ error: 'Nothing to update' });
       const result = await (await collections.socialVideos()).updateOne({ _id: String(req.params.id) }, { $set: update });

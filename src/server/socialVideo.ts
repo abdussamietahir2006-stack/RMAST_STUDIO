@@ -3,7 +3,7 @@
 // dashboard animates them (src/admin/video/engine.ts) and exports an MP4 in the browser.
 import { randomUUID } from 'node:crypto';
 import { Type } from '@google/genai';
-import type { MusicMood, SocialPostStatus, SocialVideo, VideoScene, VideoSceneType, VideoStyle, VideoTransition } from '../types/index.js';
+import type { MusicMood, PostSize, SocialPostStatus, SocialVideo, VideoScene, VideoSceneType, VideoStyle, VideoTransition } from '../types/index.js';
 import { collections, type SocialVideoDoc } from './db.js';
 import { applyNotes, cleanDesign, clipText, keepText, notesByNumber, CREATIVE_STANDARD, SCENE_DESIGN_FIELDS, exactnessRules, generateJson, MARKS, randomSeed, randomStyle, studioDay, studioFacts, VIDEO_STYLES } from './social.js';
 
@@ -208,20 +208,30 @@ export const toSocialVideo = (d: SocialVideoDoc): SocialVideo => ({
   title: d.title,
   angle: d.angle,
   scenes: d.scenes,
+  size: d.size ?? DEFAULT_VIDEO_SIZE,
   caption: d.caption,
   hashtags: d.hashtags,
   notFollowed: d.notFollowed
 });
 
 // Writes a video script without saving it
-export async function draftVideo(brief: string, seconds: number, look: VideoStyle | 'surprise' = 'surprise', music: MusicMood = 'uplifting'): Promise<SocialVideoDoc> {
+// Reels are 1080x1920 unless another size is chosen
+export const DEFAULT_VIDEO_SIZE: PostSize = { width: 1080, height: 1920 };
+
+export async function draftVideo(
+  brief: string,
+  seconds: number,
+  look: VideoStyle | 'surprise' = 'surprise',
+  music: MusicMood = 'uplifting',
+  size: PostSize = DEFAULT_VIDEO_SIZE
+): Promise<SocialVideoDoc> {
   const raw = await generateJson(instructions(brief, seconds), videoSchema(), {
     // Videos are always made from the founder's own idea, so a steady hand keeps their script intact
     temperature: 0.4,
     label: 'Social video'
   });
   const video = cleanVideo(raw, seconds);
-  notesByNumber(brief, 'scene').forEach((note, n) => video.scenes[n - 1] && applyNotes(video.scenes[n - 1], note, 'scene'));
+  notesByNumber(brief, 'scene').forEach((note, n) => video.scenes[n - 1] && applyNotes(video.scenes[n - 1], note, 'scene', brief));
   // A look named in the founder's idea is used when the dashboard was left on "Surprise me"
   const named = String((raw as Record<string, unknown>)?.look ?? '').trim().toLowerCase() as VideoStyle;
   return {
@@ -235,12 +245,13 @@ export async function draftVideo(brief: string, seconds: number, look: VideoStyl
     style: look === 'surprise' ? (VIDEO_STYLES.includes(named) ? named : randomStyle()) : look,
     seed: randomSeed(),
     music,
+    size,
     ...video
   };
 }
 
-export async function createVideo(brief: string, seconds: number, look: VideoStyle | 'surprise', music: MusicMood): Promise<SocialVideo> {
-  const doc = await draftVideo(brief, seconds, look, music);
+export async function createVideo(brief: string, seconds: number, look: VideoStyle | 'surprise', music: MusicMood, size?: PostSize): Promise<SocialVideo> {
+  const doc = await draftVideo(brief, seconds, look, music, size);
   await (await collections.socialVideos()).insertOne(doc);
   return toSocialVideo(doc);
 }

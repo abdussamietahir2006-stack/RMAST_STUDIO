@@ -139,6 +139,7 @@ interface Pen {
   step: number; // delay between elements
   inGroup: boolean;
   align: TextAlign; // the founder's alignment for this slide (left by default)
+  bigLabel: boolean; // the kicker is shown as a big heading
 }
 
 // Left edge of a block `width` wide inside the text column, following the slide's alignment
@@ -341,8 +342,28 @@ function stripe(ctx: Ctx, pal: Palette) {
 // Building blocks
 // ---------------------------------------------------------------------------
 
-function kicker(p: Pen, text: string, y: number) {
-  if (!text) return;
+// Returns the extra height it takes beyond the small label's line
+function kicker(p: Pen, text: string, y: number): number {
+  if (!text) return 0;
+  if (p.bigLabel) {
+    const { ctx } = p;
+    const label = text.toUpperCase();
+    let size = 76;
+    setFont(ctx, 800, size, SANS);
+    while (ctx.measureText(label).width > TW && size > 36) setFont(ctx, 800, (size -= 4), SANS);
+    group(p, () => {
+      if (p.dry) return;
+      setFont(ctx, 800, size, SANS);
+      setSpacing(ctx, 2);
+      ctx.fillStyle = p.pal.text;
+      if (p.pal.glow) {
+        ctx.shadowColor = p.pal.glow;
+        ctx.shadowBlur = 24;
+      }
+      ctx.fillText(label, alignX(p, ctx.measureText(label).width), y + size * 0.55);
+    }, 20);
+    return size * 0.95;
+  }
   group(p, () => {
     if (p.dry) return;
     const { ctx } = p;
@@ -360,6 +381,7 @@ function kicker(p: Pen, text: string, y: number) {
     ctx.fillStyle = p.pal.kicker;
     ctx.fillText(text.toUpperCase(), x + 30, y);
   }, 16);
+  return 0;
 }
 
 // The four corners: the founder's text where given ("-" leaves the corner empty), otherwise the
@@ -508,7 +530,7 @@ function cover(p: Pen, slide: SocialSlide) {
   const { ctx, pal } = p;
   const face = pal.display;
   let y = Math.round(H * 0.29);
-  kicker(p, slide.kicker, y);
+  y += kicker(p, slide.kicker, y);
   y += 28;
   ctx.save();
   if (!p.dry && pal.dark) {
@@ -531,7 +553,7 @@ function cover(p: Pen, slide: SocialSlide) {
 function list(p: Pen, slide: SocialSlide) {
   const { ctx, pal } = p;
   let y = 110;
-  kicker(p, slide.kicker, y);
+  y += kicker(p, slide.kicker, y);
   y = title(p, slide, y + 24, 96, 56);
   y = paragraph(p, slide.body, y + 16, 28 * p.s, pal.muted);
   y += 34;
@@ -563,7 +585,7 @@ function list(p: Pen, slide: SocialSlide) {
 function points(p: Pen, slide: SocialSlide) {
   const { pal } = p;
   let y = 110;
-  kicker(p, slide.kicker, y);
+  y += kicker(p, slide.kicker, y);
   y = title(p, slide, y + 24, 92, 56);
   y = paragraph(p, slide.body, y + 16, 28 * p.s, pal.muted);
   y += 30;
@@ -588,7 +610,7 @@ function statement(p: Pen, slide: SocialSlide) {
   const { ctx, pal } = p;
   const face = pal.display;
   let y = 110;
-  kicker(p, slide.kicker, y);
+  y += kicker(p, slide.kicker, y);
   y += 60;
   // Headline and highlight share one size so the statement reads as one sentence
   let size = 112 * p.s;
@@ -610,7 +632,7 @@ function statement(p: Pen, slide: SocialSlide) {
 function cta(p: Pen, slide: SocialSlide) {
   const { ctx, pal } = p;
   let y = 110;
-  kicker(p, slide.kicker, y);
+  y += kicker(p, slide.kicker, y);
   y = title(p, slide, y + 24, 96, 56, TW, 3);
   y = paragraph(p, slide.body, y + 30, 32 * p.s, pal.lead, Math.min(860, TW));
 
@@ -648,7 +670,7 @@ function cta(p: Pen, slide: SocialSlide) {
 function tags(p: Pen, slide: SocialSlide) {
   const { ctx, pal } = p;
   let y = 110;
-  kicker(p, slide.kicker, y);
+  y += kicker(p, slide.kicker, y);
   y = title(p, slide, y + 24, 100, 56);
   y = paragraph(p, slide.body, y + 16, 30 * p.s, pal.muted);
   y += 50;
@@ -686,7 +708,7 @@ function tags(p: Pen, slide: SocialSlide) {
 function compare(p: Pen, slide: SocialSlide) {
   const { ctx, pal } = p;
   let y = 110;
-  kicker(p, slide.kicker, y);
+  y += kicker(p, slide.kicker, y);
   y = title(p, slide, y + 24, 100, 56);
   y = paragraph(p, slide.body, y + 16, 30 * p.s, pal.muted);
   y += 50;
@@ -779,7 +801,8 @@ export function prepareSlide(ctx: Ctx, slide: SocialSlide, index: number, total:
   const pal = palette(look.style);
   const v = makeVariation(look.seed);
   const align = slide.align ?? 'left';
-  const pen = (s: number, dry: boolean, t: number | null, step = 0): Pen => ({ ctx, dry, s, pal, t, k: 0, step, inGroup: false, align });
+  const bigLabel = slide.label === 'big';
+  const pen = (s: number, dry: boolean, t: number | null, step = 0): Pen => ({ ctx, dry, s, pal, t, k: 0, step, inGroup: false, align, bigLabel });
 
   // Size the text to the slide: shrink in steps if it overflows; otherwise grow it (up to 40%)
   // so short copy fills the slide instead of leaving an empty bottom half. The cover is already big.

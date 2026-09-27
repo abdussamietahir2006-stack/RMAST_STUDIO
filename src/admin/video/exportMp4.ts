@@ -3,22 +3,30 @@
 // Frame-exact, so slow machines take longer but never drop frames. Loaded on demand.
 import { AudioBufferSource, BufferTarget, CanvasSource, canEncodeAudio, canEncodeVideo, Mp4OutputFormat, Output, QUALITY_HIGH } from 'mediabunny';
 import type { SocialVideo } from '../../types';
-import { FPS, VIDEO_H, VIDEO_W, VideoEngine } from './engine';
+import { DEFAULT_VIDEO_SIZE, FPS, VideoEngine } from './engine';
 import { composeMusic } from './music';
 import { loadSlideFonts } from '../social/slideRenderer';
 
 export interface ExportResult {
   blob: Blob;
   withMusic: boolean;
+  width: number;
+  height: number;
 }
 
 export async function exportReelMp4(
-  video: Pick<SocialVideo, 'scenes' | 'style' | 'seed' | 'music'>,
+  video: Pick<SocialVideo, 'scenes' | 'style' | 'seed' | 'music'> & { size?: SocialVideo['size'] },
   onProgress: (fraction: number) => void,
   signal?: AbortSignal
 ): Promise<ExportResult> {
-  if (typeof VideoEncoder === 'undefined' || !(await canEncodeVideo('avc', { width: VIDEO_W, height: VIDEO_H }))) {
+  // H.264 needs even sides: an odd width or height is rounded up by one pixel
+  const size = video.size ?? DEFAULT_VIDEO_SIZE;
+  const even = { width: size.width + (size.width % 2), height: size.height + (size.height % 2) };
+  if (typeof VideoEncoder === 'undefined') {
     throw new Error('This browser cannot create MP4 video. Please use Chrome or Edge on a computer.');
+  }
+  if (!(await canEncodeVideo('avc', even))) {
+    throw new Error(`This browser cannot create an MP4 at ${even.width}×${even.height}. Try a smaller size (up to about 4096×2304).`);
   }
   await loadSlideFonts();
 
@@ -26,10 +34,10 @@ export async function exportReelMp4(
   const music = video.music !== 'none' && (await canEncodeAudio('aac')) ? await composeMusic(video.music, video.scenes, video.seed) : null;
 
   const canvas = document.createElement('canvas');
-  canvas.width = VIDEO_W;
-  canvas.height = VIDEO_H;
+  canvas.width = even.width;
+  canvas.height = even.height;
   const ctx = canvas.getContext('2d')!;
-  const engine = new VideoEngine(video.scenes, 1, video.style, video.seed);
+  const engine = new VideoEngine(video.scenes, 1, video.style, video.seed, even);
 
   const output = new Output({ format: new Mp4OutputFormat({ fastStart: 'in-memory' }), target: new BufferTarget() });
   const source = new CanvasSource(canvas, { codec: 'avc', quality: QUALITY_HIGH });
@@ -53,5 +61,5 @@ export async function exportReelMp4(
     throw err;
   }
   onProgress(1);
-  return { blob: new Blob([output.target.buffer!], { type: 'video/mp4' }), withMusic: Boolean(audio) };
+  return { blob: new Blob([output.target.buffer!], { type: 'video/mp4' }), withMusic: Boolean(audio), ...even };
 }

@@ -204,6 +204,7 @@ export type TextAlign = 'left' | 'center' | 'right';
 export type SceneTone = 'muted'; // grey and dull (e.g. a "before" or problem scene)
 export type SceneMotion = 'slowZoom'; // a slow zoom in on the scene
 export type TextEntrance = 'words' | 'lines' | 'pop' | 'fade'; // how text appears (words is the default)
+export type LabelSize = 'big'; // the small label above the headline shown as a big heading
 
 // How a slide is laid out when drawn (see src/admin/social/slideRenderer.ts)
 export type SocialSlideLayout = 'cover' | 'list' | 'points' | 'statement' | 'tags' | 'compare' | 'cta';
@@ -222,6 +223,7 @@ export interface SocialSlide {
   corners?: CornerTexts; // corner texts when the founder asked for them
   button?: string; // call-to-action button label when the founder asked for one
   tone?: SceneTone;
+  label?: LabelSize;
 }
 
 export type SocialPostStatus = 'new' | 'downloaded' | 'posted' | 'skipped';
@@ -284,6 +286,7 @@ export interface VideoScene {
   tone?: SceneTone;
   motion?: SceneMotion;
   textIn?: TextEntrance;
+  label?: LabelSize;
 }
 
 export interface SocialVideo {
@@ -298,6 +301,7 @@ export interface SocialVideo {
   title: string;
   angle: string;
   scenes: VideoScene[];
+  size: PostSize; // exact pixel size (1080x1920 reel by default)
   caption: string;
   hashtags: string[];
   notFollowed?: string;

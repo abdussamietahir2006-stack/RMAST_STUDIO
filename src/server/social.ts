@@ -4,7 +4,7 @@
 // dashboard draws the slides in the studio's visual style (src/admin/social/slideRenderer.ts).
 import { randomUUID } from 'node:crypto';
 import { GoogleGenAI, Type } from '@google/genai';
-import type { CornerTexts, PostSize, SceneMotion, SceneTone, SocialPost, SocialPostStatus, SocialSlide, SocialSlideLayout, TextAlign, TextEntrance, VideoStyle } from '../types/index.js';
+import type { CornerTexts, LabelSize, PostSize, SceneMotion, SceneTone, SocialPost, SocialPostStatus, SocialSlide, SocialSlideLayout, TextAlign, TextEntrance, VideoStyle } from '../types/index.js';
 import { resolveSiteUrl } from '../config/siteUrl.js';
 import { collections, type SocialPostDoc } from './db.js';
 import { CONTACT } from '../config/contact.js';
@@ -110,7 +110,8 @@ export const DESIGN_FIELDS = {
   cornerBottomLeft: { type: Type.STRING },
   cornerBottomRight: { type: Type.STRING },
   button: { type: Type.STRING },
-  tone: { type: Type.STRING }
+  tone: { type: Type.STRING },
+  label: { type: Type.STRING }
 };
 // Scenes also move: camera motion and how the text appears
 export const SCENE_DESIGN_FIELDS = {
@@ -126,6 +127,7 @@ export interface DesignChoices {
   tone?: SceneTone;
   motion?: SceneMotion;
   textIn?: TextEntrance;
+  label?: LabelSize;
 }
 
 // Reads the optional design fields back; only what the founder asked for is kept
@@ -134,6 +136,7 @@ export function cleanDesign(r: Record<string, unknown>): DesignChoices {
   const word = (v: unknown) => String(v ?? '').trim().toLowerCase().replace(/[\s_-]+/g, '');
   if (/^(muted|grey|gray|dull|desaturated|greyscale|grayscale)/.test(word(r.tone))) out.tone = 'muted';
   if (/zoom/.test(word(r.motion))) out.motion = 'slowZoom';
+  if (/^(big|large|huge|heading)/.test(word(r.label))) out.label = 'big';
   const textIn = word(r.textIn);
   if (/^lines?|linebyline/.test(textIn)) out.textIn = 'lines';
   else if (/^pop/.test(textIn)) out.textIn = 'pop';
@@ -166,6 +169,7 @@ export function exactnessRules(kind: 'slide' | 'scene'): string {
    - cornerTopLeft, cornerTopRight, cornerBottomLeft, cornerBottomRight: short text shown in that corner (max 60 chars), exactly as the founder wants it, e.g. the website address. Use "-" to remove what the design normally shows in that corner.
    - button: the label of the call-to-action button (the design's default is "LINK IN BIO ↗").
    Every control works on every ${unit} type.
+   - label: "big" shows the kicker as a big bold heading instead of a small label. Use it when the ${unit}'s heading is a short label the founder wrote that must stand out (e.g. "❌ BEFORE", "✅ AFTER", "STEP 1").
    - tone: "muted" makes the ${unit} grey and dull (desaturated, dimmed), e.g. for a "before" or problem ${unit}.${
      kind === 'scene'
        ? `
@@ -353,7 +357,11 @@ export function notesByNumber(brief: string, word: 'scene' | 'slide'): Map<numbe
   return notes;
 }
 
-export function applyNotes(target: DesignChoices, note: string, kind: 'scene' | 'slide') {
+export function applyNotes(target: DesignChoices & { kicker?: string }, note: string, kind: 'scene' | 'slide', original = '') {
+  const k = target.kicker?.trim() ?? '';
+  if (!target.label && k && k.split(/\s+/).length <= 4 && original.includes(k) && (/[❌✅✓✗✔✘]/u.test(k) || (k === k.toUpperCase() && /[A-Z]/.test(k)))) {
+    target.label = 'big';
+  }
   if (!target.tone && /\b(gr[ae]y|dull|desaturated|black and white|b&w)\b/.test(note)) target.tone = 'muted';
   if (!target.align) {
     if (/\b(centre|center)(ed)?\b/.test(note)) target.align = 'center';
@@ -560,7 +568,7 @@ export async function draftPost(recent: SocialPostDoc[], auto: boolean, opts: Dr
     maxOutputTokens: max > 10 ? 14000 : 8000
   });
   const post = cleanPost(raw, max);
-  if (brief) notesByNumber(brief, 'slide').forEach((note, n) => post.slides[n - 1] && applyNotes(post.slides[n - 1], note, 'slide'));
+  if (brief) notesByNumber(brief, 'slide').forEach((note, n) => post.slides[n - 1] && applyNotes(post.slides[n - 1], note, 'slide', brief));
   return {
     _id: randomUUID(),
     day,

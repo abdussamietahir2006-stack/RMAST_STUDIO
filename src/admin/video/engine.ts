@@ -2,7 +2,7 @@
 // A pure function of time: draw(ctx, t) paints exactly the same frame for the live preview and
 // the MP4 export. Layers: the style's animated background (themes.ts), then the scenes' animated
 // typography, blended by the scene transitions, then the brand mark and progress line.
-import type { TextAlign, TextEntrance, VideoScene, VideoStyle } from '../../types';
+import type { PostSize, TextAlign, TextEntrance, VideoScene, VideoStyle } from '../../types';
 import { CONTACT } from '../../config/contact';
 import {
   clamp01,
@@ -23,8 +23,30 @@ export { VIDEO_H, VIDEO_W } from './themes';
 export const FPS = 30;
 export const TRANSITION = 0.7; // seconds, centred on each scene boundary
 const PAD = 96;
-const TEXT_W = VIDEO_W - PAD * 2;
-const CONTENT_MID = 940; // vertical centre of the text block (clear of Reels UI at top and bottom)
+export const DEFAULT_VIDEO_SIZE: PostSize = { width: VIDEO_W, height: VIDEO_H };
+
+// Scenes are laid out on a design frame whose short side is 1080 units (1080x1920 for a reel,
+// 1080x1350 for a 4:5 post, 1920x1080 for landscape) and scaled to the exact pixel size.
+// These hold the frame of the video being drawn; drawing is synchronous, so each draw sets them.
+let W = VIDEO_W;
+let H = VIDEO_H;
+let TEXT_W = VIDEO_W - PAD * 2;
+let BOTTOM_SAFE = 330; // room kept clear at the bottom (Reels caption and buttons on 9:16)
+const CONTENT_TOP = 250; // text starts below the logo and progress line
+const contentMid = () => H * 0.49; // vertical centre of the text block
+
+export function videoFrame(size: PostSize) {
+  const landscape = size.width >= size.height;
+  const w = landscape ? Math.round((1080 * size.width) / size.height) : 1080;
+  const h = landscape ? 1080 : Math.round((1080 * size.height) / size.width);
+  return { w, h };
+}
+function useFrame(frame: { w: number; h: number }) {
+  W = frame.w;
+  H = frame.h;
+  TEXT_W = Math.min(W - PAD * 2, 1400);
+  BOTTOM_SAFE = H >= W * 1.7 ? 330 : 150;
+}
 
 type Ctx = CanvasRenderingContext2D;
 
@@ -79,6 +101,7 @@ interface Pen {
   th: Theme;
   align: TextAlign; // the scene's alignment (the founder's choice, else the look's)
   textIn: TextEntrance; // how the scene's text appears
+  bigLabel: boolean; // the kicker is shown as a big heading (e.g. "❌ BEFORE")
 }
 
 // Left edge of a block `w` wide in the text column, for an alignment
@@ -224,9 +247,27 @@ function kicker(p: Pen, text: string, y: number, start = 0.05, align: TextAlign 
   if (!p.dry) {
     const { ctx } = p;
     const e = easeOutCubic(phase(p.local, start, 0.6));
+    const label = text.toUpperCase();
+    if (p.bigLabel) {
+      // A heading the founder wants seen: large, bold, in the text colour with a soft glow
+      let size = 110;
+      setSpacing(ctx, 3);
+      do {
+        setFont(ctx, 800, size, SANS);
+      } while (ctx.measureText(label).width > TEXT_W && (size -= 4) > 48);
+      const x = alignX(align, ctx.measureText(label).width);
+      ctx.save();
+      ctx.globalAlpha = e;
+      ctx.shadowColor = p.th.glow ?? 'rgba(0,0,0,0.45)';
+      ctx.shadowBlur = 30;
+      ctx.fillStyle = p.th.text;
+      ctx.fillText(label, x - (1 - e) * 40, y + size * 0.86);
+      ctx.restore();
+      setSpacing(ctx, 0);
+      return y + size * 1.25;
+    }
     setFont(ctx, 700, 30, SANS);
     setSpacing(ctx, 7);
-    const label = text.toUpperCase();
     const w = ctx.measureText(label).width + 38;
     const x = alignX(align, w);
     ctx.save();
@@ -244,6 +285,16 @@ function kicker(p: Pen, text: string, y: number, start = 0.05, align: TextAlign 
     ctx.fillText(label, x + 38 - (1 - e) * 30, y + 29);
     ctx.restore();
     setSpacing(ctx, 0);
+  } else if (p.bigLabel) {
+    // Same measurement as the real draw, so the block height is right
+    const { ctx } = p;
+    let size = 110;
+    setSpacing(ctx, 3);
+    do {
+      setFont(ctx, 800, size, SANS);
+    } while (ctx.measureText(text.toUpperCase()).width > TEXT_W && (size -= 4) > 48);
+    setSpacing(ctx, 0);
+    return y + size * 1.25;
   }
   return y + 84;
 }
@@ -331,13 +382,13 @@ function listScene(p: Pen, s: VideoScene, y: number): number {
         setFont(ctx, 800, 56, SANS);
         const shown = countUp(item.value, easeOutCubic(phase(p.local, end + 0.2 + i * 0.28, 1.1)));
         const w = ctx.measureText(item.value).width;
-        ctx.fillStyle = shimmer(ctx, VIDEO_W - PAD - w, w, p.t, th.accent);
+        ctx.fillStyle = shimmer(ctx, W - PAD - w, w, p.t, th.accent);
         if (th.glow) {
           ctx.shadowColor = th.glow;
           ctx.shadowBlur = 18;
         }
         ctx.textAlign = 'right';
-        ctx.fillText(shown, VIDEO_W - PAD + dx, y + rowH / 2 + 20);
+        ctx.fillText(shown, W - PAD + dx, y + rowH / 2 + 20);
         ctx.textAlign = 'left';
       }
       ctx.restore();
@@ -392,7 +443,7 @@ function tagsScene(p: Pen, s: VideoScene, y: number): number {
   setFont(ctx, 700, size, SANS);
   s.items.forEach((item, i) => {
     const w = Math.min(ctx.measureText(item.label).width + padX * 2, TEXT_W);
-    if (x > PAD && x + w > VIDEO_W - PAD) {
+    if (x > PAD && x + w > W - PAD) {
       x = PAD;
       y += h + gap;
     }
@@ -604,7 +655,7 @@ function ctaScene(p: Pen, s: VideoScene, y: number): number {
     ctx.save();
     ctx.globalAlpha = c;
     ctx.textAlign = p.align;
-    const cx = p.align === 'center' ? VIDEO_W / 2 : p.align === 'right' ? PAD + TEXT_W : PAD;
+    const cx = p.align === 'center' ? W / 2 : p.align === 'right' ? PAD + TEXT_W : PAD;
     setFont(ctx, 600, 38, SANS);
     ctx.fillStyle = th.muted;
     ctx.fillText(`@${CONTACT.instagramHandle}`, cx, y + 196);
@@ -661,9 +712,11 @@ function overlay(ctx: Ctx, th: Theme, t: number, total: number, scene: VideoScen
   };
   // Bottom corners sit above the Reels caption and buttons
   text(c?.topRight ?? '', true, 172);
-  text(c?.bottomLeft ?? '', false, VIDEO_H - 300);
-  text(c?.bottomRight ?? '', true, VIDEO_H - 300);
+  text(c?.bottomLeft ?? '', false, H - BOTTOM_SAFE + 30);
+  text(c?.bottomRight ?? '', true, H - BOTTOM_SAFE + 30);
   if (c?.topLeft) return text(c.topLeft, false, 172);
+  // The final scene has its own logo lock-up, so the corner logo steps aside
+  if (scene?.type === 'cta' || c?.topLeft === '-') return;
 
   setFont(ctx, 700, 40, SERIF);
   setSpacing(ctx, 6);
@@ -702,20 +755,27 @@ export class VideoEngine {
   private readonly th: Theme;
   private readonly variation: Variation;
 
+  private readonly frame: { w: number; h: number };
+  private readonly scale: number; // design units to pixels
+
+  // pixelScale 1 draws at exactly size.width x size.height; previews pass a smaller scale
   constructor(
     private readonly scenes: VideoScene[],
-    private readonly scale = 1,
+    pixelScale = 1,
     style: VideoStyle = 'aurora',
-    seed = 1
+    seed = 1,
+    readonly size: PostSize = DEFAULT_VIDEO_SIZE
   ) {
     this.starts = sceneStarts(scenes);
     this.duration = videoLength(scenes);
     this.th = THEMES[style] ?? THEMES.aurora;
     this.variation = makeVariation(seed);
+    this.frame = videoFrame(size);
+    this.scale = (pixelScale * size.width) / this.frame.w;
     this.layers = [0, 1].map(() => {
       const canvas = document.createElement('canvas');
-      canvas.width = Math.round(VIDEO_W * scale);
-      canvas.height = Math.round(VIDEO_H * scale);
+      canvas.width = Math.round(size.width * pixelScale);
+      canvas.height = Math.round(size.height * pixelScale);
       return { canvas, ctx: canvas.getContext('2d')! };
     });
   }
@@ -727,7 +787,7 @@ export class VideoEngine {
 
   private pen(ctx: Ctx, dry: boolean, t: number, local: number, i: number): Pen {
     const s = this.scenes[i];
-    return { ctx, dry, t, local, th: this.th, align: s?.align ?? this.th.align, textIn: s?.textIn ?? 'words' };
+    return { ctx, dry, t, local, th: this.th, align: s?.align ?? this.th.align, textIn: s?.textIn ?? 'words', bigLabel: s?.label === 'big' };
   }
 
   // Height of a scene's block, measured once (layout does not change over time)
@@ -748,18 +808,32 @@ export class VideoEngine {
     const local = this.local(i, t);
     ctx.setTransform(this.scale, 0, 0, this.scale, 0, 0);
     ctx.textBaseline = 'alphabetic';
+    // The text's anchor: its aligned edge (or centre), so zooming and fitting never push it off-frame
+    const align = s.align ?? this.th.align;
+    const ax = align === 'center' ? W / 2 : align === 'right' ? PAD + TEXT_W : PAD;
     // Slow camera push-in across the scene
     const push = 1 + (s.motion === 'slowZoom' ? 0.2 : 0.04) * clamp01(local / (s.duration + TRANSITION));
-    ctx.translate(VIDEO_W / 2, CONTENT_MID);
+    ctx.translate(ax, contentMid());
     ctx.scale(push, push);
-    ctx.translate(-VIDEO_W / 2, -CONTENT_MID);
+    ctx.translate(-ax, -contentMid());
     const h = this.height(ctx, i);
-    const top = Math.max(250, Math.min(CONTENT_MID - h / 2, VIDEO_H - 330 - h));
+    // A block taller than the safe area is scaled down to fit, anchored on its alignment
+    const room = H - BOTTOM_SAFE - CONTENT_TOP;
+    if (h > room) {
+      const k = room / h;
+      ctx.translate(ax, CONTENT_TOP);
+      ctx.scale(k, k);
+      ctx.translate(-ax, -CONTENT_TOP);
+      drawScene(this.pen(ctx, false, t, local, i), s, CONTENT_TOP);
+      return canvas;
+    }
+    const top = Math.max(CONTENT_TOP, Math.min(contentMid() - h / 2, H - BOTTOM_SAFE - h));
     drawScene(this.pen(ctx, false, t, local, i), s, top);
     return canvas;
   }
 
   draw(ctx: Ctx, time: number): void {
+    useFrame(this.frame);
     const t = Math.max(0, Math.min(time, this.duration - 1e-3));
     const n = this.scenes.length;
     let i = 0;
@@ -779,7 +853,7 @@ export class VideoEngine {
 
     ctx.setTransform(this.scale, 0, 0, this.scale, 0, 0);
     const scenePos = from === to ? from : from + easeInOutCubic(clamp01(p));
-    this.th.background(ctx, t, scenePos, this.variation);
+    this.th.background(ctx, t, scenePos, this.variation, W, H);
 
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     if (from === to) {
@@ -811,7 +885,7 @@ export class VideoEngine {
       ctx.save();
       ctx.globalAlpha = out;
       ctx.fillStyle = this.th.fade;
-      ctx.fillRect(0, 0, VIDEO_W, VIDEO_H);
+      ctx.fillRect(0, 0, W, H);
       ctx.restore();
     }
     ctx.setTransform(1, 0, 0, 1, 0, 0);

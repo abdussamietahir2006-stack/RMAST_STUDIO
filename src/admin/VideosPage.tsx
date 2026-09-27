@@ -1,10 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { AlertTriangle, Check, ClipboardCopy, Clapperboard, Download, Lightbulb, Music, Pause, Play, Shuffle, Sparkles, Trash2, X } from 'lucide-react';
-import { MusicMood, SocialVideo, VideoScene, VideoStyle } from '../types';
+import { MusicMood, PostSize, SocialVideo, VideoScene, VideoStyle } from '../types';
 import { adminApi } from './api';
 import { useAdmin } from './AdminApp';
 import { Button, Card, ErrorNote, PageHeader, Spinner } from './ui';
-import { VIDEO_H, VIDEO_W, VideoEngine } from './video/engine';
+import { DEFAULT_VIDEO_SIZE, VideoEngine } from './video/engine';
+import { SizePicker } from './social/SizePicker';
 import { STYLE_NAMES, STYLES } from './video/themes';
 import { loadSlideFonts } from './social/slideRenderer';
 import { fileSlug, fullCaption, saveBlob, STATUS_STYLE } from './social/shared';
@@ -13,7 +14,11 @@ import { fileSlug, fullCaption, saveBlob, STATUS_STYLE } from './social/shared';
 const MIN_SECONDS = 10;
 const MAX_SECONDS = 60;
 const MAX_IDEA_LENGTH = 5000;
-const PREVIEW_SCALE = 0.5; // preview canvas is 540x960, shown at 270x480 (sharp on high-DPI screens)
+// The preview fits a 270x480 box (drawn at twice that for sharp high-DPI screens)
+const previewBox = (size: PostSize) => {
+  const k = Math.min(270 / size.width, 480 / size.height);
+  return { width: Math.round(size.width * k), height: Math.round(size.height * k), pixelScale: k * 2 };
+};
 
 const MUSIC_NAMES: Record<MusicMood, string> = {
   peaceful: 'Peaceful (calm, ambient)',
@@ -54,6 +59,7 @@ function musicFor(video: SocialVideo): Promise<AudioBuffer | null> {
 
 // Live preview: the same engine as the export, drawn at half size, with the composed music
 const ReelPlayer: React.FC<{ video: SocialVideo }> = ({ video }) => {
+  const box = previewBox(video.size);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const engine = useRef<VideoEngine | null>(null);
   const [time, setTime] = useState(1.2);
@@ -89,7 +95,7 @@ const ReelPlayer: React.FC<{ video: SocialVideo }> = ({ video }) => {
     audio.current.buffer = null;
     loadSlideFonts().then(() => {
       if (cancelled) return;
-      engine.current = new VideoEngine(video.scenes, PREVIEW_SCALE, video.style, video.seed);
+      engine.current = new VideoEngine(video.scenes, box.pixelScale, video.style, video.seed, video.size);
       setReady(true);
       const ctx = canvasRef.current?.getContext('2d');
       if (ctx) engine.current.draw(ctx, timeRef.current);
@@ -97,7 +103,7 @@ const ReelPlayer: React.FC<{ video: SocialVideo }> = ({ video }) => {
     return () => {
       cancelled = true;
     };
-  }, [video.scenes, video.style, video.seed, video.music]);
+  }, [video.scenes, video.style, video.seed, video.music, video.size]);
 
   useEffect(() => () => {
     stopAudio();
@@ -147,12 +153,12 @@ const ReelPlayer: React.FC<{ video: SocialVideo }> = ({ video }) => {
 
   return (
     <div className="space-y-2 w-[270px] shrink-0">
-      <div className="relative rounded-lg overflow-hidden border border-[#22232D] bg-black" style={{ width: 270, height: 480 }}>
+      <div className="relative rounded-lg overflow-hidden border border-[#22232D] bg-black mx-auto" style={{ width: box.width, height: box.height }}>
         <canvas
           ref={canvasRef}
-          width={Math.round(VIDEO_W * PREVIEW_SCALE)}
-          height={Math.round(VIDEO_H * PREVIEW_SCALE)}
-          style={{ width: 270, height: 480 }}
+          width={Math.round(video.size.width * box.pixelScale)}
+          height={Math.round(video.size.height * box.pixelScale)}
+          style={{ width: box.width, height: box.height }}
           onClick={() => ready && !composing && play()}
           className="cursor-pointer"
         />
@@ -195,7 +201,7 @@ const ReelPlayer: React.FC<{ video: SocialVideo }> = ({ video }) => {
 
 const VideoCard: React.FC<{
   video: SocialVideo;
-  onChange: (id: string, patch: Partial<Pick<SocialVideo, 'status' | 'style' | 'seed' | 'music'>>) => void;
+  onChange: (id: string, patch: Partial<Pick<SocialVideo, 'status' | 'style' | 'seed' | 'music' | 'size'>>) => void;
   onDelete: (id: string) => void;
 }> = ({ video, onChange, onDelete }) => {
   const [progress, setProgress] = useState<number | null>(null);
@@ -212,7 +218,10 @@ const VideoCard: React.FC<{
     abort.current = new AbortController();
     try {
       const { exportReelMp4 } = await import('./video/exportMp4');
-      const { blob, withMusic } = await exportReelMp4(video, setProgress, abort.current.signal);
+      const { blob, withMusic, width, height } = await exportReelMp4(video, setProgress, abort.current.signal);
+      if (width !== video.size.width || height !== video.size.height) {
+        setExportNote(`MP4 video needs even numbers, so it was made at ${width}×${height}.`);
+      }
       saveBlob(blob, `rmast-reel-${fileSlug(video.title)}.mp4`);
       if (video.music !== 'none' && !withMusic) setExportNote('This browser could not add the music, so the video was saved without it. Chrome or Edge on a computer includes it.');
       if (video.status === 'new') onChange(video.id, { status: 'downloaded' });
@@ -256,7 +265,7 @@ const VideoCard: React.FC<{
               </span>
               <span className={`px-2 py-0.5 rounded-full border ${status.className}`}>{status.label}</span>
               <span className="px-2 py-0.5 rounded-full border border-[#2E3040] text-[#8B8D98]">
-                {Math.round(video.scenes.reduce((n, s) => n + s.duration, 0))}s · {video.scenes.length} scenes · 1080×1920
+                {Math.round(video.scenes.reduce((n, s) => n + s.duration, 0))}s · {video.scenes.length} scenes · {video.size.width}×{video.size.height}
               </span>
             </div>
             <h2 className="text-lg font-semibold text-[#ECEAE5]">{video.title}</h2>
@@ -278,8 +287,9 @@ const VideoCard: React.FC<{
             )}
           </div>
 
-          {/* Look and music: change any time without rewriting the script */}
+          {/* Size, look and music: change any time without rewriting the script */}
           <div className="flex flex-wrap items-center gap-2">
+            <SizePicker value={video.size} disabled={exporting} onChange={(size) => onChange(video.id, { size })} />
             <label className="flex items-center gap-2 text-xs text-[#A6A8B3]">
               Look
               <select
@@ -393,6 +403,7 @@ const VideoComposer: React.FC<{ onCreated: (v: SocialVideo) => void; onError: (e
   const [seconds, setSeconds] = useState(30);
   const [look, setLook] = useState<VideoStyle | 'surprise'>('surprise');
   const [music, setMusic] = useState<MusicMood>('uplifting');
+  const [size, setSize] = useState<PostSize>(DEFAULT_VIDEO_SIZE);
   const [busy, setBusy] = useState(false);
 
   const create = async (e: React.FormEvent) => {
@@ -400,7 +411,7 @@ const VideoComposer: React.FC<{ onCreated: (v: SocialVideo) => void; onError: (e
     if (brief.trim().length < 10 || busy) return;
     setBusy(true);
     try {
-      onCreated(await adminApi.createVideo(brief.trim(), seconds, look, music));
+      onCreated(await adminApi.createVideo(brief.trim(), seconds, look, music, size));
       setBrief('');
     } catch (err) {
       onError(err);
@@ -472,6 +483,7 @@ const VideoComposer: React.FC<{ onCreated: (v: SocialVideo) => void; onError: (e
                 ))}
               </select>
             </label>
+            <SizePicker value={size} onChange={setSize} disabled={busy} live />
           </div>
           <div className="flex items-center gap-3">
             <span className="text-xs text-[#6E7180]">

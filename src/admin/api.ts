@@ -41,10 +41,10 @@ export const adminApi = {
 
   socialVideos: () => request<{ videos: SocialVideo[]; ready: boolean }>('/api/admin/videos'),
   // A motion-graphics reel script from the founder's idea (the MP4 is rendered in the browser)
-  createVideo: (brief: string, seconds: number, style: VideoStyle | 'surprise', music: MusicMood) =>
-    request<SocialVideo>('/api/admin/videos', { method: 'POST', body: JSON.stringify({ brief, seconds, style, music }) }),
+  createVideo: (brief: string, seconds: number, style: VideoStyle | 'surprise', music: MusicMood, size: PostSize) =>
+    request<SocialVideo>('/api/admin/videos', { method: 'POST', body: JSON.stringify({ brief, seconds, style, music, size }) }),
   // Change a video's status, look, variation or music (the script stays the same)
-  updateVideo: (id: string, patch: Partial<Pick<SocialVideo, 'status' | 'style' | 'seed' | 'music'>>) =>
+  updateVideo: (id: string, patch: Partial<Pick<SocialVideo, 'status' | 'style' | 'seed' | 'music' | 'size'>>) =>
     request<void>(`/api/admin/videos/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify(patch) }),
   deleteVideo: (id: string) => request<void>(`/api/admin/videos/${encodeURIComponent(id)}`, { method: 'DELETE' }),
 
