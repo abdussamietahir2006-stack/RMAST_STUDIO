@@ -809,6 +809,14 @@ export function prepareSlide(ctx: Ctx, slide: SocialSlide, index: number, total:
     drawLayout(pen(s, false, t, step), slide, index, total);
     stripe(ctx, pal);
     ctx.restore();
+    // A "muted" slide is grey and dull (e.g. the "before" of a before/after)
+    if (slide.tone === 'muted' && 'filter' in ctx) {
+      ctx.save();
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.filter = 'grayscale(1) brightness(0.72) contrast(0.92)';
+      ctx.drawImage(ctx.canvas, 0, 0);
+      ctx.restore();
+    }
   };
 }
 

@@ -4,7 +4,7 @@
 // dashboard draws the slides in the studio's visual style (src/admin/social/slideRenderer.ts).
 import { randomUUID } from 'node:crypto';
 import { GoogleGenAI, Type } from '@google/genai';
-import type { CornerTexts, PostSize, SocialPost, SocialPostStatus, SocialSlide, SocialSlideLayout, TextAlign, VideoStyle } from '../types/index.js';
+import type { CornerTexts, PostSize, SceneMotion, SceneTone, SocialPost, SocialPostStatus, SocialSlide, SocialSlideLayout, TextAlign, TextEntrance, VideoStyle } from '../types/index.js';
 import { resolveSiteUrl } from '../config/siteUrl.js';
 import { collections, type SocialPostDoc } from './db.js';
 import { CONTACT } from '../config/contact.js';
@@ -109,12 +109,35 @@ export const DESIGN_FIELDS = {
   cornerTopRight: { type: Type.STRING },
   cornerBottomLeft: { type: Type.STRING },
   cornerBottomRight: { type: Type.STRING },
-  button: { type: Type.STRING }
+  button: { type: Type.STRING },
+  tone: { type: Type.STRING }
+};
+// Scenes also move: camera motion and how the text appears
+export const SCENE_DESIGN_FIELDS = {
+  ...DESIGN_FIELDS,
+  motion: { type: Type.STRING },
+  textIn: { type: Type.STRING }
 };
 
+export interface DesignChoices {
+  align?: TextAlign;
+  corners?: CornerTexts;
+  button?: string;
+  tone?: SceneTone;
+  motion?: SceneMotion;
+  textIn?: TextEntrance;
+}
+
 // Reads the optional design fields back; only what the founder asked for is kept
-export function cleanDesign(r: Record<string, unknown>): { align?: TextAlign; corners?: CornerTexts; button?: string } {
-  const out: { align?: TextAlign; corners?: CornerTexts; button?: string } = {};
+export function cleanDesign(r: Record<string, unknown>): DesignChoices {
+  const out: DesignChoices = {};
+  const word = (v: unknown) => String(v ?? '').trim().toLowerCase().replace(/[\s_-]+/g, '');
+  if (/^(muted|grey|gray|dull|desaturated|greyscale|grayscale)/.test(word(r.tone))) out.tone = 'muted';
+  if (/zoom/.test(word(r.motion))) out.motion = 'slowZoom';
+  const textIn = word(r.textIn);
+  if (/^lines?|linebyline/.test(textIn)) out.textIn = 'lines';
+  else if (/^pop/.test(textIn)) out.textIn = 'pop';
+  else if (/^fade/.test(textIn)) out.textIn = 'fade';
   const align = String(r.align ?? '').trim().toLowerCase();
   if (align === 'left' || align === 'center' || align === 'right') out.align = align;
   const corner = (v: unknown) => {
@@ -142,12 +165,28 @@ export function exactnessRules(kind: 'slide' | 'scene'): string {
    - align: "left", "center" or "right" for the ${unit}'s text.
    - cornerTopLeft, cornerTopRight, cornerBottomLeft, cornerBottomRight: short text shown in that corner (max 60 chars), exactly as the founder wants it, e.g. the website address. Use "-" to remove what the design normally shows in that corner.
    - button: the label of the call-to-action button (the design's default is "LINK IN BIO ↗").
+   Every control works on every ${unit} type.
+   - tone: "muted" makes the ${unit} grey and dull (desaturated, dimmed), e.g. for a "before" or problem ${unit}.${
+     kind === 'scene'
+       ? `
+   - motion: "slowZoom" slowly zooms in on the scene's text while the background stays still (use it for any "slow zoom" or "zoom on the text" note).
+   - textIn: how the text appears: "words" (word by word, the default), "lines" (each line pops in, one after another), "pop" (each line scales in with a bounce) or "fade".`
+       : ''
+   }
    ${
      kind === 'slide'
        ? 'The design normally shows: our logo top-left, @handle bottom-left and "SWIPE →" bottom-right on the first slide; the page number top-right on the other slides; a "LINK IN BIO ↗" button and our contact line on the last slide.'
        : 'The design normally shows: our logo top-left with a progress line on every scene, and on the final scene a "LINK IN BIO ↗" button with our handle and contact details.'
    }
 - Example: "put the website link in the bottom-right corner of slide 1" means cornerBottomRight = our website address on that ${unit}, not "link in bio" and not somewhere else.
+- Text the founder writes in quotes, or gives as the words for a ${unit}, is the on-screen text word for word (split over headline, highlight and body in the same order). Never replace it with a label, summary or title of your own (e.g. a quoted listing description stays that description, not "Generic Listing"). Emojis they include (❌, ✅) stay. Text they call "big text" or the main line goes into headline + highlight in full, never into kicker; kicker is only for a short label they write as a label (e.g. "❌ BEFORE").${
+     kind === 'scene'
+       ? `
+- Visual notes for a scene (often in brackets) map to the controls above, and EVERY note must be set: e.g. "(grey/dull look, a slow zoom on the text)" means tone "muted" AND motion "slowZoom"; "(the text pops in line by line)" means textIn "lines". Before answering, check each note of each scene against what you set.
+- Scene times given by the founder (e.g. "Scene 2 (3-8 s)") are the exact durations: set each duration to that length and set timingsFromFounder to true. Otherwise set timingsFromFounder to false.
+- If the founder names a visual look or colours for the video (e.g. "orb theme", "neon", "black and amber"), set look to the closest of: "aurora" (dark glass orb with purple, pink and gold glow), "editorial" (light cream, elegant serif), "neon" (synthwave sun, pink and cyan), "bold" (bright solid colour blocks), "mono" (black and amber). Otherwise leave look "". The look covers the whole video, so a scene note about the look's colours needs no notFollowed entry.`
+       : ''
+   }
 - If something the founder asks for cannot be done with these controls, do the closest possible and say so in notFollowed (one short sentence per item). Otherwise leave notFollowed "".`;
 }
 
@@ -299,6 +338,49 @@ export const clipText = (v: unknown, max: number) => {
   return (space > max * 0.5 ? cut.slice(0, space) : cut).replace(/[\s,;:.\-–—]+$/, '');
 };
 
+// Safety net for the founder's visual notes. When the idea is written as "Scene 2 ..." / "Slide 3 ...",
+// each block's plain-language notes are read directly and applied to that scene or slide if the
+// model left them out (it sometimes skips a note it thinks it cannot do exactly).
+export function notesByNumber(brief: string, word: 'scene' | 'slide'): Map<number, string> {
+  const notes = new Map<number, string>();
+  const marker = new RegExp(`(?:^|\\n)\\s*${word}\\s*(\\d{1,2})\\b`, 'gi');
+  const hits = [...brief.matchAll(marker)];
+  hits.forEach((m, i) => {
+    const end = i + 1 < hits.length ? hits[i + 1].index : brief.length;
+    const n = Number(m[1]);
+    if (n >= 1 && !notes.has(n)) notes.set(n, brief.slice(m.index, end).toLowerCase());
+  });
+  return notes;
+}
+
+export function applyNotes(target: DesignChoices, note: string, kind: 'scene' | 'slide') {
+  if (!target.tone && /\b(gr[ae]y|dull|desaturated|black and white|b&w)\b/.test(note)) target.tone = 'muted';
+  if (!target.align) {
+    if (/\b(centre|center)(ed)?\b/.test(note)) target.align = 'center';
+    else if (/\b(right[- ]aligned|align(ed)? (to the )?right)\b/.test(note)) target.align = 'right';
+  }
+  if (kind !== 'scene') return;
+  if (!target.motion && /\bzoom/.test(note)) target.motion = 'slowZoom';
+  if (!target.textIn) {
+    if (/line[- ]by[- ]line/.test(note)) target.textIn = 'lines';
+    else if (/\bpops?\b/.test(note)) target.textIn = 'pop';
+    else if (/\bfades?\b/.test(note)) target.textIn = 'fade';
+    else if (/word[- ]by[- ]word/.test(note)) target.textIn = 'words';
+  }
+}
+
+// When a slide or scene drops to a plain statement, its before/after words move into the text
+export function keepText(s: { headline: string; highlight: string; body: string; before?: string; after?: string }) {
+  const norm = (t: string) => t.toLowerCase().replace(/[^a-z0-9$]+/g, ' ').trim();
+  const shown = norm([s.headline, s.highlight, s.body].join(' '));
+  // Only words that are not already on screen are moved in (the model often repeats them)
+  const lost = [s.before, s.after].filter((t): t is string => Boolean(t) && !shown.includes(norm(t!))).join(' ');
+  if (!lost) return;
+  if (!s.headline && !s.highlight) s.headline = lost;
+  else if (!s.highlight) s.highlight = lost;
+  else s.body = [s.body, lost].filter(Boolean).join(' ');
+}
+
 // Leading tick/cross marks on compare examples (the slide design draws its own)
 export const MARKS = /^[\s✗✘✕×❌✓✔✅xX]+(?=\s|["“])\s*/u;
 
@@ -339,7 +421,11 @@ function cleanPost(raw: unknown, max = MAX_SLIDES): Pick<SocialPost, 'title' | '
     if (s.layout === 'list' && s.items.length < 2) s.layout = s.points.length >= 2 ? 'points' : 'statement';
     if (s.layout === 'points' && s.points.length < 2) s.layout = s.items.length >= 2 ? 'list' : 'statement';
     if (s.layout === 'tags' && s.items.length < 2) s.layout = 'statement';
-    if (s.layout === 'compare' && !(s.before && s.after)) s.layout = 'statement';
+    if (s.layout === 'compare' && !(s.before && s.after)) {
+      // Half a comparison becomes a statement, keeping its words
+      s.layout = 'statement';
+      keepText(s);
+    }
   }
   const caption = (typeof r.caption === 'string' ? r.caption : '').trim().slice(0, 2200);
   const hashtags = (Array.isArray(r.hashtags) ? r.hashtags : [])
@@ -474,6 +560,7 @@ export async function draftPost(recent: SocialPostDoc[], auto: boolean, opts: Dr
     maxOutputTokens: max > 10 ? 14000 : 8000
   });
   const post = cleanPost(raw, max);
+  if (brief) notesByNumber(brief, 'slide').forEach((note, n) => post.slides[n - 1] && applyNotes(post.slides[n - 1], note, 'slide'));
   return {
     _id: randomUUID(),
     day,

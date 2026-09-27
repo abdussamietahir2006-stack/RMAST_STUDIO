@@ -5,7 +5,7 @@ import { randomUUID } from 'node:crypto';
 import { Type } from '@google/genai';
 import type { MusicMood, SocialPostStatus, SocialVideo, VideoScene, VideoSceneType, VideoStyle, VideoTransition } from '../types/index.js';
 import { collections, type SocialVideoDoc } from './db.js';
-import { cleanDesign, clipText, CREATIVE_STANDARD, DESIGN_FIELDS, exactnessRules, generateJson, MARKS, randomSeed, randomStyle, studioDay, studioFacts, VIDEO_STYLES } from './social.js';
+import { applyNotes, cleanDesign, clipText, keepText, notesByNumber, CREATIVE_STANDARD, SCENE_DESIGN_FIELDS, exactnessRules, generateJson, MARKS, randomSeed, randomStyle, studioDay, studioFacts, VIDEO_STYLES } from './social.js';
 
 // Reels can be any whole number of seconds in this range
 export const MIN_VIDEO_SECONDS = 10;
@@ -43,7 +43,7 @@ const SCENE_SCHEMA = {
     statSuffix: { type: Type.STRING },
     before: { type: Type.STRING },
     after: { type: Type.STRING },
-    ...DESIGN_FIELDS
+    ...SCENE_DESIGN_FIELDS
   },
   required: ['type', 'duration', 'transition', 'kicker', 'headline', 'highlight', 'body', 'items', 'statValue', 'statPrefix', 'statSuffix', 'before', 'after']
 };
@@ -57,7 +57,9 @@ const videoSchema = () => ({
     scenes: { type: Type.ARRAY, items: SCENE_SCHEMA },
     caption: { type: Type.STRING },
     hashtags: { type: Type.ARRAY, items: { type: Type.STRING } },
-    notFollowed: { type: Type.STRING }
+    notFollowed: { type: Type.STRING },
+    timingsFromFounder: { type: Type.BOOLEAN },
+    look: { type: Type.STRING }
   },
   required: ['title', 'angle', 'scenes', 'caption', 'hashtags']
 });
@@ -145,8 +147,8 @@ function cleanScene(raw: unknown, forced?: VideoSceneType): VideoScene {
 
 function cleanVideo(raw: unknown, seconds: number): Pick<SocialVideo, 'title' | 'angle' | 'scenes' | 'caption' | 'hashtags' | 'notFollowed'> {
   const r = (raw ?? {}) as Record<string, unknown>;
-  const [, maxScenes] = sceneRange(seconds);
-  const list = (Array.isArray(r.scenes) ? r.scenes : []).slice(0, maxScenes);
+  // The founder may list more scenes than the length usually holds: keep them (up to 20)
+  const list = (Array.isArray(r.scenes) ? r.scenes : []).slice(0, 20);
   if (list.length < 2) throw new Error('The video script came back incomplete. Please try again.');
   const last = list.length - 1;
   const scenes = list.map((s, i) => cleanScene(s, i === 0 ? 'hook' : i === last ? 'cta' : undefined));
@@ -156,8 +158,17 @@ function cleanVideo(raw: unknown, seconds: number): Pick<SocialVideo, 'title' | 
     if (s.type === 'hook' || s.type === 'cta') s.type = 'statement';
     if ((s.type === 'list' || s.type === 'tags' || s.type === 'steps') && s.items.length < 2) s.type = 'statement';
     if (s.type === 'stat' && !(s.statValue > 0)) s.type = 'statement';
-    if (s.type === 'compare' && !(s.before && s.after)) s.type = 'statement';
+    if (s.type === 'compare' && !(s.before && s.after)) {
+      s.type = 'statement';
+      keepText(s);
+    }
     if (!s.headline && !s.highlight) s.headline = s.body || s.kicker || ' ';
+  }
+
+  // The founder's own scene times are used exactly as given (the video is as long as they add up to)
+  if (r.timingsFromFounder === true && scenes.every((s) => s.duration >= 0.5 && s.duration <= 30)) {
+    for (const s of scenes) s.duration = Math.round(Math.max(1, s.duration) * 10) / 10;
+    return finishVideo(r, scenes);
   }
 
   // Timing: keep each scene readable, then scale so the whole video lands on the chosen length
@@ -170,7 +181,10 @@ function cleanVideo(raw: unknown, seconds: number): Pick<SocialVideo, 'title' | 
   // Round-off lands on the final scene
   const drift = seconds - scenes.reduce((n, s) => n + s.duration, 0);
   scenes[last].duration = Math.round(Math.max(3, scenes[last].duration + drift) * 10) / 10;
+  return finishVideo(r, scenes);
+}
 
+function finishVideo(r: Record<string, unknown>, scenes: VideoScene[]): Pick<SocialVideo, 'title' | 'angle' | 'scenes' | 'caption' | 'hashtags' | 'notFollowed'> {
   const caption = (typeof r.caption === 'string' ? r.caption : '').trim().slice(0, 2200);
   const hashtags = (Array.isArray(r.hashtags) ? r.hashtags : [])
     .map((h) => String(h).replace(/[^A-Za-z0-9_]/g, ''))
@@ -201,18 +215,27 @@ export const toSocialVideo = (d: SocialVideoDoc): SocialVideo => ({
 
 // Writes a video script without saving it
 export async function draftVideo(brief: string, seconds: number, look: VideoStyle | 'surprise' = 'surprise', music: MusicMood = 'uplifting'): Promise<SocialVideoDoc> {
-  const raw = await generateJson(instructions(brief, seconds), videoSchema(), { temperature: 0.8, label: 'Social video' });
+  const raw = await generateJson(instructions(brief, seconds), videoSchema(), {
+    // Videos are always made from the founder's own idea, so a steady hand keeps their script intact
+    temperature: 0.4,
+    label: 'Social video'
+  });
+  const video = cleanVideo(raw, seconds);
+  notesByNumber(brief, 'scene').forEach((note, n) => video.scenes[n - 1] && applyNotes(video.scenes[n - 1], note, 'scene'));
+  // A look named in the founder's idea is used when the dashboard was left on "Surprise me"
+  const named = String((raw as Record<string, unknown>)?.look ?? '').trim().toLowerCase() as VideoStyle;
   return {
     _id: randomUUID(),
     createdAt: new Date(),
     day: studioDay(),
     brief: brief.slice(0, MAX_VIDEO_BRIEF),
-    seconds,
+    // The founder's own scene times may make the video longer or shorter than the slider
+    seconds: Math.round(video.scenes.reduce((n, s) => n + s.duration, 0)),
     status: 'new' as SocialPostStatus,
-    style: look === 'surprise' ? randomStyle() : look,
+    style: look === 'surprise' ? (VIDEO_STYLES.includes(named) ? named : randomStyle()) : look,
     seed: randomSeed(),
     music,
-    ...cleanVideo(raw, seconds)
+    ...video
   };
 }
 

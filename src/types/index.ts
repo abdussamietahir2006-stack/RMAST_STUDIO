@@ -200,6 +200,10 @@ export interface CornerTexts {
   bottomRight: string;
 }
 export type TextAlign = 'left' | 'center' | 'right';
+// Scene/slide effects the founder can ask for
+export type SceneTone = 'muted'; // grey and dull (e.g. a "before" or problem scene)
+export type SceneMotion = 'slowZoom'; // a slow zoom in on the scene
+export type TextEntrance = 'words' | 'lines' | 'pop' | 'fade'; // how text appears (words is the default)
 
 // How a slide is laid out when drawn (see src/admin/social/slideRenderer.ts)
 export type SocialSlideLayout = 'cover' | 'list' | 'points' | 'statement' | 'tags' | 'compare' | 'cta';
@@ -217,6 +221,7 @@ export interface SocialSlide {
   align?: TextAlign; // text alignment when the founder asked for one
   corners?: CornerTexts; // corner texts when the founder asked for them
   button?: string; // call-to-action button label when the founder asked for one
+  tone?: SceneTone;
 }
 
 export type SocialPostStatus = 'new' | 'downloaded' | 'posted' | 'skipped';
@@ -276,6 +281,9 @@ export interface VideoScene {
   align?: TextAlign;
   corners?: CornerTexts;
   button?: string;
+  tone?: SceneTone;
+  motion?: SceneMotion;
+  textIn?: TextEntrance;
 }
 
 export interface SocialVideo {

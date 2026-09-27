@@ -2,7 +2,7 @@
 // A pure function of time: draw(ctx, t) paints exactly the same frame for the live preview and
 // the MP4 export. Layers: the style's animated background (themes.ts), then the scenes' animated
 // typography, blended by the scene transitions, then the brand mark and progress line.
-import type { TextAlign, VideoScene, VideoStyle } from '../../types';
+import type { TextAlign, TextEntrance, VideoScene, VideoStyle } from '../../types';
 import { CONTACT } from '../../config/contact';
 import {
   clamp01,
@@ -78,6 +78,7 @@ interface Pen {
   local: number; // time since the scene started appearing
   th: Theme;
   align: TextAlign; // the scene's alignment (the founder's choice, else the look's)
+  textIn: TextEntrance; // how the scene's text appears
 }
 
 // Left edge of a block `w` wide in the text column, for an alignment
@@ -149,8 +150,37 @@ function kinetic(p: Pen, text: string, y: number, o: KineticOpts): number {
     const lineW = ctx.measureText(line).width;
     const lx = alignX(o.align, lineW);
     const fill = o.fill === 'accent' ? shimmer(ctx, lx, lineW, p.t, p.th.accent) : o.fill;
+
+    // "pop" and "fade": whole lines appear one after another (scaled in with a bounce, or faded in)
+    if (p.textIn === 'pop' || p.textIn === 'fade') {
+      const raw = phase(p.local, o.start + li * 0.3, p.textIn === 'pop' ? 0.55 : 0.7);
+      if (raw <= 0) return;
+      ctx.save();
+      ctx.fillStyle = fill;
+      if (o.glow && p.th.glow && raw >= 1) {
+        ctx.shadowColor = p.th.glow;
+        ctx.shadowBlur = o.size * 0.3;
+      }
+      if (p.textIn === 'pop') {
+        const sc = easeOutBack(raw);
+        const cx = lx + lineW / 2;
+        const cy = baseline - o.size * 0.35;
+        ctx.translate(cx, cy);
+        ctx.scale(sc, sc);
+        ctx.translate(-cx, -cy);
+        ctx.globalAlpha = clamp01(raw * 2.5);
+      } else {
+        ctx.globalAlpha = easeOutCubic(raw);
+      }
+      ctx.fillText(line, lx, baseline);
+      ctx.restore();
+      return;
+    }
+
+    // "words" (default) rise one after another; "lines" rise a whole line at a time
+    const lineE = easeOutExpo(phase(p.local, o.start + li * 0.3, 0.75));
     const words = line.split(' ').map((word) => {
-      const e = easeOutExpo(phase(p.local, o.start + k++ * stagger, 0.75));
+      const e = p.textIn === 'lines' ? lineE : easeOutExpo(phase(p.local, o.start + k++ * stagger, 0.75));
       return { word, e };
     });
     // Words still rising are drawn through a mask (they appear out of an invisible slot);
@@ -696,7 +726,8 @@ export class VideoEngine {
   }
 
   private pen(ctx: Ctx, dry: boolean, t: number, local: number, i: number): Pen {
-    return { ctx, dry, t, local, th: this.th, align: this.scenes[i]?.align ?? this.th.align };
+    const s = this.scenes[i];
+    return { ctx, dry, t, local, th: this.th, align: s?.align ?? this.th.align, textIn: s?.textIn ?? 'words' };
   }
 
   // Height of a scene's block, measured once (layout does not change over time)
@@ -718,7 +749,7 @@ export class VideoEngine {
     ctx.setTransform(this.scale, 0, 0, this.scale, 0, 0);
     ctx.textBaseline = 'alphabetic';
     // Slow camera push-in across the scene
-    const push = 1 + 0.04 * clamp01(local / (s.duration + TRANSITION));
+    const push = 1 + (s.motion === 'slowZoom' ? 0.2 : 0.04) * clamp01(local / (s.duration + TRANSITION));
     ctx.translate(VIDEO_W / 2, CONTENT_MID);
     ctx.scale(push, push);
     ctx.translate(-VIDEO_W / 2, -CONTENT_MID);
@@ -757,6 +788,17 @@ export class VideoEngine {
       const a = this.renderScene(0, from, t);
       const b = this.renderScene(1, to, t);
       this.transition(ctx, this.scenes[from].transition, a, b, clamp01(p), t);
+    }
+
+    // "muted" scenes are grey and dull; the effect blends in and out with the transition
+    const muted = (i: number) => (this.scenes[i]?.tone === 'muted' ? 1 : 0);
+    const dull = from === to ? muted(from) : muted(from) * (1 - clamp01(p)) + muted(to) * clamp01(p);
+    if (dull > 0 && 'filter' in ctx) {
+      ctx.save();
+      ctx.globalAlpha = dull;
+      ctx.filter = 'grayscale(1) brightness(0.72) contrast(0.92)';
+      ctx.drawImage(ctx.canvas, 0, 0);
+      ctx.restore();
     }
 
     ctx.setTransform(this.scale, 0, 0, this.scale, 0, 0);
