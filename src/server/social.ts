@@ -4,7 +4,8 @@
 // dashboard draws the slides in the studio's visual style (src/admin/social/slideRenderer.ts).
 import { randomUUID } from 'node:crypto';
 import { GoogleGenAI, Type } from '@google/genai';
-import type { PostSize, SocialPost, SocialPostStatus, SocialSlide, SocialSlideLayout, VideoStyle } from '../types/index.js';
+import type { CornerTexts, PostSize, SocialPost, SocialPostStatus, SocialSlide, SocialSlideLayout, TextAlign, VideoStyle } from '../types/index.js';
+import { resolveSiteUrl } from '../config/siteUrl.js';
 import { collections, type SocialPostDoc } from './db.js';
 import { CONTACT } from '../config/contact.js';
 import { servicesData } from '../data/servicesData.js';
@@ -86,13 +87,68 @@ Promises: transparent pricing published on the website, reply within 24 hours, y
 Website extras: an AI assistant visitors can talk to by voice or chat, downloadable price-list PDFs and a company profile PDF.
 AI video: ${aiVideoSinglePricing.map((v) => `${v.tier} ${usd(v.priceUSD)}`).join(', ')} per video; monthly bundles of 10/20/30 videos from ${usd(videoMonthlyBundles[0].starter.usd)}/month, saving up to 24%.
 AI static posts: ${aiPostSinglePricing.map((p) => `${p.tier} ${usd(p.priceUSD)}`).join(', ')} per post (half the price of a video), with monthly post bundles too.
-Contact: WhatsApp ${CONTACT.whatsappDisplay}, ${CONTACT.email}, Instagram @${CONTACT.instagramHandle}, website link in bio.
+Contact: WhatsApp ${CONTACT.whatsappDisplay}, ${CONTACT.email}, Instagram @${CONTACT.instagramHandle}${websiteHost() ? `, website ${websiteHost()}` : ''}.
 
 Services:
 ${services}
 
 Packages:
 ${packages}`;
+}
+
+// The public website address without the protocol (empty while running locally)
+export function websiteHost(): string {
+  const url = resolveSiteUrl();
+  return url.includes('localhost') ? '' : url.replace(/^https?:\/\//, '');
+}
+
+// Optional design fields shared by slides and scenes (plain strings keep the schema light)
+export const DESIGN_FIELDS = {
+  align: { type: Type.STRING },
+  cornerTopLeft: { type: Type.STRING },
+  cornerTopRight: { type: Type.STRING },
+  cornerBottomLeft: { type: Type.STRING },
+  cornerBottomRight: { type: Type.STRING },
+  button: { type: Type.STRING }
+};
+
+// Reads the optional design fields back; only what the founder asked for is kept
+export function cleanDesign(r: Record<string, unknown>): { align?: TextAlign; corners?: CornerTexts; button?: string } {
+  const out: { align?: TextAlign; corners?: CornerTexts; button?: string } = {};
+  const align = String(r.align ?? '').trim().toLowerCase();
+  if (align === 'left' || align === 'center' || align === 'right') out.align = align;
+  const corner = (v: unknown) => {
+    const t = String(v ?? '').replace(/\s+/g, ' ').trim().slice(0, 60);
+    return /^(-|none|hide|hidden)$/i.test(t) ? '-' : t;
+  };
+  const corners = {
+    topLeft: corner(r.cornerTopLeft),
+    topRight: corner(r.cornerTopRight),
+    bottomLeft: corner(r.cornerBottomLeft),
+    bottomRight: corner(r.cornerBottomRight)
+  };
+  if (Object.values(corners).some(Boolean)) out.corners = corners;
+  const button = String(r.button ?? '').replace(/\s+/g, ' ').trim().slice(0, 40);
+  if (button) out.button = button;
+  return out;
+}
+
+// The founder's instructions win over every default of the design
+export function exactnessRules(kind: 'slide' | 'scene'): string {
+  const unit = kind === 'slide' ? 'slide' : 'scene';
+  return `FOLLOW THE FOUNDER EXACTLY (overrides everything else, including the creative standard):
+- Every detail the founder specifies must be applied exactly as written: wording, order, numbers, the number of ${unit}s, which ${unit} shows what, and where things are placed. Never swap their choice for your own idea of what is better.
+- DESIGN CONTROLS you can set on any ${unit}. Use them ONLY when the founder asks; otherwise leave them "":
+   - align: "left", "center" or "right" for the ${unit}'s text.
+   - cornerTopLeft, cornerTopRight, cornerBottomLeft, cornerBottomRight: short text shown in that corner (max 60 chars), exactly as the founder wants it, e.g. the website address. Use "-" to remove what the design normally shows in that corner.
+   - button: the label of the call-to-action button (the design's default is "LINK IN BIO ↗").
+   ${
+     kind === 'slide'
+       ? 'The design normally shows: our logo top-left, @handle bottom-left and "SWIPE →" bottom-right on the first slide; the page number top-right on the other slides; a "LINK IN BIO ↗" button and our contact line on the last slide.'
+       : 'The design normally shows: our logo top-left with a progress line on every scene, and on the final scene a "LINK IN BIO ↗" button with our handle and contact details.'
+   }
+- Example: "put the website link in the bottom-right corner of slide 1" means cornerBottomRight = our website address on that ${unit}, not "link in bio" and not somewhere else.
+- If something the founder asks for cannot be done with these controls, do the closest possible and say so in notFollowed (one short sentence per item). Otherwise leave notFollowed "".`;
 }
 
 const SLIDE_SCHEMA = {
@@ -112,25 +168,23 @@ const SLIDE_SCHEMA = {
       items: { type: Type.OBJECT, properties: { title: { type: Type.STRING }, text: { type: Type.STRING } }, required: ['title', 'text'] }
     },
     before: { type: Type.STRING },
-    after: { type: Type.STRING }
+    after: { type: Type.STRING },
+    ...DESIGN_FIELDS
   },
   required: ['layout', 'kicker', 'headline', 'highlight', 'body', 'items', 'points', 'before', 'after']
 };
 
-// Array length limits for a structured-output schema. Gemini rejects long limits on arrays of
-// rich objects ("too many states"), so above 10 the count is left to the written instructions
-// and checked in code afterwards.
-export const arrayLimits = (min: number, max: number) =>
-  max <= 10 ? { minItems: String(min), maxItems: String(max) } : { minItems: String(Math.min(min, 4)) };
-
-const postSchema = (min: number, max: number) => ({
+// No length limits on the slides array: Gemini rejects them on arrays of rich objects ("too many
+// states"), so the count is set in the written instructions and checked in code afterwards.
+const postSchema = () => ({
   type: Type.OBJECT,
   properties: {
     title: { type: Type.STRING },
     angle: { type: Type.STRING },
-    slides: { type: Type.ARRAY, items: SLIDE_SCHEMA, ...arrayLimits(min, max) },
+    slides: { type: Type.ARRAY, items: SLIDE_SCHEMA },
     caption: { type: Type.STRING },
-    hashtags: { type: Type.ARRAY, items: { type: Type.STRING } }
+    hashtags: { type: Type.ARRAY, items: { type: Type.STRING } },
+    notFollowed: { type: Type.STRING }
   },
   required: ['title', 'angle', 'slides', 'caption', 'hashtags']
 });
@@ -222,6 +276,8 @@ ${CREATIVE_STANDARD}
 
 ${formatRules(slideRule, true)}
 
+${exactnessRules('slide')}
+
 ${CAPTION_RULES}
 
 STUDIO FACTS (for anything the draft leaves open):
@@ -265,13 +321,14 @@ function cleanSlide(raw: unknown, forced?: SocialSlideLayout): SocialSlide {
       .map((p) => ({ title: clipText((p as Record<string, unknown>)?.title, 48), text: clipText((p as Record<string, unknown>)?.text, 150) }))
       .filter((p) => p.title),
     before: clipText(r.before, 90).replace(MARKS, ''),
-    after: clipText(r.after, 100).replace(MARKS, '')
+    after: clipText(r.after, 100).replace(MARKS, ''),
+    ...cleanDesign(r)
   };
 }
 
-function cleanPost(raw: unknown): Pick<SocialPost, 'title' | 'angle' | 'slides' | 'caption' | 'hashtags'> {
+function cleanPost(raw: unknown, max = MAX_SLIDES): Pick<SocialPost, 'title' | 'angle' | 'slides' | 'caption' | 'hashtags' | 'notFollowed'> {
   const r = (raw ?? {}) as Record<string, unknown>;
-  const slides = (Array.isArray(r.slides) ? r.slides : []).slice(0, MAX_SLIDES);
+  const slides = (Array.isArray(r.slides) ? r.slides : []).slice(0, max); // never more slides than asked for
   // A single slide is a standalone post: it keeps the cover layout (i is both first and last)
   if (slides.length < MIN_SLIDES) throw new Error('The post came back incomplete. Please try again.');
   const last = slides.length - 1;
@@ -290,7 +347,8 @@ function cleanPost(raw: unknown): Pick<SocialPost, 'title' | 'angle' | 'slides' 
     .filter(Boolean)
     .slice(0, 15);
   if (!caption || !(cleaned[0].headline || cleaned[0].highlight)) throw new Error('The post came back incomplete. Please try again.');
-  return { title: clipText(r.title, 80) || 'Untitled idea', angle: clipText(r.angle, 240), slides: cleaned, caption, hashtags };
+  const notFollowed = clipText(r.notFollowed, 400);
+  return { title: clipText(r.title, 80) || 'Untitled idea', angle: clipText(r.angle, 240), slides: cleaned, caption, hashtags, ...(notFollowed ? { notFollowed } : {}) };
 }
 
 // ---------------------------------------------------------------------------
@@ -369,7 +427,8 @@ export const toSocialPost = (d: SocialPostDoc): SocialPost => ({
   // Posts made before looks existed keep the original aurora design
   style: d.style ?? 'aurora',
   seed: d.seed ?? 1,
-  size: d.size ?? DEFAULT_POST_SIZE
+  size: d.size ?? DEFAULT_POST_SIZE,
+  notFollowed: d.notFollowed
 });
 
 export interface DraftOptions {
@@ -395,7 +454,7 @@ export async function draftPost(recent: SocialPostDoc[], auto: boolean, opts: Dr
   const brief = opts.brief?.trim();
   const exact = opts.slides && opts.slides >= MIN_SLIDES && opts.slides <= MAX_SLIDES ? opts.slides : undefined;
 
-  const [min, max] = exact ? [exact, exact] : brief ? [MIN_SLIDES, MAX_SLIDES] : [IDEA_MIN_SLIDES, IDEA_MAX_SLIDES];
+  const max = exact ?? (brief ? MAX_SLIDES : IDEA_MAX_SLIDES);
   const slideRule = exact
     ? exact === 1
       ? 'exactly 1 slide: a single static post'
@@ -407,14 +466,14 @@ export async function draftPost(recent: SocialPostDoc[], auto: boolean, opts: Dr
   const pillar = brief ? null : pickPillar(recent);
   const prompt = brief ? briefInstructions(brief, day, slideRule) : dailyInstructions(pillar!, recent, day, slideRule);
 
-  const raw = await generateJson(prompt, postSchema(min, max), {
+  const raw = await generateJson(prompt, postSchema(), {
     // The founder's wording should be kept, so their posts get a steadier hand
     temperature: brief ? 0.6 : 1,
     label: 'Social post',
     // Room for up to 20 slides plus the caption
     maxOutputTokens: max > 10 ? 14000 : 8000
   });
-  const post = cleanPost(raw);
+  const post = cleanPost(raw, max);
   return {
     _id: randomUUID(),
     day,

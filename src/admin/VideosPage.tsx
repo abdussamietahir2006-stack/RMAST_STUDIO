@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Check, ClipboardCopy, Clapperboard, Download, Lightbulb, Music, Pause, Play, Shuffle, Sparkles, Trash2, X } from 'lucide-react';
+import { AlertTriangle, Check, ClipboardCopy, Clapperboard, Download, Lightbulb, Music, Pause, Play, Shuffle, Sparkles, Trash2, X } from 'lucide-react';
 import { MusicMood, SocialVideo, VideoScene, VideoStyle } from '../types';
 import { adminApi } from './api';
 import { useAdmin } from './AdminApp';
@@ -268,6 +268,12 @@ const VideoCard: React.FC<{
               <p className="text-sm text-[#8B8D98] flex gap-1.5">
                 <Lightbulb className="w-4 h-4 mt-0.5 shrink-0 text-[#C9A96E]" />
                 <span>{video.angle}</span>
+              </p>
+            )}
+            {video.notFollowed && (
+              <p className="text-sm text-[#F5C26B] flex gap-1.5">
+                <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
+                <span>Could not be applied exactly: {video.notFollowed}</span>
               </p>
             )}
           </div>

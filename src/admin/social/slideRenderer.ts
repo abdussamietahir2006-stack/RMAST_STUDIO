@@ -2,7 +2,7 @@
 // (src/admin/video/themes.ts). The same drawing runs as a still image or animated: in the animated
 // version every line of text rises into place within the first two seconds.
 // Canvas (not HTML screenshots) keeps export exact and works under the site's strict CSP.
-import type { PostSize, SocialSlide, VideoStyle } from '../../types';
+import type { CornerTexts, PostSize, SocialSlide, TextAlign, VideoStyle } from '../../types';
 import { CONTACT } from '../../config/contact';
 import { clamp01, makeVariation, SANS, SERIF, THEMES, type Variation } from '../video/themes';
 
@@ -138,7 +138,12 @@ interface Pen {
   k: number; // animated elements so far
   step: number; // delay between elements
   inGroup: boolean;
+  align: TextAlign; // the founder's alignment for this slide (left by default)
 }
+
+// Left edge of a block `width` wide inside the text column, following the slide's alignment
+const alignX = (p: Pen, width: number) =>
+  p.align === 'center' ? PAD + (TW - width) / 2 : p.align === 'right' ? PAD + TW - width : PAD;
 
 let fontsReady: Promise<void> | null = null;
 export function loadSlideFonts(): Promise<void> {
@@ -341,32 +346,86 @@ function kicker(p: Pen, text: string, y: number) {
   group(p, () => {
     if (p.dry) return;
     const { ctx } = p;
+    setFont(ctx, 700, 22, SANS);
+    setSpacing(ctx, 5);
+    const x = alignX(p, 30 + ctx.measureText(text.toUpperCase()).width);
     ctx.save();
     ctx.shadowColor = p.pal.dot;
     ctx.shadowBlur = 18;
     ctx.fillStyle = p.pal.dot;
     ctx.beginPath();
-    ctx.arc(PAD + 7, y - 8, 7, 0, Math.PI * 2);
+    ctx.arc(x + 7, y - 8, 7, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
-    setFont(ctx, 700, 22, SANS);
-    setSpacing(ctx, 5);
     ctx.fillStyle = p.pal.kicker;
-    ctx.fillText(text.toUpperCase(), PAD + 30, y);
+    ctx.fillText(text.toUpperCase(), x + 30, y);
   }, 16);
 }
 
-function pageLabel(p: Pen, index: number, total: number) {
-  if (index === 0) return;
-  group(p, () => {
-    if (p.dry) return;
-    const { ctx } = p;
-    setFont(ctx, 700, 22, SANS);
-    setSpacing(ctx, 4);
-    ctx.fillStyle = p.pal.page;
-    ctx.textAlign = 'right';
-    ctx.fillText(`${String(index + 1).padStart(2, '0')} / ${String(total).padStart(2, '0')}`, W - PAD, 118);
-  }, 12);
+// The four corners: the founder's text where given ("-" leaves the corner empty), otherwise the
+// design's default: logo, @handle and "SWIPE" on the first slide, the page number on the others
+function corners(p: Pen, slide: SocialSlide, index: number, total: number) {
+  const { ctx, pal } = p;
+  const custom: CornerTexts = slide.corners ?? { topLeft: '', topRight: '', bottomLeft: '', bottomRight: '' };
+  const first = index === 0;
+  // On inner slides the top row sits above the kicker unless everything is left-aligned as designed
+  const topY = first ? 140 : p.align === 'left' && !custom.topLeft ? 118 : 64;
+  const bottomY = first ? H - 120 : H - 52;
+
+  const text = (value: string, right: boolean, y: number) =>
+    group(p, () => {
+      if (p.dry) return;
+      const c = fit(ctx, value, { family: SANS, weight: 700, tracking: 2, upper: false }, 26, 14, TW / 2 - 12, 1);
+      setFace(ctx, { family: SANS, weight: 700, tracking: 2, upper: false }, c.size);
+      ctx.fillStyle = pal.text;
+      ctx.globalAlpha *= 0.85;
+      ctx.textAlign = right ? 'right' : 'left';
+      ctx.fillText(c.lines[0] ?? value, right ? W - PAD : PAD, y);
+    }, 12);
+  const slot = (value: string, right: boolean, y: number, fallback?: () => void) => {
+    if (value === '-') return;
+    if (value) text(value, right, y);
+    else fallback?.();
+  };
+
+  slot(custom.topLeft, false, topY, first ? () =>
+    group(p, () => {
+      if (p.dry) return;
+      setFont(ctx, 700, 44, SERIF);
+      setSpacing(ctx, 6);
+      ctx.fillStyle = pal.text;
+      ctx.fillText('RMAST', PAD, 140);
+      const w = ctx.measureText('RMAST').width;
+      setFont(ctx, 600, 36, SERIF, true);
+      ctx.fillStyle = pal.brandAccent;
+      ctx.fillText('Studio', PAD + w + 18, 140);
+    }, 12) : undefined);
+  slot(custom.topRight, true, topY, first ? undefined : () =>
+    group(p, () => {
+      if (p.dry) return;
+      setFont(ctx, 700, 22, SANS);
+      setSpacing(ctx, 4);
+      ctx.fillStyle = pal.page;
+      ctx.textAlign = 'right';
+      ctx.fillText(`${String(index + 1).padStart(2, '0')} / ${String(total).padStart(2, '0')}`, W - PAD, topY);
+    }, 12));
+  slot(custom.bottomLeft, false, bottomY, first ? () =>
+    group(p, () => {
+      if (p.dry) return;
+      setFont(ctx, 600, 26, SANS);
+      ctx.fillStyle = pal.muted;
+      ctx.fillText(`@${CONTACT.instagramHandle}`, PAD, bottomY);
+    }, 12) : undefined);
+  slot(custom.bottomRight, true, bottomY, first ? () =>
+    group(p, () => {
+      if (p.dry) return;
+      setFont(ctx, 700, 24, SANS);
+      setSpacing(ctx, 5);
+      ctx.fillStyle = pal.muted;
+      ctx.textAlign = 'right';
+      // A single-slide post has nothing to swipe to, so it points to the bio link instead
+      ctx.fillText(total > 1 ? 'SWIPE  →' : 'LINK IN BIO  ↗', W - PAD, bottomY);
+    }, 12) : undefined);
 }
 
 // Draws pre-wrapped lines, each rising out of a mask; returns the new y (baseline of the last line)
@@ -389,17 +448,19 @@ function lines(p: Pen, rows: string[], y: number, size: number, lineH: number, f
     }
     setFace(ctx, face, size);
     const width = ctx.measureText(row).width;
+    // Column text follows the slide's alignment; indented text (numbered points) stays put
+    const dx = x === PAD ? alignX(p, width) : x;
     if (fill === 'accent' && p.pal.marker && glowing) {
       ctx.fillStyle = p.pal.marker;
-      ctx.fillRect(x - 12, base - size * 0.8, width + 24, size * 1.0);
+      ctx.fillRect(dx - 12, base - size * 0.8, width + 24, size * 1.0);
     }
-    ctx.fillStyle = fill === 'accent' ? gradient(ctx, x, width, p.pal.accent) : fill;
+    ctx.fillStyle = fill === 'accent' ? gradient(ctx, dx, width, p.pal.accent) : fill;
     // Glow is left off while the line is masked, so it never shows the mask's hard edge
     if (glowing && p.pal.glow && e >= 1) {
       ctx.shadowColor = p.pal.glow;
       ctx.shadowBlur = 28;
     }
-    ctx.fillText(row, x, base);
+    ctx.fillText(row, dx, base);
     ctx.restore();
   }
   return y;
@@ -443,20 +504,9 @@ function roundRect(ctx: Ctx, x: number, y: number, w: number, h: number, r: numb
 // Layouts. Each returns how far its content overflows its space (<= 0 means it fits).
 // ---------------------------------------------------------------------------
 
-function cover(p: Pen, slide: SocialSlide, total: number) {
+function cover(p: Pen, slide: SocialSlide) {
   const { ctx, pal } = p;
   const face = pal.display;
-  group(p, () => {
-    if (p.dry) return;
-    setFont(ctx, 700, 44, SERIF);
-    setSpacing(ctx, 6);
-    ctx.fillStyle = pal.text;
-    ctx.fillText('RMAST', PAD, 140);
-    const w = ctx.measureText('RMAST').width;
-    setFont(ctx, 600, 36, SERIF, true);
-    ctx.fillStyle = pal.brandAccent;
-    ctx.fillText('Studio', PAD + w + 18, 140);
-  }, 12);
   let y = Math.round(H * 0.29);
   kicker(p, slide.kicker, y);
   y += 28;
@@ -475,24 +525,11 @@ function cover(p: Pen, slide: SocialSlide, total: number) {
   }
   y = paragraph(p, slide.body, y + 36, 34 * p.s, pal.lead, Math.min(780, TW));
   ctx.restore();
-
-  group(p, () => {
-    if (p.dry) return;
-    setFont(ctx, 600, 26, SANS);
-    ctx.fillStyle = pal.muted;
-    ctx.fillText(`@${CONTACT.instagramHandle}`, PAD, H - 120);
-    setFont(ctx, 700, 24, SANS);
-    setSpacing(ctx, 5);
-    ctx.textAlign = 'right';
-    // A single-slide post has nothing to swipe to, so it points to the bio link instead
-    ctx.fillText(total > 1 ? 'SWIPE  →' : 'LINK IN BIO  ↗', W - PAD, H - 120);
-  }, 12);
   return y - (H - 200);
 }
 
-function list(p: Pen, slide: SocialSlide, index: number, total: number) {
+function list(p: Pen, slide: SocialSlide) {
   const { ctx, pal } = p;
-  pageLabel(p, index, total);
   let y = 110;
   kicker(p, slide.kicker, y);
   y = title(p, slide, y + 24, 96, 56);
@@ -523,9 +560,8 @@ function list(p: Pen, slide: SocialSlide, index: number, total: number) {
   return y - (H - 130);
 }
 
-function points(p: Pen, slide: SocialSlide, index: number, total: number) {
+function points(p: Pen, slide: SocialSlide) {
   const { pal } = p;
-  pageLabel(p, index, total);
   let y = 110;
   kicker(p, slide.kicker, y);
   y = title(p, slide, y + 24, 92, 56);
@@ -548,10 +584,9 @@ function points(p: Pen, slide: SocialSlide, index: number, total: number) {
   return y - (H - 130);
 }
 
-function statement(p: Pen, slide: SocialSlide, index: number, total: number) {
+function statement(p: Pen, slide: SocialSlide) {
   const { ctx, pal } = p;
   const face = pal.display;
-  pageLabel(p, index, total);
   let y = 110;
   kicker(p, slide.kicker, y);
   y += 60;
@@ -572,9 +607,8 @@ function statement(p: Pen, slide: SocialSlide, index: number, total: number) {
   return y - (H - 170);
 }
 
-function cta(p: Pen, slide: SocialSlide, index: number, total: number) {
+function cta(p: Pen, slide: SocialSlide) {
   const { ctx, pal } = p;
-  pageLabel(p, index, total);
   let y = 110;
   kicker(p, slide.kicker, y);
   y = title(p, slide, y + 24, 96, 56, TW, 3);
@@ -582,20 +616,21 @@ function cta(p: Pen, slide: SocialSlide, index: number, total: number) {
 
   group(p, () => {
     if (p.dry) return;
-    setFont(ctx, 700, 30, SANS);
-    setSpacing(ctx, 4);
-    const label = 'LINK IN BIO  ↗';
+    const label = slide.button || 'LINK IN BIO  ↗';
+    const f = fit(ctx, label, { family: SANS, weight: 700, tracking: 4, upper: false }, 30, 18, TW - 80, 1);
+    setFace(ctx, { family: SANS, weight: 700, tracking: 4, upper: false }, f.size);
     const bw = ctx.measureText(label).width + 80;
+    const bx = alignX(p, bw);
     const by = H - 260;
     ctx.save();
     ctx.shadowColor = pal.shadow;
     ctx.shadowBlur = 60;
     ctx.shadowOffsetY = 20;
-    ctx.fillStyle = gradient(ctx, PAD, bw, pal.fill);
-    ctx.fillRect(PAD, by, bw, 92);
+    ctx.fillStyle = gradient(ctx, bx, bw, pal.fill);
+    ctx.fillRect(bx, by, bw, 92);
     ctx.restore();
     ctx.fillStyle = pal.buttonText;
-    ctx.fillText(label, PAD + 40, by + 57);
+    ctx.fillText(label, bx + 40, by + 46 + f.size * 0.36);
   });
 
   group(p, () => {
@@ -604,15 +639,14 @@ function cta(p: Pen, slide: SocialSlide, index: number, total: number) {
     const c = fit(ctx, contact, sans(500), 24, 16, TW, 1);
     setFont(ctx, 500, c.size, SANS);
     ctx.fillStyle = pal.muted;
-    ctx.fillText(contact, PAD, H - 110);
+    ctx.fillText(contact, alignX(p, ctx.measureText(contact).width), H - 110);
   }, 12);
   return y - (H - 300);
 }
 
 // Short labels as pills, wrapped across rows ("Price", "Commute", "Schools")
-function tags(p: Pen, slide: SocialSlide, index: number, total: number) {
+function tags(p: Pen, slide: SocialSlide) {
   const { ctx, pal } = p;
-  pageLabel(p, index, total);
   let y = 110;
   kicker(p, slide.kicker, y);
   y = title(p, slide, y + 24, 100, 56);
@@ -649,9 +683,8 @@ function tags(p: Pen, slide: SocialSlide, index: number, total: number) {
 }
 
 // The weak version crossed out, then the better version in a gradient-bordered card
-function compare(p: Pen, slide: SocialSlide, index: number, total: number) {
+function compare(p: Pen, slide: SocialSlide) {
   const { ctx, pal } = p;
-  pageLabel(p, index, total);
   let y = 110;
   kicker(p, slide.kicker, y);
   y = title(p, slide, y + 24, 100, 56);
@@ -718,21 +751,22 @@ function compare(p: Pen, slide: SocialSlide, index: number, total: number) {
 }
 
 function drawLayout(p: Pen, slide: SocialSlide, index: number, total: number): number {
+  corners(p, slide, index, total);
   switch (slide.layout) {
     case 'cover':
-      return cover(p, slide, total);
+      return cover(p, slide);
     case 'list':
-      return list(p, slide, index, total);
+      return list(p, slide);
     case 'points':
-      return points(p, slide, index, total);
+      return points(p, slide);
     case 'statement':
-      return statement(p, slide, index, total);
+      return statement(p, slide);
     case 'tags':
-      return tags(p, slide, index, total);
+      return tags(p, slide);
     case 'compare':
-      return compare(p, slide, index, total);
+      return compare(p, slide);
     case 'cta':
-      return cta(p, slide, index, total);
+      return cta(p, slide);
   }
 }
 
@@ -744,7 +778,8 @@ export function prepareSlide(ctx: Ctx, slide: SocialSlide, index: number, total:
   useFrame(frame);
   const pal = palette(look.style);
   const v = makeVariation(look.seed);
-  const pen = (s: number, dry: boolean, t: number | null, step = 0): Pen => ({ ctx, dry, s, pal, t, k: 0, step, inGroup: false });
+  const align = slide.align ?? 'left';
+  const pen = (s: number, dry: boolean, t: number | null, step = 0): Pen => ({ ctx, dry, s, pal, t, k: 0, step, inGroup: false, align });
 
   // Size the text to the slide: shrink in steps if it overflows; otherwise grow it (up to 40%)
   // so short copy fills the slide instead of leaving an empty bottom half. The cover is already big.

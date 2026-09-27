@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  AlertTriangle,
   Check,
   ClipboardCopy,
   Download,
@@ -399,6 +400,12 @@ const PostCard: React.FC<{
               <p className="text-sm text-[#8B8D98] flex gap-1.5">
                 <Lightbulb className="w-4 h-4 mt-0.5 shrink-0 text-[#C9A96E]" />
                 <span>{post.angle}</span>
+              </p>
+            )}
+            {post.notFollowed && (
+              <p className="text-sm text-[#F5C26B] flex gap-1.5">
+                <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
+                <span>Could not be applied exactly: {post.notFollowed}</span>
               </p>
             )}
           </div>

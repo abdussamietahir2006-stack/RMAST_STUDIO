@@ -2,7 +2,7 @@
 // A pure function of time: draw(ctx, t) paints exactly the same frame for the live preview and
 // the MP4 export. Layers: the style's animated background (themes.ts), then the scenes' animated
 // typography, blended by the scene transitions, then the brand mark and progress line.
-import type { VideoScene, VideoStyle } from '../../types';
+import type { TextAlign, VideoScene, VideoStyle } from '../../types';
 import { CONTACT } from '../../config/contact';
 import {
   clamp01,
@@ -77,8 +77,12 @@ interface Pen {
   t: number; // absolute time (for shimmer)
   local: number; // time since the scene started appearing
   th: Theme;
-  align: 'left' | 'center'; // for headline-led scenes
+  align: TextAlign; // the scene's alignment (the founder's choice, else the look's)
 }
+
+// Left edge of a block `w` wide in the text column, for an alignment
+const alignX = (align: TextAlign | undefined, w: number) =>
+  align === 'center' ? PAD + (TEXT_W - w) / 2 : align === 'right' ? PAD + TEXT_W - w : PAD;
 
 const displayText = (p: Pen, s: string) => (p.th.display.upper ? s.toUpperCase() : s);
 
@@ -119,7 +123,7 @@ interface KineticOpts {
   start: number; // seconds after the scene starts
   stagger?: number; // seconds between words
   lineH?: number;
-  align?: 'left' | 'center';
+  align?: TextAlign;
   tracking?: number;
   glow?: boolean;
 }
@@ -143,7 +147,7 @@ function kinetic(p: Pen, text: string, y: number, o: KineticOpts): number {
     const top = y + li * o.size * lineH;
     const baseline = top + o.size * 0.86;
     const lineW = ctx.measureText(line).width;
-    const lx = o.align === 'center' ? PAD + (TEXT_W - lineW) / 2 : PAD;
+    const lx = alignX(o.align, lineW);
     const fill = o.fill === 'accent' ? shimmer(ctx, lx, lineW, p.t, p.th.accent) : o.fill;
     const words = line.split(' ').map((word) => {
       const e = easeOutExpo(phase(p.local, o.start + k++ * stagger, 0.75));
@@ -185,7 +189,7 @@ function kinetic(p: Pen, text: string, y: number, o: KineticOpts): number {
 const wordCount = (s: string) => (s ? s.split(/\s+/).filter(Boolean).length : 0);
 
 // Small uppercase label with a glowing dot
-function kicker(p: Pen, text: string, y: number, start = 0.05, align: 'left' | 'center' = 'left'): number {
+function kicker(p: Pen, text: string, y: number, start = 0.05, align: TextAlign = 'left'): number {
   if (!text) return y;
   if (!p.dry) {
     const { ctx } = p;
@@ -194,7 +198,7 @@ function kicker(p: Pen, text: string, y: number, start = 0.05, align: 'left' | '
     setSpacing(ctx, 7);
     const label = text.toUpperCase();
     const w = ctx.measureText(label).width + 38;
-    const x = align === 'center' ? (VIDEO_W - w) / 2 : PAD;
+    const x = alignX(align, w);
     ctx.save();
     ctx.globalAlpha = e;
     ctx.shadowColor = p.th.dot;
@@ -214,7 +218,7 @@ function kicker(p: Pen, text: string, y: number, start = 0.05, align: 'left' | '
   return y + 84;
 }
 
-const displayOpts = (p: Pen, size: number, fill: string | 'accent', start: number, lineH: number, align: 'left' | 'center'): KineticOpts => ({
+const displayOpts = (p: Pen, size: number, fill: string | 'accent', start: number, lineH: number, align: TextAlign): KineticOpts => ({
   size,
   weight: p.th.display.weight,
   family: p.th.display.family,
@@ -227,7 +231,7 @@ const displayOpts = (p: Pen, size: number, fill: string | 'accent', start: numbe
 });
 
 // Headline, then the accent highlight, sharing one size so they read as one phrase
-function titleBlock(p: Pen, s: VideoScene, y: number, max: number, min: number, maxLines: number, start: number, align: 'left' | 'center' = 'left') {
+function titleBlock(p: Pen, s: VideoScene, y: number, max: number, min: number, maxLines: number, start: number, align: TextAlign = 'left') {
   const head = displayText(p, s.headline);
   const high = displayText(p, s.highlight);
   const size = fitSize(p, [head, high].filter(Boolean).join(' '), p.th.display.family, p.th.display.weight, max, min, TEXT_W, maxLines);
@@ -237,7 +241,7 @@ function titleBlock(p: Pen, s: VideoScene, y: number, max: number, min: number, 
   return { y, end: highStart + wordCount(high) * 0.07 + 0.5 };
 }
 
-function bodyText(p: Pen, text: string, y: number, start: number, size = 50, colour?: string, align: 'left' | 'center' = 'left'): number {
+function bodyText(p: Pen, text: string, y: number, start: number, size = 50, colour?: string, align: TextAlign = 'left'): number {
   if (!text) return y;
   return kinetic(p, text, y + 26, { size, weight: 500, family: SANS, fill: colour ?? p.th.lead, start, stagger: 0.025, lineH: 1.38, align });
 }
@@ -328,7 +332,7 @@ function statScene(p: Pen, s: VideoScene, y: number): number {
     const current = `${s.statPrefix}${Math.round(s.statValue * e).toLocaleString('en-US')}${s.statSuffix}`;
     setFont(ctx, 900, size, family);
     const w = ctx.measureText(final).width;
-    const x = p.align === 'center' ? (VIDEO_W - w) / 2 : PAD;
+    const x = alignX(p.align, w);
     ctx.save();
     ctx.globalAlpha = clamp01(phase(p.local, 0.15, 0.4));
     ctx.shadowColor = th.glow ?? 'rgba(255,92,170,0.45)';
@@ -511,7 +515,6 @@ function stepsScene(p: Pen, s: VideoScene, y: number): number {
 
 function ctaScene(p: Pen, s: VideoScene, y: number): number {
   const { ctx, th } = p;
-  const center = p.align === 'center';
   // Logo lock-up
   if (!p.dry) {
     const e = easeOutExpo(phase(p.local, 0.1, 0.8));
@@ -523,7 +526,7 @@ function ctaScene(p: Pen, s: VideoScene, y: number): number {
     setSpacing(ctx, 0);
     setFont(ctx, 600, 54, SERIF, true);
     const w2 = ctx.measureText('Studio').width;
-    const x = center ? (VIDEO_W - (w + 24 + w2)) / 2 : PAD;
+    const x = alignX(p.align, w + 24 + w2);
     setFont(ctx, 700, 64, SERIF);
     setSpacing(ctx, 10);
     ctx.fillStyle = th.text;
@@ -542,13 +545,17 @@ function ctaScene(p: Pen, s: VideoScene, y: number): number {
   if (!p.dry) {
     const e = easeOutBack(phase(p.local, end + 0.2, 0.6));
     if (e > 0) {
-      setFont(ctx, 800, 40, SANS);
+      const label = s.button || 'LINK IN BIO  ↗';
+      // Long custom labels shrink to fit the column
+      let fontSize = 40;
       setSpacing(ctx, 6);
-      const label = 'LINK IN BIO  ↗';
+      do {
+        setFont(ctx, 800, fontSize, SANS);
+      } while (ctx.measureText(label).width + 110 > TEXT_W && (fontSize -= 2) > 22);
       const bw = ctx.measureText(label).width + 110;
       const bh = 116;
       const pulse = 1 + 0.025 * Math.sin(p.t * 4);
-      const bx = center ? (VIDEO_W - bw) / 2 : PAD;
+      const bx = alignX(p.align, bw);
       ctx.save();
       ctx.translate(bx + bw / 2, y + bh / 2);
       ctx.scale(e * pulse, e * pulse);
@@ -566,8 +573,8 @@ function ctaScene(p: Pen, s: VideoScene, y: number): number {
     const c = easeOutCubic(phase(p.local, end + 0.6, 0.7));
     ctx.save();
     ctx.globalAlpha = c;
-    ctx.textAlign = center ? 'center' : 'left';
-    const cx = center ? VIDEO_W / 2 : PAD;
+    ctx.textAlign = p.align;
+    const cx = p.align === 'center' ? VIDEO_W / 2 : p.align === 'right' ? PAD + TEXT_W : PAD;
     setFont(ctx, 600, 38, SANS);
     ctx.fillStyle = th.muted;
     ctx.fillText(`@${CONTACT.instagramHandle}`, cx, y + 196);
@@ -599,12 +606,35 @@ function drawScene(p: Pen, s: VideoScene, y: number): number {
   }
 }
 
-// Brand mark and a progress line (drawn on top of everything)
-function overlay(ctx: Ctx, th: Theme, t: number, total: number) {
+// Brand mark, progress line and the scene's corner texts (drawn on top of everything).
+// Corner text: "" = the default (logo top-left, nothing elsewhere), "-" = empty, else shown as written.
+function overlay(ctx: Ctx, th: Theme, t: number, total: number, scene: VideoScene | undefined) {
   ctx.fillStyle = th.track;
   ctx.fillRect(PAD, 92, TEXT_W, 5);
   ctx.fillStyle = shimmer(ctx, PAD, TEXT_W, t, th.fill);
   ctx.fillRect(PAD, 92, TEXT_W * clamp01(t / total), 5);
+
+  const c = scene?.corners;
+  const text = (value: string, right: boolean, y: number) => {
+    if (!value || value === '-') return;
+    ctx.save();
+    setSpacing(ctx, 2);
+    let size = 36;
+    do {
+      setFont(ctx, 700, size, SANS);
+    } while (ctx.measureText(value).width > TEXT_W / 2 - 12 && (size -= 2) > 18);
+    ctx.globalAlpha = 0.9;
+    ctx.fillStyle = th.text;
+    ctx.textAlign = right ? 'right' : 'left';
+    ctx.fillText(value, right ? PAD + TEXT_W : PAD, y);
+    ctx.restore();
+  };
+  // Bottom corners sit above the Reels caption and buttons
+  text(c?.topRight ?? '', true, 172);
+  text(c?.bottomLeft ?? '', false, VIDEO_H - 300);
+  text(c?.bottomRight ?? '', true, VIDEO_H - 300);
+  if (c?.topLeft) return text(c.topLeft, false, 172);
+
   setFont(ctx, 700, 40, SERIF);
   setSpacing(ctx, 6);
   ctx.fillStyle = th.text;
@@ -665,15 +695,15 @@ export class VideoEngine {
     return i === 0 ? t : t - this.starts[i] + TRANSITION / 2;
   }
 
-  private pen(ctx: Ctx, dry: boolean, t: number, local: number): Pen {
-    return { ctx, dry, t, local, th: this.th, align: this.th.align };
+  private pen(ctx: Ctx, dry: boolean, t: number, local: number, i: number): Pen {
+    return { ctx, dry, t, local, th: this.th, align: this.scenes[i]?.align ?? this.th.align };
   }
 
   // Height of a scene's block, measured once (layout does not change over time)
   private height(ctx: Ctx, i: number) {
     let h = this.heights.get(i);
     if (h === undefined) {
-      h = drawScene(this.pen(ctx, true, 0, 99), this.scenes[i], 0);
+      h = drawScene(this.pen(ctx, true, 0, 99, i), this.scenes[i], 0);
       this.heights.set(i, h);
     }
     return h;
@@ -694,7 +724,7 @@ export class VideoEngine {
     ctx.translate(-VIDEO_W / 2, -CONTENT_MID);
     const h = this.height(ctx, i);
     const top = Math.max(250, Math.min(CONTENT_MID - h / 2, VIDEO_H - 330 - h));
-    drawScene(this.pen(ctx, false, t, local), s, top);
+    drawScene(this.pen(ctx, false, t, local, i), s, top);
     return canvas;
   }
 
@@ -730,7 +760,8 @@ export class VideoEngine {
     }
 
     ctx.setTransform(this.scale, 0, 0, this.scale, 0, 0);
-    overlay(ctx, this.th, t, this.duration);
+    // Corner texts follow the scene that is mostly on screen
+    overlay(ctx, this.th, t, this.duration, this.scenes[from === to || p < 0.5 ? from : to]);
 
     // Gentle fade out at the very end
     const out = clamp01((t - (this.duration - 0.45)) / 0.45);

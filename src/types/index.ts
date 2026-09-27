@@ -191,6 +191,16 @@ export interface ChatTurn {
 // Social media manager (dashboard): one AI-written Instagram carousel per day
 // ---------------------------------------------------------------------------
 
+// Design details the founder can set on a slide or scene. Corner text: "" = the design's default,
+// "-" = show nothing there, anything else is shown in that corner exactly as written.
+export interface CornerTexts {
+  topLeft: string;
+  topRight: string;
+  bottomLeft: string;
+  bottomRight: string;
+}
+export type TextAlign = 'left' | 'center' | 'right';
+
 // How a slide is laid out when drawn (see src/admin/social/slideRenderer.ts)
 export type SocialSlideLayout = 'cover' | 'list' | 'points' | 'statement' | 'tags' | 'compare' | 'cta';
 
@@ -204,6 +214,9 @@ export interface SocialSlide {
   points: { title: string; text: string }[]; // "points" layout (numbered)
   before?: string; // "compare" layout: the weak version (crossed out)
   after?: string; // "compare" layout: the better version
+  align?: TextAlign; // text alignment when the founder asked for one
+  corners?: CornerTexts; // corner texts when the founder asked for them
+  button?: string; // call-to-action button label when the founder asked for one
 }
 
 export type SocialPostStatus = 'new' | 'downloaded' | 'posted' | 'skipped';
@@ -230,6 +243,7 @@ export interface SocialPost {
   style: VideoStyle; // visual look of the slides (same looks as the reels)
   seed: number; // varies details within the look
   size: PostSize;
+  notFollowed?: string; // founder instructions the design could not apply, shown on the card
 }
 
 // ---------------------------------------------------------------------------
@@ -259,6 +273,9 @@ export interface VideoScene {
   statSuffix: string; // e.g. "/mo", "%", "x"
   before: string; // "compare": the weak version
   after: string; // "compare": the better version
+  align?: TextAlign;
+  corners?: CornerTexts;
+  button?: string;
 }
 
 export interface SocialVideo {
@@ -275,4 +292,5 @@ export interface SocialVideo {
   scenes: VideoScene[];
   caption: string;
   hashtags: string[];
+  notFollowed?: string;
 }
