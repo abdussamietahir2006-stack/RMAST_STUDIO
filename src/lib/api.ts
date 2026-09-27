@@ -41,6 +41,6 @@ export function askAssistant(messages: ChatTurn[], currency: Currency): Promise<
   return request('/api/assistant', { method: 'POST', body: JSON.stringify({ messages, currency }) });
 }
 
-export function fetchSiteContent(): Promise<{ media: Record<string, { url: string; kind: MediaKind }> }> {
+export function fetchSiteContent(): Promise<{ media: Record<string, { url: string; kind: MediaKind; poster?: string }> }> {
   return request('/api/content');
 }

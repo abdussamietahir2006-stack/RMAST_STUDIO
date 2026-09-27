@@ -55,6 +55,7 @@ export interface MediaDoc {
   pathname: string;
   contentType: string;
   size: number;
+  poster?: string; // videos: first-frame image shown while the video loads
   updatedAt: Date;
   updatedBy: string;
 }

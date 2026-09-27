@@ -33,3 +33,38 @@ export async function webVideoWarnings(file: File, seconds: number | null): Prom
   }
   return warnings;
 }
+
+// The video's first frame as an image (max 1280 px wide), used as its poster on the website
+export async function posterFromVideo(file: File): Promise<Blob | null> {
+  const url = URL.createObjectURL(file);
+  try {
+    const video = document.createElement('video');
+    video.muted = true;
+    video.playsInline = true;
+    video.preload = 'auto';
+    video.src = url;
+    await new Promise<void>((resolve, reject) => {
+      video.onloadeddata = () => resolve();
+      video.onerror = () => reject(new Error('unreadable'));
+    });
+    video.currentTime = 0.05;
+    await new Promise<void>((resolve) => {
+      video.onseeked = () => resolve();
+      setTimeout(resolve, 3000);
+    });
+    const scale = Math.min(1, 1280 / (video.videoWidth || 1280));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(video.videoWidth * scale);
+    canvas.height = Math.round(video.videoHeight * scale);
+    const ctx = canvas.getContext('2d');
+    if (!ctx || !canvas.width) return null;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const toBlob = (type: string) => new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, type, 0.82));
+    const webp = await toBlob('image/webp');
+    return webp?.type === 'image/webp' ? webp : await toBlob('image/jpeg');
+  } catch {
+    return null;
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}

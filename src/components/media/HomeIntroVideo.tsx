@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Pause, Play, Volume2, VolumeX } from 'lucide-react';
-import { useMedia } from '../../context/SiteContentContext';
+import { useMedia, useMediaLoaded } from '../../context/SiteContentContext';
 import { HOME_INTRO_KEY } from '../../config/mediaSlots';
 
 const prefersReducedMotion = () =>
@@ -34,6 +34,7 @@ function afterPageLoad(fn: () => void): () => void {
 // It loads after the page itself, so the site stays fast.
 export const HomeIntroVideo: React.FC = () => {
   const intro = useMedia(HOME_INTRO_KEY);
+  const mediaLoaded = useMediaLoaded();
   const ref = useRef<HTMLVideoElement>(null);
   const [active, setActive] = useState(false); // src attached
   const [shown, setShown] = useState(false); // first frame ready (fades in, no black flash)
@@ -43,6 +44,7 @@ export const HomeIntroVideo: React.FC = () => {
   const userChoice = useRef(false);
   const reducedMotion = prefersReducedMotion();
   const url = intro?.kind === 'video' ? intro.url : undefined;
+  const poster = intro?.kind === 'video' ? intro.poster : undefined;
 
   // Attach the video after the page has loaded (visitors who prefer less motion start it themselves)
   useEffect(() => {
@@ -126,6 +128,13 @@ export const HomeIntroVideo: React.FC = () => {
     }
   };
 
+  // Still finding out which video to show: a quiet placeholder, never "coming soon"
+  if (!url && !mediaLoaded) {
+    return (
+      <div className="relative w-full aspect-video overflow-hidden rounded-sm border border-[#2A2F42] bg-gradient-to-br from-[#12162A] via-[#0B0E17] to-[#1A1030] shadow-2xl animate-pulse" />
+    );
+  }
+
   if (!url) {
     return (
       <div className="relative w-full aspect-video overflow-hidden rounded-sm border border-[#2A2F42] bg-[#0B0E17] shadow-2xl">
@@ -146,15 +155,17 @@ export const HomeIntroVideo: React.FC = () => {
     <div className="relative w-full aspect-video overflow-hidden rounded-sm border border-[#2A2F42] bg-gradient-to-br from-[#12162A] via-[#0B0E17] to-[#1A1030] shadow-2xl">
       <video
         ref={ref}
-        src={active ? url : undefined}
+        src={url}
+        poster={poster}
         loop
         playsInline
-        preload={active ? 'auto' : 'none'}
+        // Before the page has loaded: only the poster, or just enough of the file for its first frame
+        preload={active ? 'auto' : poster ? 'none' : 'metadata'}
         disableRemotePlayback
         aria-label="Introduction to RMAST Studio"
         onLoadedData={() => setShown(true)}
         onPlay={() => setPaused(false)}
-        className={`absolute inset-0 w-full h-full object-cover bg-black transition-opacity duration-500 ${shown ? 'opacity-100' : 'opacity-0'}`}
+        className={`absolute inset-0 w-full h-full object-cover bg-black transition-opacity duration-500 ${shown || poster ? 'opacity-100' : 'opacity-0'}`}
       />
 
       {!active && reducedMotion && (

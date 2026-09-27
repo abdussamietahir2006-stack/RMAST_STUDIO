@@ -65,9 +65,26 @@ export const adminApi = {
       multipart: file.size > 8 * 1024 * 1024,
       onUploadProgress: ({ percentage }) => onProgress(percentage)
     });
+    // Videos also get a poster (their first frame), so the website shows a picture while they load
+    let poster: string | undefined;
+    if (file.type.startsWith('video/')) {
+      const { posterFromVideo } = await import('./videoCheck');
+      const image = await posterFromVideo(file);
+      if (image) {
+        const ext = image.type === 'image/webp' ? 'webp' : 'jpg';
+        poster = (
+          await upload(`media/${key}/poster-${safeName.replace(/\.[a-z0-9]+$/, '')}.${ext}`, image, {
+            access: 'public',
+            handleUploadUrl: '/api/admin/media/upload',
+            clientPayload: JSON.stringify({ key }),
+            contentType: image.type
+          }).catch(() => null)
+        )?.url;
+      }
+    }
     return request<MediaAsset>(`/api/admin/media/${encodeURIComponent(key)}`, {
       method: 'PUT',
-      body: JSON.stringify({ url: blob.url, contentType: file.type, size: file.size })
+      body: JSON.stringify({ url: blob.url, contentType: file.type, size: file.size, poster })
     });
   }
 };

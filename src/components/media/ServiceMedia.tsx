@@ -17,7 +17,7 @@ export const AiContentMedia: React.FC<AiContentMediaProps> = ({ slug, image, alt
   const video = useMedia(slug ? aiContentSlotKey(slug) : '');
 
   if (slug && video?.kind === 'video') {
-    return <LoopingVideo src={video.url} poster={image} label={`${alt} video`} className={className} />;
+    return <LoopingVideo src={video.url} poster={video.poster ?? image} label={`${alt} video`} className={className} />;
   }
   return <img src={image} alt={alt} loading="lazy" decoding="async" className={className} />;
 };

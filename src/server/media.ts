@@ -26,13 +26,18 @@ export async function listMedia(): Promise<MediaAsset[]> {
   return docs.map(toAsset);
 }
 
-// Public, cacheable map used by the website: { [slotKey]: { url, kind } }
-export async function publicMedia(): Promise<Record<string, { url: string; kind: MediaKind }>> {
+// Public, cacheable map used by the website: { [slotKey]: { url, kind, poster? } }
+export async function publicMedia(): Promise<Record<string, { url: string; kind: MediaKind; poster?: string }>> {
   const docs = await (await collections.media())
-    .find({}, { projection: { url: 1, kind: 1 } })
+    .find({}, { projection: { url: 1, kind: 1, poster: 1 } })
     .toArray();
-  return Object.fromEntries(docs.map((d) => [d._id, { url: d.url, kind: d.kind }]));
+  return Object.fromEntries(docs.map((d) => [d._id, { url: d.url, kind: d.kind, ...(d.poster ? { poster: d.poster } : {}) }]));
 }
+
+// A video's poster (its first frame) is stored beside it as media/<slot>/poster-*.webp|jpg
+const POSTER_TYPES = ['image/webp', 'image/jpeg'];
+const POSTER_MAX_BYTES = 3 * 1024 * 1024;
+const isPosterPath = (pathname: string, slotKey: string) => pathname.startsWith(`media/${slotKey}/poster-`);
 
 // Issues a short-lived token so the browser uploads straight to Vercel Blob.
 // Files never pass through this function, which keeps large videos fast and within limits.
@@ -54,6 +59,9 @@ export async function handleUploadToken(req: Request, res: Response): Promise<vo
       const slot = findMediaSlot(key);
       if (!slot) throw new Error('Unknown media slot');
       if (!pathname.startsWith(`media/${slot.key}/`)) throw new Error('Invalid upload path');
+      if (slot.kind === 'video' && isPosterPath(pathname, slot.key)) {
+        return { allowedContentTypes: POSTER_TYPES, maximumSizeInBytes: POSTER_MAX_BYTES, addRandomSuffix: true, cacheControlMaxAge: 60 * 60 * 24 * 365 };
+      }
       const limits = MEDIA_LIMITS[slot.kind];
       return {
         allowedContentTypes: limits.types,
@@ -87,6 +95,18 @@ export async function saveMedia(key: string, body: unknown, user: UserDoc): Prom
   if (!pathname.startsWith(`media/${slot.key}/`)) return 'Media URL does not match this slot';
   if (!MEDIA_LIMITS[slot.kind].types.includes(contentType)) return 'Unsupported file type';
 
+  // Optional poster for videos: must also live in this slot's folder
+  let poster: string | undefined;
+  if (slot.kind === 'video' && b.poster) {
+    try {
+      const p = new URL(str(b.poster, 1000));
+      const posterPath = decodeURIComponent(p.pathname.replace(/^\//, ''));
+      if (p.protocol === 'https:' && p.hostname.endsWith(BLOB_HOST_SUFFIX) && isPosterPath(posterPath, slot.key)) poster = p.toString();
+    } catch {
+      // An invalid poster is ignored; the video still saves
+    }
+  }
+
   const media = await collections.media();
   const previous = await media.findOne({ _id: slot.key });
   const doc: MediaDoc = {
@@ -96,12 +116,14 @@ export async function saveMedia(key: string, body: unknown, user: UserDoc): Prom
     pathname,
     contentType,
     size,
+    ...(poster ? { poster } : {}),
     updatedAt: new Date(),
     updatedBy: user._id
   };
   await media.replaceOne({ _id: slot.key }, doc, { upsert: true });
 
   if (previous && previous.url !== url) await deleteBlob(previous.url);
+  if (previous?.poster && previous.poster !== poster) await deleteBlob(previous.poster);
   return toAsset(doc);
 }
 
@@ -110,6 +132,7 @@ export async function removeMedia(key: string): Promise<boolean> {
   const previous = await media.findOneAndDelete({ _id: key });
   if (!previous) return false;
   await deleteBlob(previous.url);
+  if (previous.poster) await deleteBlob(previous.poster);
   return true;
 }
 
