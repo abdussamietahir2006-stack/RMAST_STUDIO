@@ -79,7 +79,7 @@ export const PricingPage: React.FC = () => {
             <div
               role="tablist"
               aria-label="Pricing package categories"
-              className="inline-flex p-2 bg-surface-2/80 backdrop-blur-md border border-line/80 rounded-sm gap-2"
+              className="inline-flex flex-wrap justify-center max-w-full p-2 bg-surface-2/80 backdrop-blur-md border border-line/80 rounded-sm gap-2"
             >
               <button
                 role="tab"
