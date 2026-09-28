@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 
 export type Theme = 'dark' | 'light';
 
@@ -13,18 +13,32 @@ const STORAGE_KEY = 'rmast_studio_theme_v2';
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Always start dark so the first render matches the prerendered HTML; a saved choice is applied right after
+  // Starts dark so the first render matches the prerendered HTML; the real theme is applied right after
+  // (public/theme-init.js has already set it on <html> before the first paint)
   const [theme, setThemeState] = useState<Theme>('dark');
-  const [loaded, setLoaded] = useState(false);
+  // A choice made with the toggle is remembered; until then the site follows the operating system
+  const chosen = useRef(false);
 
   useEffect(() => {
+    let saved: string | null = null;
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved === 'light' || saved === 'dark') setThemeState(saved);
+      saved = localStorage.getItem(STORAGE_KEY);
     } catch {
-      // Storage unavailable: keep the default
+      // Storage unavailable: follow the system
     }
-    setLoaded(true);
+    if (saved === 'light' || saved === 'dark') {
+      chosen.current = true;
+      setThemeState(saved);
+      return;
+    }
+    const system = window.matchMedia?.('(prefers-color-scheme: light)');
+    if (!system) return;
+    setThemeState(system.matches ? 'light' : 'dark');
+    const follow = (e: MediaQueryListEvent) => {
+      if (!chosen.current) setThemeState(e.matches ? 'light' : 'dark');
+    };
+    system.addEventListener('change', follow);
+    return () => system.removeEventListener('change', follow);
   }, []);
 
   useEffect(() => {
@@ -32,28 +46,23 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (theme === 'light') {
       root.classList.add('theme-light');
       root.classList.remove('theme-dark', 'dark');
-      root.style.colorScheme = 'light';
     } else {
       root.classList.add('theme-dark', 'dark');
       root.classList.remove('theme-light');
-      root.style.colorScheme = 'dark';
     }
+  }, [theme]);
 
-    if (!loaded) return;
+  const setTheme = (next: Theme) => {
+    chosen.current = true;
+    setThemeState(next);
     try {
-      localStorage.setItem(STORAGE_KEY, theme);
-    } catch (e) {
-      console.error('Failed to save theme in localStorage', e);
+      localStorage.setItem(STORAGE_KEY, next);
+    } catch {
+      // Storage unavailable: the choice lasts for this visit
     }
-  }, [theme, loaded]);
-
-  const toggleTheme = () => {
-    setThemeState((prev) => (prev === 'dark' ? 'light' : 'dark'));
   };
 
-  const setTheme = (newTheme: Theme) => {
-    setThemeState(newTheme);
-  };
+  const toggleTheme = () => setTheme(theme === 'dark' ? 'light' : 'dark');
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>

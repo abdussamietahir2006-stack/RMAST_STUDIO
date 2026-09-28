@@ -111,10 +111,10 @@ export const PageBackground: React.FC = () => {
     }
   }, [currentPath]);
 
-  // Dark mode is plain black across the whole site: no photo, tints, grid or vignette
+  // Dark mode is the plain canvas colour across the whole site: no photo, tints, grid or vignette
   if (!isLight) {
     return (
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden select-none bg-black">
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden select-none bg-canvas">
         {currentPath === '/' && <AuroraCanvas showOrb light={false} />}
       </div>
     );
