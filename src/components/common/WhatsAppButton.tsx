@@ -40,7 +40,7 @@ export const WhatsAppButton: React.FC = () => {
         rel="noopener noreferrer"
         onMouseEnter={() => setShowTooltip(true)}
         onMouseLeave={() => setShowTooltip(false)}
-        className="h-11 px-4 sm:px-4 rounded-full bg-surface/95 backdrop-blur-md border border-line hover:border-[#25D366] text-fg hover:text-[#25D366] flex items-center gap-3 shadow-2xl transition-all duration-300 hover:scale-105 group cursor-pointer"
+        className="h-11 px-2.5 sm:px-4 rounded-full bg-surface/95 backdrop-blur-md border border-line hover:border-[#25D366] text-fg hover:text-[#25D366] flex items-center gap-3 shadow-2xl transition-all duration-300 hover:scale-105 group cursor-pointer"
         aria-label="Direct WhatsApp line with RMAST Studio founders"
       >
         {/* Pulse indicator */}
@@ -54,7 +54,8 @@ export const WhatsAppButton: React.FC = () => {
           </span>
         </div>
 
-        <div className="flex flex-col text-left">
+        {/* On phones the button is icon-only so it covers less of the page */}
+        <div className="hidden sm:flex flex-col text-left">
           <span className="text-xs font-mono uppercase tracking-wider font-semibold group-hover:text-[#25D366] transition-colors leading-none">
             Founder WhatsApp
           </span>

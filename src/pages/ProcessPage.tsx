@@ -49,7 +49,7 @@ export const ProcessPage: React.FC = () => {
             {coreProcessSteps.map((step) => (
               <div
                 key={step.step}
-                className="p-8 bg-surface-2/85 backdrop-blur-md border border-line/80 hover:border-primary/50 transition-all duration-300 space-y-6 flex flex-col justify-between shadow-xl rounded-card"
+                className="p-8 bg-surface-2/85 backdrop-blur-md border border-line/80 hover:border-primary/50 transition-all duration-300 space-y-6 flex flex-col justify-between shadow-sm rounded-card"
               >
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
@@ -90,7 +90,7 @@ export const ProcessPage: React.FC = () => {
         </section>
 
         {/* Division-Specific Workflow Tracks */}
-        <section className="space-y-12 p-8 md:p-12 bg-surface-2/80 backdrop-blur-md border border-line/80 shadow-xl">
+        <section className="space-y-12 p-8 md:p-12 bg-surface-2/80 backdrop-blur-md border border-line/80 shadow-sm">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-line">
             <div className="space-y-2">
               <span className="text-xs font-mono uppercase tracking-[0.2em] text-brand">
@@ -174,7 +174,7 @@ export const ProcessPage: React.FC = () => {
         </section>
 
         {/* CTA */}
-        <section className="p-12 bg-surface-2/85 backdrop-blur-md border border-line/80 text-center space-y-6 shadow-xl">
+        <section className="p-12 bg-surface-2/85 backdrop-blur-md border border-line/80 text-center space-y-6 shadow-sm">
           <h3 className="type-h3 text-fg">
             Ready to initiate Stage 01 Discover?
           </h3>

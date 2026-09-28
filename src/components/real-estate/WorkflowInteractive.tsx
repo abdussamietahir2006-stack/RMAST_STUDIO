@@ -155,7 +155,7 @@ export const WorkflowInteractive: React.FC = () => {
                 <div
                   className={`w-12 h-12 rounded-sm border flex items-center justify-center transition-all duration-300 ${
                     isActive
-                      ? 'bg-primary border-primary text-on-primary scale-110 shadow-lg shadow-primary/20'
+                      ? 'bg-primary border-primary text-on-primary scale-110 shadow-sm shadow-primary/20'
                       : isCompleted
                       ? 'bg-surface-2 border-primary/60 text-brand'
                       : 'bg-surface border-line text-subtle group-hover:border-line-strong'

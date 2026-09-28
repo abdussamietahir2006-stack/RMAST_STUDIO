@@ -86,14 +86,14 @@ export const AiContentPage: React.FC = () => {
             {aiContentServices.map((service, index) => (
               <div
                 key={service.id}
-                className="group bg-surface-2/80 backdrop-blur-md border border-line/80 hover:border-primary/60 shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden rounded-sm"
+                className="group bg-surface-2/80 backdrop-blur-md border border-line/80 hover:border-primary/60 shadow-sm transition-all duration-300 flex flex-col justify-between overflow-hidden rounded-sm"
               >
                 <div>
                   {/* Image header with overlay tags */}
                   <div className="relative aspect-[16/9] overflow-hidden bg-surface">
                     <ServiceMedia
                       service={service}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-80 group-hover:opacity-100"
+                      className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300"
                     />
                     <div className="absolute top-3 left-3 flex items-center gap-2">
                       <span className="text-xs font-mono tracking-widest uppercase bg-surface/90 backdrop-blur-sm px-3 py-1 text-brand font-bold border border-line">
@@ -502,7 +502,7 @@ export const AiContentPage: React.FC = () => {
         </section>
 
         {/* Ready to create banner */}
-        <section className="p-12 bg-surface-2/85 backdrop-blur-md border border-line/80 text-center space-y-6 shadow-xl">
+        <section className="p-12 bg-surface-2/85 backdrop-blur-md border border-line/80 text-center space-y-6 shadow-sm">
           <h3 className="type-h3 text-fg">
             Ready to make content people stop scrolling for?
           </h3>

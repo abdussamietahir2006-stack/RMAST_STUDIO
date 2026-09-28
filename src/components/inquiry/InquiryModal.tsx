@@ -727,7 +727,7 @@ const InquiryDialog: React.FC<{ target: InquiryTarget; onClose: () => void }> = 
                     type="submit"
                     whileHover={{ y: -2 }}
                     whileTap={{ scale: 0.98 }}
-                    className="btn-shine inline-flex items-center justify-center gap-2 px-8 py-4 rounded-md bg-primary text-on-primary text-xs font-bold uppercase tracking-[0.16em] shadow-[0_10px_30px_-10px_rgba(166,139,255,0.6)] cursor-pointer group"
+                    className="btn btn-primary group"
                   >
                     Continue
                     <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
@@ -898,7 +898,7 @@ const InquiryDialog: React.FC<{ target: InquiryTarget; onClose: () => void }> = 
                   onClick={onClose}
                   whileHover={{ y: -2 }}
                   whileTap={{ scale: 0.98 }}
-                  className="btn-shine px-8 py-3 rounded-md bg-primary text-on-primary text-xs font-bold uppercase tracking-[0.16em] cursor-pointer"
+                  className="btn btn-primary"
                 >
                   Done
                 </m.button>

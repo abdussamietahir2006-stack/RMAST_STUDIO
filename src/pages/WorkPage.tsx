@@ -76,7 +76,7 @@ export const WorkPage: React.FC = () => {
             return (
               <div
                 key={project.id}
-                className="group p-8 md:p-12 bg-surface-2/80 backdrop-blur-md border border-line/80 hover:border-primary/50 transition-all duration-300 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center shadow-xl rounded-card"
+                className="group p-8 md:p-12 bg-surface-2/80 backdrop-blur-md border border-line/80 hover:border-primary/50 transition-all duration-300 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center shadow-sm rounded-card"
               >
                 {/* Visual Preview (7 cols) */}
                 <div
@@ -86,7 +86,7 @@ export const WorkPage: React.FC = () => {
                 >
                   <ProjectMedia
                     project={project}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-75 group-hover:opacity-100"
+                    className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300"
                   />
                   <div className="absolute top-4 left-4 flex items-center gap-2">
                     <span className="text-xs font-mono tracking-widest uppercase bg-surface/90 backdrop-blur-sm px-3 py-1 text-fg border border-line">

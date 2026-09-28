@@ -33,7 +33,7 @@ export const CaseStudiesPage: React.FC = () => {
           {projectsData.map((project) => (
             <article
               key={project.id}
-              className="p-8 md:p-12 bg-surface-2/80 backdrop-blur-md border border-line/80 rounded-sm space-y-12 shadow-2xl"
+              className="p-8 md:p-12 bg-surface-2/80 backdrop-blur-md border border-line/80 rounded-sm space-y-12 shadow-sm"
             >
               {/* Header */}
               <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 pb-8 border-b border-line">
@@ -62,7 +62,7 @@ export const CaseStudiesPage: React.FC = () => {
 
               {/* Showcase Banner */}
               <div className="relative aspect-[21/9] overflow-hidden rounded-sm bg-surface border border-line">
-                <ProjectMedia project={project} className="w-full h-full object-cover opacity-85" />
+                <ProjectMedia project={project} className="w-full h-full object-cover" />
               </div>
 
               {/* Grid: Challenges vs Solutions */}

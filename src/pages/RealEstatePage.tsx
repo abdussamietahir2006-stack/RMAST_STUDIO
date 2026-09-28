@@ -87,7 +87,7 @@ export const RealEstatePage: React.FC = () => {
             {realEstateServices.map((service, index) => (
               <div
                 key={service.id}
-                className="p-8 sm:p-8 bg-surface-2/80 backdrop-blur-md border border-line/80 hover:border-primary/60 shadow-xl transition-all duration-300 rounded-sm relative group"
+                className="p-8 sm:p-8 bg-surface-2/80 backdrop-blur-md border border-line/80 hover:border-primary/60 shadow-sm transition-all duration-300 rounded-sm relative group"
               >
                 {/* Service Card Top Header */}
                 <div className="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-line">
@@ -219,7 +219,7 @@ export const RealEstatePage: React.FC = () => {
                 key={pkg.id}
                 className={`p-8 rounded-sm border flex flex-col justify-between space-y-8 ${
                   pkg.highlight
-                    ? 'bg-surface border-primary shadow-xl relative'
+                    ? 'bg-surface border-primary shadow-sm relative'
                     : 'bg-surface border-line'
                 }`}
               >
@@ -297,11 +297,7 @@ export const RealEstatePage: React.FC = () => {
                       features: pkg.included
                     })
                   }
-                  className={`w-full py-4 text-xs font-semibold uppercase tracking-[0.16em] transition-all cursor-pointer ${
-                    pkg.highlight
-                      ? 'bg-primary text-on-primary hover:bg-primary-hover'
-                      : 'border border-line text-fg hover:border-primary'
-                  }`}
+                  className={`btn w-full ${pkg.highlight ? 'btn-primary' : 'btn-secondary'}`}
                 >
                   {pkg.ctaText || 'Build System'}
                 </button>
@@ -311,7 +307,7 @@ export const RealEstatePage: React.FC = () => {
         </section>
 
         {/* Bottom Banner */}
-        <section className="p-12 bg-surface-2/85 backdrop-blur-md border border-line/80 text-center space-y-6 shadow-xl">
+        <section className="p-12 bg-surface-2/85 backdrop-blur-md border border-line/80 text-center space-y-6 shadow-sm">
           <h3 className="type-h3 text-fg">
             Ready to stop losing leads to delayed responses?
           </h3>

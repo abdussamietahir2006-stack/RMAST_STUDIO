@@ -439,7 +439,7 @@ export const StudioAssistant: React.FC = () => {
       <div className="fixed bottom-6 right-6 z-40">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className={`h-12 px-4 rounded-full border flex items-center gap-3 shadow-2xl transition-all duration-300 cursor-pointer ${
+          className={`h-12 px-3.5 sm:px-4 rounded-full border flex items-center gap-3 shadow-2xl transition-all duration-300 cursor-pointer ${
             isOpen
               ? 'bg-primary text-on-primary border-primary'
               : 'bg-surface text-fg border-line hover:border-primary/60 hover:scale-105'
@@ -455,7 +455,7 @@ export const StudioAssistant: React.FC = () => {
           ) : (
             <>
               <Sparkles className="w-4 h-4 text-brand" />
-              <span className="text-xs font-mono uppercase tracking-wider">Studio Assistant</span>
+              <span className="hidden sm:inline text-xs font-mono uppercase tracking-wider">Studio Assistant</span>
             </>
           )}
         </button>

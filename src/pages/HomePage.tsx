@@ -35,14 +35,14 @@ const MARQUEE_ITEMS = [
   'Product Films'
 ];
 
-// One strip of the crossed marquee; the list is doubled so the loop is seamless
+// A scrolling strip of the studio's disciplines; the list is doubled so the loop is seamless
 const MarqueeBand: React.FC<{ reverse?: boolean; className: string; itemClassName: string }> = ({ reverse, className, itemClassName }) => (
   <div className={`marquee overflow-hidden py-4 ${className}`}>
     <div className="marquee-track" style={reverse ? { animationDirection: 'reverse' } : undefined}>
       {[...MARQUEE_ITEMS, ...MARQUEE_ITEMS].map((item, i) => (
-        <span key={i} className={`flex items-center gap-8 pr-8 font-serif text-2xl md:text-4xl font-bold whitespace-nowrap ${itemClassName}`}>
+        <span key={i} className={`flex items-center gap-8 pr-8 text-xl md:text-2xl font-semibold tracking-tight whitespace-nowrap ${itemClassName}`}>
           {item}
-          <span aria-hidden="true" className="text-lg md:text-2xl">✦</span>
+          <span aria-hidden="true" className="text-sm text-brand">✦</span>
         </span>
       ))}
     </div>
@@ -114,9 +114,19 @@ export const HomePage: React.FC = () => {
                 <span className="text-aurora">NEXT.</span>
               </h1>
 
-              <p className="text-xl sm:text-2xl md:text-3xl text-fg max-w-3xl font-bold leading-relaxed pt-3 tracking-normal">
+              <p className="text-lg sm:text-xl text-muted max-w-xl leading-relaxed">
                 Digital systems for real estate and cinematic AI content for brands.
               </p>
+              {/* One primary action, one secondary (same destinations as the header and pricing links) */}
+              <div className="flex flex-wrap items-center gap-3 pt-2">
+                <button type="button" onClick={() => navigate('/contact')} className="btn btn-primary">
+                  Start a Project
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+                <button type="button" onClick={() => navigate('/pricing')} className="btn btn-secondary">
+                  View Pricing
+                </button>
+              </div>
             </div>
 
             <div className="lg:col-span-5">
@@ -127,7 +137,7 @@ export const HomePage: React.FC = () => {
           {/* TWO MAJOR PATHWAYS: VISUALLY DISTINCT */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
             {/* PATH 1: REAL ESTATE */}
-            <div className="group relative p-8 md:p-12 bg-surface-2/80 backdrop-blur-md border border-line/80 hover:border-primary/60 transition-all duration-300 flex flex-col justify-between overflow-hidden shadow-xl rounded-card">
+            <div className="group relative p-8 md:p-12 bg-surface-2/80 backdrop-blur-md border border-line/80 hover:border-primary/60 transition-all duration-300 flex flex-col justify-between overflow-hidden shadow-sm rounded-card">
               <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full pointer-events-none group-hover:scale-125 transition-transform duration-500" />
               
               <div className="space-y-4">
@@ -174,7 +184,7 @@ export const HomePage: React.FC = () => {
             </div>
 
             {/* PATH 2: BRANDS & AI CONTENT */}
-            <div className="group relative p-8 md:p-12 bg-surface-2/80 backdrop-blur-md border border-line/80 hover:border-primary/60 transition-all duration-300 flex flex-col justify-between overflow-hidden shadow-xl rounded-card">
+            <div className="group relative p-8 md:p-12 bg-surface-2/80 backdrop-blur-md border border-line/80 hover:border-primary/60 transition-all duration-300 flex flex-col justify-between overflow-hidden shadow-sm rounded-card">
               <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full pointer-events-none group-hover:scale-125 transition-transform duration-500" />
 
               <div className="space-y-4">
@@ -233,17 +243,9 @@ export const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* Crossed marquee bands */}
-      <div aria-hidden="true" className="relative py-16 overflow-hidden select-none">
-        <MarqueeBand
-          reverse
-          className="absolute inset-x-[-5%] top-1/2 -translate-y-1/2 rotate-[3deg] bg-canvas border-y border-line"
-          itemClassName="text-subtle"
-        />
-        <MarqueeBand
-          className="relative mx-[-5%] -rotate-[3deg] bg-gradient-to-r from-primary via-accent to-accent shadow-[0_20px_80px_-20px_rgba(255,92,170,0.6)]"
-          itemClassName="text-on-primary"
-        />
+      {/* Disciplines strip */}
+      <div aria-hidden="true" className="relative overflow-hidden select-none border-y border-line bg-surface/60">
+        <MarqueeBand className="py-6" itemClassName="text-subtle" />
       </div>
 
       {/* ===================================================
@@ -387,7 +389,7 @@ export const HomePage: React.FC = () => {
                 slug="real-estate"
                 image="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=800&q=80"
                 alt="Real Estate AI Property Tours"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-60 group-hover:opacity-80"
+                className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-canvas via-transparent to-transparent" />
               <div className="absolute bottom-6 left-6 right-6 space-y-1">
@@ -412,7 +414,7 @@ export const HomePage: React.FC = () => {
                 slug="fashion"
                 image="https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=800&q=80"
                 alt="Fashion AI Campaigns"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-60 group-hover:opacity-80"
+                className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-canvas via-transparent to-transparent" />
               <div className="absolute bottom-6 left-6 right-6 space-y-1">
@@ -437,7 +439,7 @@ export const HomePage: React.FC = () => {
                 slug="food"
                 image="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80"
                 alt="Food AI Content"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-60 group-hover:opacity-80"
+                className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-canvas via-transparent to-transparent" />
               <div className="absolute bottom-6 left-6 right-6 space-y-1">
@@ -462,7 +464,7 @@ export const HomePage: React.FC = () => {
                 slug="products"
                 image="https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80"
                 alt="Product Films"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-60 group-hover:opacity-80"
+                className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-canvas via-transparent to-transparent" />
               <div className="absolute bottom-6 left-6 right-6 space-y-1">
@@ -532,7 +534,7 @@ export const HomePage: React.FC = () => {
                 <div className="lg:col-span-7 overflow-hidden rounded-sm relative aspect-[16/10] bg-surface">
                   <ProjectMedia
                     project={project}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-80 group-hover:opacity-100"
+                    className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300"
                   />
                   <div className="absolute top-4 left-4 text-xs font-mono tracking-widest uppercase bg-surface/80 backdrop-blur-sm px-3 py-1 text-fg border border-line">
                     {project.category}
@@ -615,7 +617,7 @@ export const HomePage: React.FC = () => {
             {teamData.map((founder, index) => (
               <div
                 key={index}
-                className="p-8 md:p-12 bg-surface-2/85 backdrop-blur-md border border-line/80 hover:border-primary/50 rounded-sm space-y-6 flex flex-col justify-between shadow-xl"
+                className="p-8 md:p-12 bg-surface-2/85 backdrop-blur-md border border-line/80 hover:border-primary/50 rounded-sm space-y-6 flex flex-col justify-between shadow-sm"
               >
                 <div className="space-y-4">
                   <div className="w-20 h-20 rounded-sm overflow-hidden bg-surface-2 border border-line">

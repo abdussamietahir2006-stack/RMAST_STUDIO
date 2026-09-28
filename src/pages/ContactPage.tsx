@@ -148,7 +148,7 @@ export const ContactPage: React.FC = () => {
         {/* Contact Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
           {/* Form Column (7 cols) */}
-          <div className="lg:col-span-7 bg-surface-2/85 backdrop-blur-md border border-line/80 p-8 md:p-12 rounded-sm shadow-2xl">
+          <div className="lg:col-span-7 bg-surface-2/85 backdrop-blur-md border border-line/80 p-8 md:p-12 rounded-sm shadow-sm">
             {submitted ? (
               <div className="space-y-6 py-12 text-center">
                 <div className="w-16 h-16 rounded-full bg-surface-2 border border-primary text-brand flex items-center justify-center mx-auto">
@@ -317,7 +317,7 @@ export const ContactPage: React.FC = () => {
           {/* Contact Information & Channels Column (5 cols) */}
           <div className="lg:col-span-5 space-y-8">
             {/* Direct Studio Channels */}
-            <div className="p-8 bg-surface-2/85 backdrop-blur-md border border-line/80 space-y-6 shadow-2xl rounded-card">
+            <div className="p-8 bg-surface-2/85 backdrop-blur-md border border-line/80 space-y-6 shadow-sm rounded-card">
               <div className="space-y-1">
                 <span className="text-xs font-mono uppercase tracking-widest text-brand">
                   Studio Coordinates
@@ -402,7 +402,7 @@ export const ContactPage: React.FC = () => {
             </div>
 
             {/* Founder Direct Guarantee */}
-            <div className="p-6 bg-surface-2/80 backdrop-blur-md border border-line/80 space-y-3 shadow-xl rounded-card">
+            <div className="p-6 bg-surface-2/80 backdrop-blur-md border border-line/80 space-y-3 shadow-sm rounded-card">
               <div className="text-xs font-mono uppercase tracking-widest text-brand">
                 Direct Founder Guarantee
               </div>

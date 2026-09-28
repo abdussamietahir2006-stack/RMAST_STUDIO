@@ -119,7 +119,7 @@ export const ServicesPage: React.FC = () => {
               <div
                 key={service.id}
                 id={`service-${service.id}`}
-                className="scroll-mt-32 p-8 sm:p-12 bg-surface-2/80 backdrop-blur-md border border-line/80 hover:border-primary/60 shadow-2xl transition-all duration-300 relative group rounded-sm"
+                className="scroll-mt-32 p-8 sm:p-12 bg-surface-2/80 backdrop-blur-md border border-line/80 hover:border-primary/60 shadow-sm transition-all duration-300 relative group rounded-sm"
               >
                 {/* Visual Service Top Bar */}
                 <div className="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-line">
@@ -299,7 +299,7 @@ export const ServicesPage: React.FC = () => {
         </section>
 
         {/* Bottom Consultation Banner */}
-        <section className="p-12 bg-surface-2/85 backdrop-blur-md border border-line/80 text-center space-y-6 shadow-xl">
+        <section className="p-12 bg-surface-2/85 backdrop-blur-md border border-line/80 text-center space-y-6 shadow-sm">
           <div className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-[0.2em] text-brand">
             <Sparkles className="w-4 h-4" />
             <span>Need A Custom Hybrid Scope?</span>

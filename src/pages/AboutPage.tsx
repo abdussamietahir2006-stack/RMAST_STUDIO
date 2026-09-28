@@ -30,7 +30,7 @@ export const AboutPage: React.FC = () => {
 
         {/* Mission & Vision Bento */}
         <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="p-8 md:p-12 bg-surface-2/80 backdrop-blur-md border border-line/80 space-y-4 shadow-xl rounded-card">
+          <div className="p-8 md:p-12 bg-surface-2/80 backdrop-blur-md border border-line/80 space-y-4 shadow-sm rounded-card">
             <div className="text-xs font-mono uppercase tracking-widest text-brand flex items-center gap-2">
               <Target className="w-4 h-4" />
               <span>Studio Mission</span>
@@ -43,7 +43,7 @@ export const AboutPage: React.FC = () => {
             </p>
           </div>
 
-          <div className="p-8 md:p-12 bg-surface-2/80 backdrop-blur-md border border-line/80 space-y-4 shadow-xl rounded-card">
+          <div className="p-8 md:p-12 bg-surface-2/80 backdrop-blur-md border border-line/80 space-y-4 shadow-sm rounded-card">
             <div className="text-xs font-mono uppercase tracking-widest text-brand flex items-center gap-2">
               <Zap className="w-4 h-4" />
               <span>Studio Vision</span>
@@ -75,7 +75,7 @@ export const AboutPage: React.FC = () => {
             {teamData.map((founder, idx) => (
               <div
                 key={idx}
-                className="p-8 md:p-12 bg-surface-2/85 backdrop-blur-md border border-line/80 rounded-sm space-y-6 flex flex-col justify-between shadow-xl"
+                className="p-8 md:p-12 bg-surface-2/85 backdrop-blur-md border border-line/80 rounded-sm space-y-6 flex flex-col justify-between shadow-sm"
               >
                 <div className="space-y-6">
                   <div className="w-24 h-24 rounded-sm overflow-hidden bg-surface-2 border border-line">
@@ -147,12 +147,14 @@ export const AboutPage: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="relative group overflow-hidden rounded-sm border border-line/80 bg-surface-2/80 shadow-lg">
+            <div className="relative group overflow-hidden rounded-sm border border-line/80 bg-surface-2/80 shadow-sm">
               <div className="aspect-[4/3] overflow-hidden">
                 <img
                   src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1000&q=80"
+                  loading="lazy"
+                  decoding="async"
                   alt="Team architectural sprint review"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-85 group-hover:opacity-100"
+                  className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300"
                 />
               </div>
               <div className="p-6 space-y-1 bg-surface/90 backdrop-blur-md border-t border-line">
@@ -168,12 +170,14 @@ export const AboutPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="relative group overflow-hidden rounded-sm border border-line/80 bg-surface-2/80 shadow-lg">
+            <div className="relative group overflow-hidden rounded-sm border border-line/80 bg-surface-2/80 shadow-sm">
               <div className="aspect-[4/3] overflow-hidden">
                 <img
                   src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=1000&q=80"
+                  loading="lazy"
+                  decoding="async"
                   alt="Founders boardroom strategy meeting"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-85 group-hover:opacity-100"
+                  className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300"
                 />
               </div>
               <div className="p-6 space-y-1 bg-surface/90 backdrop-blur-md border-t border-line">
@@ -189,12 +193,14 @@ export const AboutPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="relative group overflow-hidden rounded-sm border border-line/80 bg-surface-2/80 shadow-lg">
+            <div className="relative group overflow-hidden rounded-sm border border-line/80 bg-surface-2/80 shadow-sm">
               <div className="aspect-[4/3] overflow-hidden">
                 <img
                   src="https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?auto=format&fit=crop&w=1000&q=80"
+                  loading="lazy"
+                  decoding="async"
                   alt="AI video editing and color grade session"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-85 group-hover:opacity-100"
+                  className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300"
                 />
               </div>
               <div className="p-6 space-y-1 bg-surface/90 backdrop-blur-md border-t border-line">
@@ -213,7 +219,7 @@ export const AboutPage: React.FC = () => {
         </section>
 
         {/* How We Work */}
-        <section className="space-y-8 p-8 md:p-12 bg-surface-2/80 backdrop-blur-md border border-line/80 shadow-xl">
+        <section className="space-y-8 p-8 md:p-12 bg-surface-2/80 backdrop-blur-md border border-line/80 shadow-sm">
           <div className="space-y-2">
             <span className="text-xs font-mono uppercase tracking-[0.2em] text-brand">
               Operating Standard
@@ -241,7 +247,7 @@ export const AboutPage: React.FC = () => {
         </section>
 
         {/* Global Operations Footprint */}
-        <section className="p-8 md:p-12 bg-surface-2/85 backdrop-blur-md border border-line/80 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-xl">
+        <section className="p-8 md:p-12 bg-surface-2/85 backdrop-blur-md border border-line/80 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm">
           <div className="space-y-2">
             <div className="text-xs font-mono uppercase tracking-wider text-brand">
               Remote First · Global Execution

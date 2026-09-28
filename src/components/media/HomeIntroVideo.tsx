@@ -131,13 +131,13 @@ export const HomeIntroVideo: React.FC = () => {
   // Still finding out which video to show: a quiet placeholder, never "coming soon"
   if (!url && !mediaLoaded) {
     return (
-      <div className="relative w-full aspect-video overflow-hidden rounded-sm border border-line-strong bg-gradient-to-br from-surface-2 via-surface to-surface-2 shadow-2xl animate-pulse" />
+      <div className="relative w-full aspect-video overflow-hidden rounded-sm border border-line-strong bg-gradient-to-br from-surface-2 via-surface to-surface-2 shadow-sm animate-pulse" />
     );
   }
 
   if (!url) {
     return (
-      <div className="relative w-full aspect-video overflow-hidden rounded-sm border border-line-strong bg-surface shadow-2xl">
+      <div className="relative w-full aspect-video overflow-hidden rounded-sm border border-line-strong bg-surface shadow-sm">
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-surface-2 via-surface to-surface-2">
           <span className="w-16 h-16 rounded-full border border-primary/50 text-brand flex items-center justify-center">
             <Play className="w-6 h-6 ml-1" />
@@ -152,7 +152,7 @@ export const HomeIntroVideo: React.FC = () => {
     'w-10 h-10 rounded-full bg-black/55 text-white border border-white/15 backdrop-blur-sm flex items-center justify-center hover:bg-black/75 transition-colors cursor-pointer';
 
   return (
-    <div className="relative w-full aspect-video overflow-hidden rounded-sm border border-line-strong bg-gradient-to-br from-surface-2 via-surface to-surface-2 shadow-2xl">
+    <div className="relative w-full aspect-video overflow-hidden rounded-sm border border-line-strong bg-gradient-to-br from-surface-2 via-surface to-surface-2 shadow-sm">
       <video
         ref={ref}
         src={url}
@@ -175,7 +175,7 @@ export const HomeIntroVideo: React.FC = () => {
           className="absolute inset-0 flex flex-col items-center justify-center gap-4 cursor-pointer"
           aria-label="Play the RMAST Studio introduction video"
         >
-          <span className="w-16 h-16 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-lg">
+          <span className="w-16 h-16 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-sm">
             <Play className="w-6 h-6 ml-1 fill-current" />
           </span>
           <span className="text-xs font-mono uppercase tracking-[0.2em] text-fg">Watch: What is RMAST</span>

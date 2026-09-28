@@ -134,7 +134,7 @@ export const PricingPage: React.FC = () => {
                     key={pkg.id}
                     className={`p-8 rounded-sm border flex flex-col justify-between space-y-8 ${
                       pkg.highlight
-                        ? 'bg-surface border-primary shadow-2xl relative'
+                        ? 'bg-surface border-primary shadow-sm relative'
                         : 'bg-surface border-line'
                     }`}
                   >
@@ -212,11 +212,7 @@ export const PricingPage: React.FC = () => {
                           features: pkg.included
                         })
                       }
-                      className={`w-full py-4 text-xs font-semibold uppercase tracking-[0.16em] transition-all cursor-pointer ${
-                        pkg.highlight
-                          ? 'bg-primary text-on-primary hover:bg-primary-hover'
-                          : 'border border-line text-fg hover:border-primary'
-                      }`}
+                      className={`btn w-full ${pkg.highlight ? 'btn-primary' : 'btn-secondary'}`}
                     >
                       {pkg.ctaText}
                     </button>
@@ -496,7 +492,7 @@ export const PricingPage: React.FC = () => {
                     key={pkg.id}
                     className={`p-8 rounded-sm border flex flex-col justify-between space-y-8 ${
                       pkg.highlight
-                        ? 'bg-surface border-primary shadow-2xl relative'
+                        ? 'bg-surface border-primary shadow-sm relative'
                         : 'bg-surface border-line'
                     }`}
                   >
@@ -558,11 +554,7 @@ export const PricingPage: React.FC = () => {
                           features: pkg.included
                         })
                       }
-                      className={`w-full py-4 text-xs font-semibold uppercase tracking-[0.16em] transition-all cursor-pointer ${
-                        pkg.highlight
-                          ? 'bg-primary text-on-primary hover:bg-primary-hover'
-                          : 'border border-line text-fg hover:border-primary'
-                      }`}
+                      className={`btn w-full ${pkg.highlight ? 'btn-primary' : 'btn-secondary'}`}
                     >
                       {pkg.ctaText}
                     </button>
@@ -687,7 +679,7 @@ export const PricingPage: React.FC = () => {
         </section>
 
         {/* LEGAL / THIRD-PARTY TRANSPARENCY DISCLAIMER */}
-        <section className="p-8 bg-surface-2/80 backdrop-blur-md border border-line/80 space-y-4 shadow-xl">
+        <section className="p-8 bg-surface-2/80 backdrop-blur-md border border-line/80 space-y-4 shadow-sm">
           <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-brand">
             <ShieldAlert className="w-4 h-4" />
             <span>Important Terms & Third-Party Cost Policy</span>
@@ -703,7 +695,7 @@ export const PricingPage: React.FC = () => {
         </section>
 
         {/* CTA */}
-        <section className="p-12 bg-surface-2/85 backdrop-blur-md border border-line/80 text-center space-y-6 shadow-xl">
+        <section className="p-12 bg-surface-2/85 backdrop-blur-md border border-line/80 text-center space-y-6 shadow-sm">
           <h3 className="type-h3 text-fg">
             Need a tailored proposal or custom software quote?
           </h3>

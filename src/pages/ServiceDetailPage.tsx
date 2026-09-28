@@ -75,7 +75,7 @@ export const ServiceDetailPage: React.FC<ServiceDetailPageProps> = ({ slug, divi
           </p>
 
           {/* Pricing Highlight Card */}
-          <div className="p-8 bg-surface-2/85 backdrop-blur-md border border-line/80 flex flex-col md:flex-row md:items-center justify-between gap-6 max-w-3xl shadow-xl rounded-card">
+          <div className="p-8 bg-surface-2/85 backdrop-blur-md border border-line/80 flex flex-col md:flex-row md:items-center justify-between gap-6 max-w-3xl shadow-sm rounded-card">
             <div>
               <div className="text-xs font-mono uppercase tracking-widest text-subtle">
                 Starting Investment Tier
