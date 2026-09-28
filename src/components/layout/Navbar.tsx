@@ -129,7 +129,7 @@ export const Navbar: React.FC = () => {
 
   const panelClasses = isLight
     ? 'bg-white border-slate-200 shadow-xl shadow-slate-900/10'
-    : 'bg-[#0D1019] border-[#262B3D] shadow-2xl shadow-black/50';
+    : 'bg-surface border-line-strong shadow-2xl shadow-black/50';
 
   return (
     <>
@@ -138,25 +138,25 @@ export const Navbar: React.FC = () => {
           isScrolled
             ? isLight
               ? 'bg-white/85 backdrop-blur-md border-b border-slate-200/90 py-4 shadow-sm'
-              : 'bg-black/85 backdrop-blur-md border-b border-[#1E2230] py-4'
+              : 'bg-black/85 backdrop-blur-md border-b border-line py-4'
             : 'bg-transparent py-6'
         }`}
       >
-        <div className="max-w-7xl mx-auto px-6 md:px-10 flex items-center justify-between gap-6">
+        <div className="max-w-site mx-auto px-4 sm:px-6 flex items-center justify-between gap-6">
           {/* Brand Wordmark */}
           <button
             onClick={() => go('/')}
-            className="flex items-baseline gap-2 text-left group cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-[#A68BFF] rounded-sm shrink-0"
+            className="flex items-baseline gap-2 text-left group cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-primary rounded-sm shrink-0"
             aria-label="RMAST Studio home"
           >
             <span
               className={`font-serif text-[26px] leading-none font-bold tracking-[0.16em] transition-colors duration-300 ${
-                isLight ? 'text-slate-900' : 'text-[#FAF8F5]'
-              } group-hover:text-[#A68BFF]`}
+                isLight ? 'text-slate-900' : 'text-fg'
+              } group-hover:text-brand`}
             >
               RMAST
             </span>
-            <span className="font-editorial italic text-[22px] leading-none font-medium text-[#A68BFF] transition-transform duration-300 group-hover:translate-x-0.5">
+            <span className="font-editorial italic text-[22px] leading-none font-medium text-brand transition-transform duration-300 group-hover:translate-x-0.5">
               Studio
             </span>
           </button>
@@ -165,16 +165,16 @@ export const Navbar: React.FC = () => {
           <nav
             ref={navRef}
             aria-label="Main"
-            className={`hidden xl:flex items-center gap-9 text-[13px] uppercase font-medium tracking-[0.14em] ${
-              isLight ? 'text-slate-600' : 'text-[#A1A1AA]'
+            className={`hidden xl:flex items-center gap-7 text-[15px] font-medium whitespace-nowrap ${
+              isLight ? 'text-slate-600' : 'text-muted'
             }`}
           >
             {NAV_ITEMS.map((item) => {
               const active = isActive(item);
-              const itemClasses = `transition-colors duration-200 cursor-pointer relative py-1 focus:outline-none focus-visible:text-[#A68BFF] ${
-                isLight ? 'hover:text-slate-950' : 'hover:text-[#FAF8F5]'
-              } ${active ? 'text-[#A68BFF] font-semibold' : ''}`;
-              const underline = active && <span className="absolute -bottom-0.5 left-0 right-0 h-[1.5px] bg-[#A68BFF]" />;
+              const itemClasses = `transition-colors duration-200 cursor-pointer relative py-1 focus:outline-none focus-visible:text-brand ${
+                isLight ? 'hover:text-slate-950' : 'hover:text-fg'
+              } ${active ? 'text-brand font-semibold' : ''}`;
+              const underline = active && <span className="absolute -bottom-0.5 left-0 right-0 h-[1.5px] bg-primary" />;
 
               if (!item.menu) {
                 return (
@@ -205,8 +205,8 @@ export const Navbar: React.FC = () => {
                       aria-expanded={open}
                       aria-controls={menuId}
                       aria-label={`${item.label} menu`}
-                      className={`p-0.5 rounded cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-[#A68BFF] ${
-                        active ? 'text-[#A68BFF]' : ''
+                      className={`p-1 rounded cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-primary ${
+                        active ? 'text-brand' : ''
                       }`}
                     >
                       <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
@@ -230,12 +230,12 @@ export const Navbar: React.FC = () => {
                               tabIndex={open ? 0 : -1}
                               aria-current={current ? 'page' : undefined}
                               className={`w-full flex items-start gap-3 p-3 rounded text-left transition-colors cursor-pointer group ${
-                                isLight ? 'hover:bg-slate-50' : 'hover:bg-[#161A28]'
-                              } ${current ? (isLight ? 'bg-slate-50' : 'bg-[#161A28]') : ''}`}
+                                isLight ? 'hover:bg-slate-50' : 'hover:bg-surface-2'
+                              } ${current ? (isLight ? 'bg-slate-50' : 'bg-surface-2') : ''}`}
                             >
                               <span
-                                className={`mt-0.5 w-8 h-8 shrink-0 rounded flex items-center justify-center border ${
-                                  isLight ? 'border-slate-200 text-[#6A3FE0]' : 'border-[#2A3044] text-[#A68BFF]'
+                                className={`mt-1 w-8 h-8 shrink-0 rounded flex items-center justify-center border ${
+                                  isLight ? 'border-slate-200 text-brand' : 'border-line-strong text-brand'
                                 }`}
                               >
                                 <Icon className="w-4 h-4" />
@@ -243,12 +243,12 @@ export const Navbar: React.FC = () => {
                               <span className="min-w-0">
                                 <span
                                   className={`block text-sm font-semibold ${
-                                    current ? 'text-[#A68BFF]' : isLight ? 'text-slate-900' : 'text-[#FAF8F5]'
+                                    current ? 'text-brand' : isLight ? 'text-slate-900' : 'text-fg'
                                   }`}
                                 >
                                   {label}
                                 </span>
-                                <span className={`block text-xs mt-0.5 ${isLight ? 'text-slate-500' : 'text-[#8E92A0]'}`}>
+                                <span className={`block text-xs mt-1 ${isLight ? 'text-slate-500' : 'text-muted'}`}>
                                   {description}
                                 </span>
                               </span>
@@ -270,7 +270,7 @@ export const Navbar: React.FC = () => {
               <CurrencyToggle />
               <button
                 onClick={() => go('/contact')}
-                className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.15em] bg-[#A68BFF] text-[#0A0A0C] hover:bg-[#BBA6FF] transition-all duration-200 cursor-pointer shadow-sm whitespace-nowrap"
+                className="btn btn-primary inline-flex items-center gap-2 cursor-pointer whitespace-nowrap"
               >
                 <span>Start a Project</span>
                 <ArrowUpRight className="w-3.5 h-3.5" />
@@ -283,7 +283,7 @@ export const Navbar: React.FC = () => {
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className={`xl:hidden p-2 -mr-2 focus:outline-none cursor-pointer ${
-                isLight ? 'text-slate-800 hover:text-[#A68BFF]' : 'text-[#E4E4E7] hover:text-[#A68BFF]'
+                isLight ? 'text-slate-800 hover:text-brand' : 'text-fg hover:text-brand'
               }`}
               aria-label="Toggle menu"
               aria-expanded={mobileMenuOpen}
@@ -302,13 +302,13 @@ export const Navbar: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -12 }}
           transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-          className={`fixed inset-0 z-40 backdrop-blur-xl flex flex-col pt-24 px-8 pb-10 justify-between xl:hidden overflow-y-auto ${
-            isLight ? 'bg-white/95 text-slate-900' : 'bg-black/95 text-[#E4E4E7]'
+          className={`fixed inset-0 z-40 backdrop-blur-xl flex flex-col pt-24 px-8 pb-12 justify-between xl:hidden overflow-y-auto ${
+            isLight ? 'bg-white/95 text-slate-900' : 'bg-black/95 text-fg'
           }`}
         >
           <div className="space-y-6">
-            <div className={`flex items-center justify-between pb-2 border-b ${isLight ? 'border-slate-200' : 'border-[#1E1E24]'}`}>
-              <div className="text-[11px] font-mono tracking-widest text-[#71717A] uppercase">Navigation</div>
+            <div className={`flex items-center justify-between pb-2 border-b ${isLight ? 'border-slate-200' : 'border-line'}`}>
+              <div className="text-xs font-mono tracking-widest text-subtle uppercase">Navigation</div>
               <div className="flex items-center gap-3">
                 <div className="sm:hidden">
                   <CurrencyToggle />
@@ -320,7 +320,7 @@ export const Navbar: React.FC = () => {
               {NAV_ITEMS.map((item) => {
                 const active = isActive(item);
                 const linkClasses = (isCurrent: boolean) =>
-                  isCurrent ? 'text-[#A68BFF]' : isLight ? 'text-slate-800 hover:text-[#A68BFF]' : 'text-[#E4E4E7] hover:text-[#A68BFF]';
+                  isCurrent ? 'text-brand' : isLight ? 'text-slate-800 hover:text-brand' : 'text-fg hover:text-brand';
                 return (
                   <div key={item.path}>
                     <button
@@ -330,14 +330,14 @@ export const Navbar: React.FC = () => {
                       {item.label}
                     </button>
                     {item.menu && (
-                      <div className={`mt-1 ml-1 pl-4 border-l flex flex-col ${isLight ? 'border-slate-200' : 'border-[#262B3D]'}`}>
+                      <div className={`mt-1 ml-1 pl-4 border-l flex flex-col ${isLight ? 'border-slate-200' : 'border-line-strong'}`}>
                         {item.menu
                           .filter((m) => m.label !== 'Overview')
                           .map((m) => (
                             <button
                               key={m.path}
                               onClick={() => go(m.path)}
-                              className={`text-left text-sm font-mono uppercase tracking-wider py-1.5 transition-colors ${linkClasses(
+                              className={`text-left text-sm font-mono uppercase tracking-wider py-2 transition-colors ${linkClasses(
                                 isActiveMenuItem(m.path)
                               )}`}
                             >
@@ -351,17 +351,17 @@ export const Navbar: React.FC = () => {
               })}
             </div>
 
-            <div className={`pt-4 border-t space-y-3 ${isLight ? 'border-slate-200' : 'border-[#1E1E24]'}`}>
-              <div className="text-xs text-[#71717A] font-mono uppercase tracking-wider">Direct Inquiries</div>
-              <p className={`text-sm ${isLight ? 'text-slate-600' : 'text-[#A1A1AA]'}`}>{CONTACT.email}</p>
-              <p className="text-sm text-[#A68BFF]">{CONTACT.whatsappDisplay} (WhatsApp)</p>
+            <div className={`pt-4 border-t space-y-3 ${isLight ? 'border-slate-200' : 'border-line'}`}>
+              <div className="text-xs text-subtle font-mono uppercase tracking-wider">Direct Inquiries</div>
+              <p className={`text-sm ${isLight ? 'text-slate-600' : 'text-muted'}`}>{CONTACT.email}</p>
+              <p className="text-sm text-brand">{CONTACT.whatsappDisplay} (WhatsApp)</p>
             </div>
           </div>
 
           <div className="pt-6">
             <button
               onClick={() => go('/contact')}
-              className="w-full flex items-center justify-center gap-2 py-3.5 text-xs font-semibold uppercase tracking-[0.16em] bg-[#A68BFF] text-[#0A0A0C]"
+              className="btn btn-primary w-full flex items-center justify-center gap-2"
             >
               <span>Start a Project</span>
               <ArrowUpRight className="w-4 h-4" />

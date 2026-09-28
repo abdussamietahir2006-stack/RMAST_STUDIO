@@ -31,22 +31,22 @@ export const WorkPage: React.FC = () => {
   });
 
   return (
-    <div className="pt-32 pb-24 px-6 md:px-10 min-h-screen">
-      <div className="max-w-7xl mx-auto space-y-20">
+    <div className="pt-30 pb-24 px-4 sm:px-6 min-h-screen">
+      <div className="max-w-site mx-auto space-y-24">
         {/* Header */}
         <section className="space-y-6 max-w-4xl">
           <div className="flex items-center gap-3">
-            <span className="text-xs font-mono uppercase tracking-[0.25em] text-[#A68BFF]">
+            <span className="text-xs font-mono uppercase tracking-[0.25em] text-brand">
               Portfolio of Execution
             </span>
           </div>
 
-          <h1 className="font-serif text-5xl sm:text-7xl lg:text-8xl font-bold text-[#FAF8F5] leading-[1.02] tracking-tight">
+          <h1 className="type-h1 text-fg">
             Selected Works & <br />
-            <span className="italic font-light text-[#A68BFF]">Architectural Systems.</span>
+            <span className="italic font-light text-brand">Architectural Systems.</span>
           </h1>
 
-          <p className="text-base sm:text-lg text-[#A1A1AA] leading-relaxed font-light">
+          <p className="text-base sm:text-lg text-muted leading-relaxed font-light">
             An editorial catalog of custom broker flagships, automated deal engines, and cinematic AI campaigns. Structured for future Headless CMS and API synchronization.
           </p>
 
@@ -56,10 +56,10 @@ export const WorkPage: React.FC = () => {
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-3.5 py-1.5 text-xs font-mono tracking-wider uppercase transition-all cursor-pointer ${
+                className={`px-4 py-2 text-xs font-mono tracking-wider uppercase transition-all cursor-pointer ${
                   selectedCategory === cat
-                    ? 'bg-[#A68BFF] text-[#0A0A0C] font-semibold'
-                    : 'bg-[#101014] border border-[#222228] text-[#8E8D88] hover:text-[#FAF8F5] hover:border-[#3F3F46]'
+                    ? 'bg-primary text-on-primary font-semibold'
+                    : 'bg-surface border border-line text-muted hover:text-fg hover:border-line-strong'
                 }`}
               >
                 {cat}
@@ -76,11 +76,11 @@ export const WorkPage: React.FC = () => {
             return (
               <div
                 key={project.id}
-                className="group p-8 md:p-12 bg-[#0E111C]/80 backdrop-blur-md border border-[#232738]/80 hover:border-[#A68BFF]/50 transition-all duration-300 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center shadow-xl"
+                className="group p-8 md:p-12 bg-surface-2/80 backdrop-blur-md border border-line/80 hover:border-primary/50 transition-all duration-300 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center shadow-xl rounded-card"
               >
                 {/* Visual Preview (7 cols) */}
                 <div
-                  className={`lg:col-span-7 overflow-hidden rounded-sm relative aspect-[16/10] bg-[#141418] ${
+                  className={`lg:col-span-7 overflow-hidden rounded-sm relative aspect-[16/10] bg-surface ${
                     isAlternate ? 'lg:order-2' : ''
                   }`}
                 >
@@ -89,10 +89,10 @@ export const WorkPage: React.FC = () => {
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-75 group-hover:opacity-100"
                   />
                   <div className="absolute top-4 left-4 flex items-center gap-2">
-                    <span className="text-[10px] font-mono tracking-widest uppercase bg-[#0A0A0D]/90 backdrop-blur-sm px-2.5 py-1 text-[#FAF8F5] border border-[#27272A]">
+                    <span className="text-xs font-mono tracking-widest uppercase bg-surface/90 backdrop-blur-sm px-3 py-1 text-fg border border-line">
                       {project.category}
                     </span>
-                    <span className="text-[10px] font-mono tracking-widest uppercase bg-[#0A0A0D]/90 backdrop-blur-sm px-2.5 py-1 text-[#A68BFF] border border-[#27272A]">
+                    <span className="text-xs font-mono tracking-widest uppercase bg-surface/90 backdrop-blur-sm px-3 py-1 text-brand border border-line">
                       {project.division === 'real-estate' ? 'Real Estate Systems' : 'AI Content Studio'}
                     </span>
                   </div>
@@ -104,41 +104,41 @@ export const WorkPage: React.FC = () => {
                     isAlternate ? 'lg:order-1' : ''
                   }`}
                 >
-                  <div className="flex items-center gap-2 text-xs font-mono text-[#71717A]">
+                  <div className="flex items-center gap-2 text-xs font-mono text-subtle">
                     <span>{project.clientLocation}</span>
                     <span>·</span>
                     <span>{project.year}</span>
                   </div>
 
                   <div>
-                    <h2 className="font-serif text-3xl md:text-4xl text-[#FAF8F5] font-semibold group-hover:text-[#A68BFF] transition-colors">
+                    <h2 className="type-h2 text-fg group-hover:text-brand transition-colors">
                       {project.title}
                     </h2>
-                    <p className="text-xs font-mono uppercase tracking-wider text-[#A1A1AA] mt-1.5">
+                    <p className="text-sm font-mono uppercase tracking-wider text-muted mt-2">
                       {project.subtitle}
                     </p>
                   </div>
 
-                  <p className="text-sm text-[#8E8D88] leading-relaxed">
+                  <p className="text-sm text-muted leading-relaxed">
                     {project.description}
                   </p>
 
-                  <div className="p-4 bg-[#08080B] border-l-2 border-[#A68BFF] space-y-1">
-                    <div className="text-[10px] font-mono uppercase tracking-wider text-[#A68BFF]">
+                  <div className="p-4 bg-canvas border-l-2 border-primary space-y-1">
+                    <div className="text-xs font-mono uppercase tracking-wider text-brand">
                       System Impact
                     </div>
-                    <p className="text-xs text-[#E4E4E7]">
+                    <p className="text-sm text-fg">
                       {project.outcome}
                     </p>
                   </div>
 
                   <div className="pt-2">
-                    <div className="text-[10px] font-mono uppercase tracking-wider text-[#71717A] mb-1.5">
+                    <div className="text-xs font-mono uppercase tracking-wider text-subtle mb-2">
                       Services Executed
                     </div>
-                    <div className="flex flex-wrap gap-2 text-xs font-mono text-[#A1A1AA]">
+                    <div className="flex flex-wrap gap-2 text-xs font-mono text-muted">
                       {project.services.map((s, idx) => (
-                        <span key={idx} className="px-2 py-0.5 bg-[#121216] border border-[#22222A]">
+                        <span key={idx} className="px-2 py-1 bg-surface border border-line">
                           {s}
                         </span>
                       ))}
@@ -148,7 +148,7 @@ export const WorkPage: React.FC = () => {
                   <div className="pt-4">
                     <button
                       onClick={() => navigate('/case-studies')}
-                      className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#FAF8F5] group-hover:text-[#A68BFF] transition-colors cursor-pointer"
+                      className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-fg group-hover:text-brand transition-colors cursor-pointer"
                     >
                       <span>Examine Case Study Specs</span>
                       <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -161,8 +161,8 @@ export const WorkPage: React.FC = () => {
         </section>
 
         {/* Future CMS Placeholder Note */}
-        <div className="p-6 bg-[#0E111C]/80 backdrop-blur-md border border-[#232738]/80 text-xs font-mono text-[#71717A] text-center shadow-md">
-          Note: This portfolio is structured with data models ready to bind directly to <code className="text-[#A68BFF]">/api/projects</code> and custom MongoDB/CMS collections upon deployment.
+        <div className="p-6 bg-surface-2/80 backdrop-blur-md border border-line/80 text-xs font-mono text-subtle text-center shadow-md rounded-card">
+          Note: This portfolio is structured with data models ready to bind directly to <code className="text-brand">/api/projects</code> and custom MongoDB/CMS collections upon deployment.
         </div>
       </div>
     </div>

@@ -20,27 +20,27 @@ export const RealEstatePage: React.FC = () => {
   const realEstateServices = servicesData.filter((s) => s.division === 'real-estate');
 
   return (
-    <div className="pt-32 pb-24 px-6 md:px-10 min-h-screen">
-      <div className="max-w-7xl mx-auto space-y-24">
+    <div className="pt-30 pb-24 px-4 sm:px-6 min-h-screen">
+      <div className="max-w-site mx-auto space-y-24">
         {/* Editorial Page Header */}
         <section className="space-y-6 max-w-4xl">
           <div className="flex items-center gap-3">
-            <span className="text-xs font-mono uppercase tracking-[0.25em] text-[#A68BFF]">
+            <span className="text-xs font-mono uppercase tracking-[0.25em] text-brand">
               Division One · Real Estate Digital Systems
             </span>
           </div>
 
-          <h1 className="font-serif text-5xl sm:text-7xl lg:text-8xl font-bold text-[#FAF8F5] leading-[1.02] tracking-tight">
+          <h1 className="type-h1 text-fg">
             We build the digital systems behind modern real-estate businesses.
           </h1>
 
-          <p className="text-lg md:text-xl text-[#A1A1AA] leading-relaxed font-light">
+          <p className="text-lg md:text-xl text-muted leading-relaxed font-light">
             We do not sell pretty websites that sit idle. We engineer end-to-end digital infrastructure that turns cold portal inquiries into closed commissions for brokers in the United States, United Arab Emirates, and Canada.
           </p>
 
-          <div className="pt-2 flex flex-wrap items-center gap-6 text-xs font-mono text-[#71717A]">
-            <span className="flex items-center gap-1.5 text-[#E4E4E7]">
-              <MapPin className="w-3.5 h-3.5 text-[#A68BFF]" />
+          <div className="pt-2 flex flex-wrap items-center gap-6 text-xs font-mono text-subtle">
+            <span className="flex items-center gap-2 text-fg">
+              <MapPin className="w-3.5 h-3.5 text-brand" />
               Target Markets: United States · UAE · Canada
             </span>
             <span>·</span>
@@ -53,13 +53,13 @@ export const RealEstatePage: React.FC = () => {
         {/* Interactive Visual Workflow */}
         <section className="space-y-6">
           <div className="space-y-2">
-            <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#A68BFF]">
+            <span className="text-xs font-mono uppercase tracking-[0.2em] text-brand">
               The Operational Architecture
             </span>
-            <h2 className="font-serif text-3xl md:text-4xl text-[#FAF8F5] font-semibold">
+            <h2 className="type-h2 text-fg">
               The Seven-Stage Transaction Machine
             </h2>
-            <p className="text-sm text-[#8E8D88] max-w-2xl">
+            <p className="text-sm text-muted max-w-2xl">
               From the instant a buyer clicks an ad or submits an off-plan query, the RMAST automated architecture executes qualification, CRM routing, follow-up cadences, and viewing booking.
             </p>
           </div>
@@ -69,16 +69,16 @@ export const RealEstatePage: React.FC = () => {
 
         {/* Real Estate Specific Services Deep Dive */}
         <section className="space-y-12">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-[#1E1E24]">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-line">
             <div className="space-y-2">
-              <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#A68BFF]">
+              <span className="text-xs font-mono uppercase tracking-[0.2em] text-brand">
                 Comprehensive Capabilities
               </span>
-              <h2 className="font-serif text-3xl sm:text-5xl text-[#FAF8F5] font-semibold tracking-tight">
+              <h2 className="type-h2 text-fg">
                 Real Estate Digital Systems
               </h2>
             </div>
-            <p className="text-xs font-mono text-[#71717A]">
+            <p className="text-sm font-mono text-subtle">
               8 modular systems engineered to interlock seamlessly with your brokerage operations.
             </p>
           </div>
@@ -87,29 +87,29 @@ export const RealEstatePage: React.FC = () => {
             {realEstateServices.map((service, index) => (
               <div
                 key={service.id}
-                className="p-7 sm:p-9 bg-[#0E111C]/80 backdrop-blur-md border border-[#232738]/80 hover:border-[#A68BFF]/60 shadow-xl transition-all duration-300 rounded-sm relative group"
+                className="p-8 sm:p-8 bg-surface-2/80 backdrop-blur-md border border-line/80 hover:border-primary/60 shadow-xl transition-all duration-300 rounded-sm relative group"
               >
                 {/* Service Card Top Header */}
-                <div className="flex flex-wrap items-center justify-between gap-4 pb-5 border-b border-[#1E1E26]">
+                <div className="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-line">
                   <div className="flex items-center gap-3">
-                    <span className="px-3 py-1 bg-[#1A1A24] border border-[#A68BFF]/40 text-[#A68BFF] text-xs font-mono font-bold tracking-widest">
+                    <span className="px-3 py-1 bg-surface-2 border border-primary/40 text-brand text-xs font-mono font-bold tracking-widest">
                       SERVICE {String(index + 1).padStart(2, '0')} OF {realEstateServices.length}
                     </span>
-                    <span className="text-xs font-mono uppercase tracking-wider text-[#A1A1AA]">
+                    <span className="text-xs font-mono uppercase tracking-wider text-muted">
                       {service.kicker}
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-2 bg-[#121218] border border-[#2A2A36] px-3.5 py-1.5 rounded-sm">
-                    <span className="text-[10px] font-mono uppercase text-[#71717A]">Starting:</span>
-                    <span className="text-sm font-mono text-[#FAF8F5] font-semibold">
+                  <div className="flex items-center gap-2 bg-surface border border-line px-4 py-2 rounded-sm">
+                    <span className="text-xs font-mono uppercase text-subtle">Starting:</span>
+                    <span className="text-sm font-mono text-fg font-semibold">
                       {format(service.startingPriceUSD)}
                     </span>
-                    <span className="text-[10px] font-mono text-[#A68BFF] uppercase">
+                    <span className="text-xs font-mono text-brand uppercase">
                       ({service.billingType === 'monthly' ? 'per month' : 'one-time'})
                     </span>
                     {service.hourlyRateUSD && (
-                      <span className="text-[11px] font-mono text-[#A1A1AA] border-l border-[#2A2A36] pl-2 ml-1">
+                      <span className="text-xs font-mono text-muted border-l border-line pl-2 ml-1">
                         or {formatHourly(service.hourlyRateUSD)}
                       </span>
                     )}
@@ -117,47 +117,47 @@ export const RealEstatePage: React.FC = () => {
                 </div>
 
                 {/* Title & Headline */}
-                <div className="pt-5 pb-5">
-                  <h3 className="font-serif text-2xl sm:text-3xl text-[#FAF8F5] font-semibold tracking-tight group-hover:text-[#A68BFF] transition-colors">
+                <div className="pt-6 pb-6">
+                  <h3 className="type-h3 text-fg group-hover:text-brand transition-colors">
                     {service.title}
                   </h3>
-                  <p className="text-xs sm:text-sm font-mono text-[#A68BFF]/90 mt-1 italic">
+                  <p className="text-sm sm:text-sm font-mono text-brand/90 mt-1 italic">
                     "{service.headline}"
                   </p>
                 </div>
 
                 {/* 3 Clear Detail Compartments */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   {/* Compartment 1: What it builds */}
-                  <div className="p-4 bg-[#121217] border border-[#1E1E26] rounded-sm space-y-2">
-                    <div className="text-[10px] font-mono uppercase tracking-widest text-[#A68BFF] font-semibold pb-1 border-b border-[#1C1C24]">
+                  <div className="p-4 bg-surface border border-line rounded-sm space-y-2">
+                    <div className="text-xs font-mono uppercase tracking-widest text-brand font-semibold pb-1 border-b border-line">
                       01 · What It Does & Solves
                     </div>
-                    <p className="text-xs sm:text-sm text-[#D4D4D8] leading-relaxed">
+                    <p className="text-sm sm:text-sm text-fg leading-relaxed">
                       {service.summary}
                     </p>
                   </div>
 
                   {/* Compartment 2: Who it is for */}
-                  <div className="p-4 bg-[#121217] border border-[#1E1E26] rounded-sm space-y-2">
-                    <div className="text-[10px] font-mono uppercase tracking-widest text-[#A68BFF] font-semibold pb-1 border-b border-[#1C1C24]">
+                  <div className="p-4 bg-surface border border-line rounded-sm space-y-2">
+                    <div className="text-xs font-mono uppercase tracking-widest text-brand font-semibold pb-1 border-b border-line">
                       02 · Engineered For
                     </div>
-                    <div className="p-3 bg-[#171720] border-l-2 border-[#A68BFF] text-xs text-[#FAF8F5] italic leading-relaxed">
+                    <div className="p-3 bg-surface-2 border-l-2 border-primary text-xs text-fg italic leading-relaxed">
                       {service.targetAudience}
                     </div>
                   </div>
 
                   {/* Compartment 3: Included Deliverables */}
-                  <div className="p-4 bg-[#121217] border border-[#1E1E26] rounded-sm space-y-2">
-                    <div className="text-[10px] font-mono uppercase tracking-widest text-[#A68BFF] font-semibold pb-1 border-b border-[#1C1C24] flex items-center justify-between">
+                  <div className="p-4 bg-surface border border-line rounded-sm space-y-2">
+                    <div className="text-xs font-mono uppercase tracking-widest text-brand font-semibold pb-1 border-b border-line flex items-center justify-between">
                       <span>03 · Core Deliverables</span>
-                      <span className="text-[10px] text-[#71717A]">{service.keyFeatures.length} Specs</span>
+                      <span className="text-xs text-subtle">{service.keyFeatures.length} Specs</span>
                     </div>
-                    <ul className="space-y-1.5 text-xs text-[#A1A1AA]">
+                    <ul className="space-y-2 text-xs text-muted">
                       {service.keyFeatures.slice(0, 3).map((f, i) => (
                         <li key={i} className="flex items-start gap-2">
-                          <Check className="w-3.5 h-3.5 text-[#A68BFF] shrink-0 mt-0.5" />
+                          <Check className="w-3.5 h-3.5 text-brand shrink-0 mt-1" />
                           <span>{f}</span>
                         </li>
                       ))}
@@ -166,13 +166,13 @@ export const RealEstatePage: React.FC = () => {
                 </div>
 
                 {/* Footer Controls */}
-                <div className="mt-6 pt-5 border-t border-[#1C1C22] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="mt-6 pt-6 border-t border-line flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <button
                     onClick={() => navigate(`/services/${service.slug}`)}
-                    className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-[#FAF8F5] hover:text-[#A68BFF] cursor-pointer group/link"
+                    className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-fg hover:text-brand cursor-pointer group/link"
                   >
                     <span>View Architectural Specifications & Scope</span>
-                    <ArrowRight className="w-3.5 h-3.5 text-[#A68BFF] group-hover/link:translate-x-1 transition-transform" />
+                    <ArrowRight className="w-3.5 h-3.5 text-brand group-hover/link:translate-x-1 transition-transform" />
                   </button>
 
                   <button
@@ -189,7 +189,7 @@ export const RealEstatePage: React.FC = () => {
                         features: service.keyFeatures
                       })
                     }
-                    className="px-5 py-2 bg-[#A68BFF] text-[#0A0A0C] text-xs font-mono font-semibold uppercase tracking-wider hover:bg-[#BBA6FF] transition-all cursor-pointer text-center"
+                    className="btn btn-primary cursor-pointer text-center"
                   >
                     Inquire This System
                   </button>
@@ -202,13 +202,13 @@ export const RealEstatePage: React.FC = () => {
         {/* Real Estate Packages Section */}
         <section className="space-y-12">
           <div className="space-y-3">
-            <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#A68BFF]">
+            <span className="text-xs font-mono uppercase tracking-[0.2em] text-brand">
               Investment Packages
             </span>
-            <h2 className="font-serif text-3xl md:text-4xl text-[#FAF8F5] font-semibold">
+            <h2 className="type-h2 text-fg">
               Real Estate System Packages
             </h2>
-            <p className="text-sm text-[#8E8D88]">
+            <p className="text-sm text-muted">
               Final pricing depends on scope, integrations, and requirements. Currency displayed in {currency}.
             </p>
           </div>
@@ -219,47 +219,47 @@ export const RealEstatePage: React.FC = () => {
                 key={pkg.id}
                 className={`p-8 rounded-sm border flex flex-col justify-between space-y-8 ${
                   pkg.highlight
-                    ? 'bg-[#101015] border-[#A68BFF] shadow-xl relative'
-                    : 'bg-[#0A0A0D] border-[#1E1E24]'
+                    ? 'bg-surface border-primary shadow-xl relative'
+                    : 'bg-surface border-line'
                 }`}
               >
                 {pkg.highlight && (
-                  <div className="absolute -top-3 left-8 px-3 py-0.5 bg-[#A68BFF] text-[#0A0A0C] text-[10px] font-mono uppercase tracking-widest font-bold">
+                  <div className="absolute -top-3 left-8 px-3 py-1 bg-primary text-on-primary text-xs font-mono uppercase tracking-widest font-bold">
                     Most Popular Pipeline
                   </div>
                 )}
 
                 <div className="space-y-6">
                   <div>
-                    <span className="text-xs font-mono uppercase tracking-wider text-[#71717A]">
+                    <span className="text-xs font-mono uppercase tracking-wider text-subtle">
                       {pkg.tier}
                     </span>
-                    <h3 className="font-serif text-2xl text-[#FAF8F5] font-semibold mt-1">
+                    <h3 className="type-h3 text-fg mt-1">
                       {pkg.title}
                     </h3>
                   </div>
 
                   <div>
-                    <div className="text-3xl font-serif font-bold text-[#FAF8F5]">
+                    <div className="text-3xl font-serif font-bold text-fg">
                       {format(pkg.priceUSD)}
                     </div>
-                    <div className="text-xs font-mono text-[#71717A] mt-1">
+                    <div className="text-xs font-mono text-subtle mt-1">
                       Starting from · One-time investment
                     </div>
                   </div>
 
-                  <p className="text-xs text-[#A1A1AA] italic">
+                  <p className="text-sm text-muted italic">
                     Best for: {pkg.bestFor}
                   </p>
 
                   <div className="space-y-3 pt-2">
-                    <div className="text-[10px] font-mono uppercase tracking-wider text-[#A68BFF]">
+                    <div className="text-xs font-mono uppercase tracking-wider text-brand">
                       What's Included:
                     </div>
-                    <ul className="space-y-2 text-xs text-[#D4D4D8]">
+                    <ul className="space-y-2 text-xs text-fg">
                       {pkg.included.map((item, idx) => (
                         <li key={idx} className="flex items-start gap-2">
-                          <Check className="w-3.5 h-3.5 text-[#A68BFF] shrink-0 mt-0.5" />
+                          <Check className="w-3.5 h-3.5 text-brand shrink-0 mt-1" />
                           <span>{item}</span>
                         </li>
                       ))}
@@ -267,14 +267,14 @@ export const RealEstatePage: React.FC = () => {
                   </div>
 
                   {pkg.notIncluded && pkg.notIncluded.length > 0 && (
-                    <div className="space-y-2 pt-2 border-t border-[#1C1C22]">
-                      <div className="text-[10px] font-mono uppercase tracking-wider text-[#71717A]">
+                    <div className="space-y-2 pt-2 border-t border-line">
+                      <div className="text-xs font-mono uppercase tracking-wider text-subtle">
                         Not Included:
                       </div>
-                      <ul className="space-y-1 text-[11px] text-[#71717A]">
+                      <ul className="space-y-1 text-xs text-subtle">
                         {pkg.notIncluded.map((item, idx) => (
-                          <li key={idx} className="flex items-start gap-1.5">
-                            <span className="text-[#52525B]">✕</span>
+                          <li key={idx} className="flex items-start gap-2">
+                            <span className="text-subtle">✕</span>
                             <span>{item}</span>
                           </li>
                         ))}
@@ -297,10 +297,10 @@ export const RealEstatePage: React.FC = () => {
                       features: pkg.included
                     })
                   }
-                  className={`w-full py-3.5 text-xs font-semibold uppercase tracking-[0.16em] transition-all cursor-pointer ${
+                  className={`w-full py-4 text-xs font-semibold uppercase tracking-[0.16em] transition-all cursor-pointer ${
                     pkg.highlight
-                      ? 'bg-[#A68BFF] text-[#0A0A0C] hover:bg-[#BBA6FF]'
-                      : 'border border-[#27272A] text-[#FAF8F5] hover:border-[#A68BFF]'
+                      ? 'bg-primary text-on-primary hover:bg-primary-hover'
+                      : 'border border-line text-fg hover:border-primary'
                   }`}
                 >
                   {pkg.ctaText || 'Build System'}
@@ -311,11 +311,11 @@ export const RealEstatePage: React.FC = () => {
         </section>
 
         {/* Bottom Banner */}
-        <section className="p-10 bg-[#0E111C]/85 backdrop-blur-md border border-[#232738]/80 text-center space-y-6 shadow-xl">
-          <h3 className="font-serif text-3xl text-[#FAF8F5] font-semibold">
+        <section className="p-12 bg-surface-2/85 backdrop-blur-md border border-line/80 text-center space-y-6 shadow-xl">
+          <h3 className="type-h3 text-fg">
             Ready to stop losing leads to delayed responses?
           </h3>
-          <p className="text-sm text-[#8E8D88] max-w-xl mx-auto">
+          <p className="text-sm text-muted max-w-xl mx-auto">
             Book a system discovery call directly with Raja Muhammad Abdussamie Tahir. We will audit your current workflow and map your automated pipeline.
           </p>
           <div>
@@ -327,7 +327,7 @@ export const RealEstatePage: React.FC = () => {
                   kicker: 'Founder Scoping'
                 })
               }
-              className="px-8 py-3.5 bg-[#A68BFF] text-[#0A0A0C] text-xs font-semibold uppercase tracking-[0.16em] hover:bg-[#BBA6FF] transition-all cursor-pointer"
+              className="btn btn-primary cursor-pointer"
             >
               Start Real Estate Consultation
             </button>

@@ -171,7 +171,7 @@ const AppRouter: React.FC = () => {
   // The dashboard has its own layout, without the public site's navigation and widgets
   if (route.kind === 'admin') {
     return (
-      <Suspense fallback={<div className="min-h-screen bg-[#0B0C10]" aria-busy="true" />}>
+      <Suspense fallback={<div className="min-h-screen bg-surface" aria-busy="true" />}>
         <AdminApp />
       </Suspense>
     );
@@ -180,8 +180,8 @@ const AppRouter: React.FC = () => {
   return (
     <div
       className={`min-h-screen ${
-        isLight ? 'bg-[#F8FAFC] text-[#0F172A]' : 'bg-[#000000] text-[#E8E6E1]'
-      } flex flex-col justify-between selection:bg-[#A68BFF]/20 selection:text-[#FAF8F5] relative transition-colors duration-500`}
+        isLight ? 'bg-[#F8FAFC] text-fg' : 'bg-canvas text-fg'
+      } flex flex-col justify-between selection:bg-primary/20 selection:text-fg relative transition-colors duration-500`}
     >
       {/* Route-aware studio background image (both themes) */}
       <PageBackground />

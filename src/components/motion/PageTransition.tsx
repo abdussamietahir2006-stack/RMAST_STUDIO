@@ -27,7 +27,7 @@ export const PageTransition: React.FC<{ routeKey: string; children: React.ReactN
           <m.div
             key={loadingKey}
             aria-hidden="true"
-            className="fixed top-0 left-0 right-0 h-[3px] z-[70] origin-left bg-gradient-to-r from-[#A68BFF] via-[#FF5CAA] to-[#3DDCFF] shadow-[0_0_18px_rgba(255,92,170,0.9)]"
+            className="fixed top-0 left-0 right-0 h-[3px] z-[70] origin-left bg-gradient-to-r from-primary via-accent to-accent shadow-[0_0_18px_rgba(255,92,170,0.9)]"
             initial={{ scaleX: 0, opacity: 1 }}
             animate={{ scaleX: 1, opacity: 1 }}
             exit={{ opacity: 0 }}

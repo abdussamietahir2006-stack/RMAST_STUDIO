@@ -7,30 +7,30 @@ export const Footer: React.FC = () => {
   const { navigate } = useNavigation();
 
   return (
-    <footer className="bg-[#0A0C14]/90 backdrop-blur-md border-t border-[#1E2230] text-[#A1A1AA] pt-20 pb-12 relative overflow-hidden">
+    <footer className="bg-surface/90 backdrop-blur-md border-t border-line text-muted pt-24 pb-12 relative overflow-hidden">
       {/* Subtle top ambient glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-[1px] bg-gradient-to-r from-transparent via-[#A68BFF]/40 to-transparent pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-[1px] bg-gradient-to-r from-transparent via-primary/40 to-transparent pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto px-6 md:px-10">
+      <div className="max-w-site mx-auto px-4 sm:px-6">
         {/* Main Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8 pb-16 border-b border-[#1A1A1E]">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8 pb-16 border-b border-line">
           {/* Studio Brand Column (4 cols) */}
           <div className="lg:col-span-4 space-y-6">
             <div className="space-y-2">
-              <span className="font-serif text-3xl font-bold tracking-[0.18em] text-[#FAF8F5] block">
+              <span className="font-serif text-3xl font-bold tracking-[0.18em] text-fg block">
                 RMAST
               </span>
-              <p className="text-xs uppercase font-mono tracking-widest text-[#A68BFF]">
+              <p className="text-sm uppercase font-mono tracking-widest text-brand">
                 Digital Systems · AI Content Studio
               </p>
             </div>
 
-            <p className="text-sm text-[#8E8D88] leading-relaxed max-w-sm">
+            <p className="text-sm text-muted leading-relaxed max-w-sm">
               Digital systems for real estate. Cinematic AI content for brands.
               Architected by founders Raja Muhammad Abdussamie Tahir & Mashhood.
             </p>
 
-            <div className="pt-2 text-xs font-mono text-[#71717A] tracking-wider uppercase flex items-center gap-2">
+            <div className="pt-2 text-xs font-mono text-subtle tracking-wider uppercase flex items-center gap-2">
               <span className="inline-block w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
               <span>Small team. Serious execution. Remote studio.</span>
             </div>
@@ -38,14 +38,14 @@ export const Footer: React.FC = () => {
 
           {/* Division 1: Real Estate (3 cols) */}
           <div className="lg:col-span-3 space-y-4">
-            <div className="text-xs font-mono uppercase tracking-[0.2em] text-[#FAF8F5]">
+            <div className="text-xs font-mono uppercase tracking-[0.2em] text-fg">
               Real Estate Systems
             </div>
-            <ul className="space-y-2.5 text-sm text-[#8E8D88]">
+            <ul className="space-y-3 text-sm text-muted">
               <li>
                 <button
                   onClick={() => navigate('/services/web-development')}
-                  className="hover:text-[#A68BFF] transition-colors cursor-pointer text-left"
+                  className="hover:text-brand transition-colors cursor-pointer text-left"
                 >
                   Website Development
                 </button>
@@ -53,7 +53,7 @@ export const Footer: React.FC = () => {
               <li>
                 <button
                   onClick={() => navigate('/services/custom-software')}
-                  className="hover:text-[#A68BFF] transition-colors cursor-pointer text-left"
+                  className="hover:text-brand transition-colors cursor-pointer text-left"
                 >
                   Custom Software
                 </button>
@@ -61,7 +61,7 @@ export const Footer: React.FC = () => {
               <li>
                 <button
                   onClick={() => navigate('/services/crm-development')}
-                  className="hover:text-[#A68BFF] transition-colors cursor-pointer text-left"
+                  className="hover:text-brand transition-colors cursor-pointer text-left"
                 >
                   CRM Architecture
                 </button>
@@ -69,7 +69,7 @@ export const Footer: React.FC = () => {
               <li>
                 <button
                   onClick={() => navigate('/services/ai-automation')}
-                  className="hover:text-[#A68BFF] transition-colors cursor-pointer text-left"
+                  className="hover:text-brand transition-colors cursor-pointer text-left"
                 >
                   AI Automation
                 </button>
@@ -77,7 +77,7 @@ export const Footer: React.FC = () => {
               <li>
                 <button
                   onClick={() => navigate('/services/ai-assistants')}
-                  className="hover:text-[#A68BFF] transition-colors cursor-pointer text-left"
+                  className="hover:text-brand transition-colors cursor-pointer text-left"
                 >
                   Conversational AI
                 </button>
@@ -85,7 +85,7 @@ export const Footer: React.FC = () => {
               <li>
                 <button
                   onClick={() => navigate('/services/admin-support')}
-                  className="hover:text-[#A68BFF] transition-colors cursor-pointer text-left"
+                  className="hover:text-brand transition-colors cursor-pointer text-left"
                 >
                   Admin Operations & VA
                 </button>
@@ -95,14 +95,14 @@ export const Footer: React.FC = () => {
 
           {/* Division 2: AI Content (3 cols) */}
           <div className="lg:col-span-3 space-y-4">
-            <div className="text-xs font-mono uppercase tracking-[0.2em] text-[#FAF8F5]">
+            <div className="text-xs font-mono uppercase tracking-[0.2em] text-fg">
               AI Content Studio
             </div>
-            <ul className="space-y-2.5 text-sm text-[#8E8D88]">
+            <ul className="space-y-3 text-sm text-muted">
               <li>
                 <button
                   onClick={() => navigate('/ai-content/real-estate')}
-                  className="hover:text-[#A68BFF] transition-colors cursor-pointer text-left"
+                  className="hover:text-brand transition-colors cursor-pointer text-left"
                 >
                   Property Cinematic Tours
                 </button>
@@ -110,7 +110,7 @@ export const Footer: React.FC = () => {
               <li>
                 <button
                   onClick={() => navigate('/ai-content/fashion')}
-                  className="hover:text-[#A68BFF] transition-colors cursor-pointer text-left"
+                  className="hover:text-brand transition-colors cursor-pointer text-left"
                 >
                   Fashion & Lookbook Films
                 </button>
@@ -118,7 +118,7 @@ export const Footer: React.FC = () => {
               <li>
                 <button
                   onClick={() => navigate('/ai-content/food')}
-                  className="hover:text-[#A68BFF] transition-colors cursor-pointer text-left"
+                  className="hover:text-brand transition-colors cursor-pointer text-left"
                 >
                   Food & Restaurant Cinema
                 </button>
@@ -126,7 +126,7 @@ export const Footer: React.FC = () => {
               <li>
                 <button
                   onClick={() => navigate('/ai-content/products')}
-                  className="hover:text-[#A68BFF] transition-colors cursor-pointer text-left"
+                  className="hover:text-brand transition-colors cursor-pointer text-left"
                 >
                   Product Commercials
                 </button>
@@ -134,7 +134,7 @@ export const Footer: React.FC = () => {
               <li>
                 <button
                   onClick={() => navigate('/ai-content')}
-                  className="hover:text-[#A68BFF] transition-colors cursor-pointer text-left"
+                  className="hover:text-brand transition-colors cursor-pointer text-left"
                 >
                   Brand Advertising Cuts
                 </button>
@@ -142,7 +142,7 @@ export const Footer: React.FC = () => {
               <li>
                 <button
                   onClick={() => navigate('/pricing')}
-                  className="hover:text-[#A68BFF] transition-colors cursor-pointer text-left"
+                  className="hover:text-brand transition-colors cursor-pointer text-left"
                 >
                   Monthly Content Bundles
                 </button>
@@ -152,15 +152,15 @@ export const Footer: React.FC = () => {
 
           {/* Quick Studio & Contact (2 cols) */}
           <div className="lg:col-span-2 space-y-4">
-            <div className="text-xs font-mono uppercase tracking-[0.2em] text-[#FAF8F5]">
+            <div className="text-xs font-mono uppercase tracking-[0.2em] text-fg">
               Direct Contact
             </div>
             <div className="space-y-3 text-xs">
               <a
                 href={mailtoLink()}
-                className="flex items-center gap-2 text-[#FAF8F5] hover:text-[#A68BFF] transition-colors break-all"
+                className="flex items-center gap-2 text-fg hover:text-brand transition-colors break-all"
               >
-                <Mail className="w-3.5 h-3.5 text-[#A68BFF] shrink-0" />
+                <Mail className="w-3.5 h-3.5 text-brand shrink-0" />
                 <span>{CONTACT.email}</span>
               </a>
 
@@ -168,9 +168,9 @@ export const Footer: React.FC = () => {
                 href={whatsappLink()}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-[#FAF8F5] hover:text-[#A68BFF] transition-colors"
+                className="flex items-center gap-2 text-fg hover:text-brand transition-colors"
               >
-                <MessageSquare className="w-3.5 h-3.5 text-[#A68BFF] shrink-0" />
+                <MessageSquare className="w-3.5 h-3.5 text-brand shrink-0" />
                 <span>{CONTACT.whatsappDisplay}</span>
               </a>
 
@@ -178,9 +178,9 @@ export const Footer: React.FC = () => {
                 href={CONTACT.instagramUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-[#FAF8F5] hover:text-[#A68BFF] transition-colors"
+                className="flex items-center gap-2 text-fg hover:text-brand transition-colors"
               >
-                <Instagram className="w-3.5 h-3.5 text-[#A68BFF] shrink-0" />
+                <Instagram className="w-3.5 h-3.5 text-brand shrink-0" />
                 <span>@{CONTACT.instagramHandle}</span>
               </a>
 
@@ -188,7 +188,7 @@ export const Footer: React.FC = () => {
                 href={CONTACT.founderLinkedIn}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-[#FAF8F5] hover:text-[#0A66C2] transition-colors"
+                className="flex items-center gap-2 text-fg hover:text-[#0A66C2] transition-colors"
                 aria-label="Raja Muhammad Abdussamie Tahir on LinkedIn"
               >
                 <Linkedin className="w-3.5 h-3.5 text-[#0A66C2] shrink-0" />
@@ -199,30 +199,30 @@ export const Footer: React.FC = () => {
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-[#71717A]">
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-subtle">
           <span>© {new Date().getFullYear()} RMAST Studio. All rights reserved.</span>
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
             <button
               onClick={() => navigate('/about')}
-              className="hover:text-[#FAF8F5] transition-colors"
+              className="hover:text-fg transition-colors"
             >
               Founders
             </button>
             <button
               onClick={() => navigate('/process')}
-              className="hover:text-[#FAF8F5] transition-colors"
+              className="hover:text-fg transition-colors"
             >
               Methodology
             </button>
             <button
               onClick={() => navigate('/pricing')}
-              className="hover:text-[#FAF8F5] transition-colors"
+              className="hover:text-fg transition-colors"
             >
               Investment
             </button>
             <button
               onClick={() => navigate('/contact')}
-              className="hover:text-[#FAF8F5] transition-colors text-[#A68BFF]"
+              className="hover:text-fg transition-colors text-brand"
             >
               Start Conversation
             </button>

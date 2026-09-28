@@ -20,28 +20,28 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
       type="button"
       aria-label={`Switch to ${isLight ? 'Dark' : 'Light'} Mode`}
       title={`Switch to ${isLight ? 'Dark' : 'Light'} Mode`}
-      className={`group relative inline-flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all duration-300 cursor-pointer select-none text-xs font-mono tracking-wider ${
+      className={`group relative inline-flex items-center gap-2 px-3 py-2 rounded-full border transition-all duration-300 cursor-pointer select-none text-xs font-mono tracking-wider ${
         isLight
           ? 'bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-800 shadow-sm'
-          : 'bg-[#121624]/90 hover:bg-[#1A2033] border-[#252B3D] text-[#D0D4E0] hover:text-[#FAF8F5] hover:border-[#A68BFF]/50'
+          : 'bg-surface-2/90 hover:bg-surface-2 border-line-strong text-fg hover:text-fg hover:border-primary/50'
       } ${className}`}
     >
       <div
         className={`w-4 h-4 rounded-full flex items-center justify-center transition-transform duration-300 ${
           isLight
             ? 'rotate-0 text-amber-600'
-            : 'rotate-180 text-[#A68BFF]'
+            : 'rotate-180 text-brand'
         }`}
       >
         {isLight ? (
           <Sun className="w-3.5 h-3.5 fill-amber-500/20 stroke-[2.2]" />
         ) : (
-          <Moon className="w-3.5 h-3.5 fill-[#A68BFF]/20 stroke-[2]" />
+          <Moon className="w-3.5 h-3.5 fill-primary/20 stroke-[2]" />
         )}
       </div>
 
       {showLabel && (
-        <span className="font-semibold uppercase text-[10px]">
+        <span className="font-semibold uppercase text-xs">
           {isLight ? 'Light' : 'Dark'}
         </span>
       )}
@@ -49,7 +49,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
       {/* Subtle indicator ring */}
       <span
         className={`w-1.5 h-1.5 rounded-full transition-colors ${
-          isLight ? 'bg-amber-500' : 'bg-[#A68BFF]'
+          isLight ? 'bg-amber-500' : 'bg-primary'
         }`}
       />
     </button>

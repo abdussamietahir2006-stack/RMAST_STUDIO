@@ -84,11 +84,11 @@ const Field: React.FC<{
   required?: boolean;
   children: React.ReactNode;
 }> = ({ id, label, icon: Icon, error, required, children }) => (
-  <div className="space-y-1.5">
-    <label htmlFor={id} className="flex items-center justify-between text-[11px] font-mono uppercase tracking-[0.14em] text-[#A1A1AA]">
+  <div className="space-y-2">
+    <label htmlFor={id} className="flex items-center justify-between text-xs font-mono uppercase tracking-[0.14em] text-muted">
       <span>
         {label}
-        {required && <span className="text-[#A68BFF]"> *</span>}
+        {required && <span className="text-brand"> *</span>}
       </span>
       <AnimatePresence>
         {error && (
@@ -96,7 +96,7 @@ const Field: React.FC<{
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="normal-case tracking-normal font-sans text-[11px] text-[#F87171]"
+            className="normal-case tracking-normal font-sans text-xs text-[#F87171]"
             id={`${id}-error`}
           >
             {error}
@@ -108,18 +108,18 @@ const Field: React.FC<{
       key={error ? `err-${error}` : 'ok'}
       animate={error ? { x: [0, -6, 6, -4, 4, 0] } : { x: 0 }}
       transition={{ duration: 0.35 }}
-      className={`group/field relative flex items-center rounded-md border bg-[#080A11] transition-all duration-200 focus-within:border-[#A68BFF] focus-within:shadow-[0_0_0_3px_rgba(166,139,255,0.15),0_8px_30px_-12px_rgba(166,139,255,0.35)] ${
-        error ? 'border-[#7F1D1D]' : 'border-[#232838] hover:border-[#2E3550]'
+      className={`group/field relative flex items-center rounded-md border bg-surface transition-all duration-200 focus-within:border-primary focus-within:shadow-[0_0_0_3px_rgba(166,139,255,0.15),0_8px_30px_-12px_rgba(166,139,255,0.35)] ${
+        error ? 'border-[#7F1D1D]' : 'border-line hover:border-line-strong'
       }`}
     >
-      <Icon className="absolute left-3.5 w-4 h-4 text-[#5B6070] transition-colors group-focus-within/field:text-[#A68BFF] pointer-events-none" />
+      <Icon className="absolute left-3.5 w-4 h-4 text-subtle transition-colors group-focus-within/field:text-brand pointer-events-none" />
       {children}
     </m.div>
   </div>
 );
 
 const inputClass =
-  'w-full bg-transparent pl-10 pr-3.5 py-3 text-sm text-[#FAF8F5] placeholder:text-[#4A4F60] outline-none rounded-md';
+  'w-full bg-transparent pl-12 pr-4 py-3 text-sm text-fg placeholder:text-subtle outline-none rounded-md';
 
 // ---------------------------------------------------------------------------
 // Animated success check
@@ -133,7 +133,7 @@ const SuccessMark: React.FC = () => (
     className="relative w-20 h-20 mx-auto"
   >
     <m.span
-      className="absolute inset-0 rounded-full bg-[#A68BFF]/20"
+      className="absolute inset-0 rounded-full bg-primary/20"
       initial={{ scale: 1, opacity: 0.6 }}
       animate={{ scale: 1.6, opacity: 0 }}
       transition={{ duration: 1.2, repeat: 2, ease: 'easeOut' }}
@@ -374,7 +374,7 @@ const InquiryDialog: React.FC<{ target: InquiryTarget; onClose: () => void }> = 
       {/* Backdrop */}
       <m.div
         onClick={onClose}
-        className="fixed inset-0 bg-[#05070C]/80 backdrop-blur-xl"
+        className="fixed inset-0 bg-canvas/80 backdrop-blur-xl"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -391,11 +391,11 @@ const InquiryDialog: React.FC<{ target: InquiryTarget; onClose: () => void }> = 
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 24, scale: 0.97 }}
         transition={{ duration: 0.45, ease: EASE }}
-        className="relative z-10 w-full max-w-5xl min-h-screen sm:min-h-0 sm:my-8 outline-none grid grid-cols-1 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] overflow-hidden sm:rounded-xl border border-[#262B3D] bg-[#0B0E17] text-[#FAF8F5] shadow-[0_40px_120px_-20px_rgba(0,0,0,0.8),0_0_0_1px_rgba(166,139,255,0.08)]"
+        className="relative z-10 w-full max-w-5xl min-h-screen sm:min-h-0 sm:my-8 outline-none grid grid-cols-1 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] overflow-hidden sm:rounded-xl border border-line-strong bg-surface text-fg shadow-[0_40px_120px_-20px_rgba(0,0,0,0.8),0_0_0_1px_rgba(166,139,255,0.08)]"
       >
         {/* Animated gold edge */}
         <m.div
-          className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#A68BFF] to-transparent"
+          className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary to-transparent"
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
           transition={{ duration: 0.8, ease: EASE, delay: 0.1 }}
@@ -404,13 +404,13 @@ const InquiryDialog: React.FC<{ target: InquiryTarget; onClose: () => void }> = 
         <button
           onClick={onClose}
           aria-label="Close dialog"
-          className="fixed sm:absolute top-4 right-4 z-20 w-9 h-9 rounded-full backdrop-blur-md flex items-center justify-center text-[#8E92A0] hover:text-[#FAF8F5] bg-[#111522]/80 border border-[#262B3D] hover:border-[#A68BFF]/60 hover:rotate-90 transition-all duration-300 cursor-pointer"
+          className="fixed sm:absolute top-4 right-4 z-20 w-9 h-9 rounded-full backdrop-blur-md flex items-center justify-center text-muted hover:text-fg bg-surface-2/80 border border-line-strong hover:border-primary/60 hover:rotate-90 transition-all duration-300 cursor-pointer"
         >
           <X className="w-4 h-4" />
         </button>
 
         {/* ================= Summary panel ================= */}
-        <aside className="relative overflow-hidden p-6 sm:p-8 lg:p-9 border-b lg:border-b-0 lg:border-r border-[#1E2335] bg-[#0A0C14]">
+        <aside className="relative overflow-hidden p-6 sm:p-8 lg:p-8 border-b lg:border-b-0 lg:border-r border-line bg-surface">
           <div
             aria-hidden="true"
             className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-[radial-gradient(circle,rgba(166,139,255,0.20)_0%,transparent_65%)] pointer-events-none"
@@ -421,12 +421,12 @@ const InquiryDialog: React.FC<{ target: InquiryTarget; onClose: () => void }> = 
           />
 
           <div className="relative space-y-6">
-            <span className="inline-flex items-center gap-2 text-[10px] font-mono tracking-[0.2em] uppercase text-[#A68BFF] bg-[#A68BFF]/10 border border-[#A68BFF]/30 px-3 py-1 rounded-full">
+            <span className="inline-flex items-center gap-2 text-xs font-mono tracking-[0.2em] uppercase text-brand bg-primary/10 border border-primary/30 px-3 py-1 rounded-full">
               <DivisionIcon className="w-3 h-3" />
               {divisionLabel}
             </span>
 
-            <div className="space-y-3 pr-10 lg:pr-0">
+            <div className="space-y-3 pr-12 lg:pr-0">
               <AnimatePresence mode="wait" initial={false}>
                 <m.h2
                   key={activeTarget.title}
@@ -442,7 +442,7 @@ const InquiryDialog: React.FC<{ target: InquiryTarget; onClose: () => void }> = 
               </AnimatePresence>
 
               <div className="flex items-baseline gap-2">
-                <span className="text-[10px] font-mono uppercase tracking-widest text-[#71717A]">From</span>
+                <span className="text-xs font-mono uppercase tracking-widest text-subtle">From</span>
                 <AnimatePresence mode="popLayout" initial={false}>
                   <m.span
                     key={getEstimatedPriceString()}
@@ -450,21 +450,21 @@ const InquiryDialog: React.FC<{ target: InquiryTarget; onClose: () => void }> = 
                     animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                     exit={{ opacity: 0, y: -14, filter: 'blur(4px)' }}
                     transition={{ duration: 0.3, ease: EASE }}
-                    className="font-serif text-3xl sm:text-4xl font-bold text-[#A68BFF]"
+                    className="font-serif text-3xl sm:text-4xl font-bold text-brand"
                   >
                     {activeTarget.priceUSD ? format(activeTarget.priceUSD) : 'Custom'}
                   </m.span>
                 </AnimatePresence>
                 {activeTarget.priceUSD && (
-                  <span className="text-xs font-mono text-[#8E92A0]">{activeTarget.billingFrequency}</span>
+                  <span className="text-xs font-mono text-muted">{activeTarget.billingFrequency}</span>
                 )}
               </div>
             </div>
 
             {/* Tier selector */}
             {options.length > 1 && (
-              <div className="space-y-2.5">
-                <div className="text-[10px] font-mono uppercase tracking-[0.18em] text-[#8E92A0]">Choose your tier</div>
+              <div className="space-y-3">
+                <div className="text-xs font-mono uppercase tracking-[0.18em] text-muted">Choose your tier</div>
                 <div role="radiogroup" aria-label="Choose your tier" className="grid grid-cols-3 lg:grid-cols-1 gap-2">
                   {options.map((opt) => {
                     const active = opt.id === selectedId;
@@ -475,36 +475,36 @@ const InquiryDialog: React.FC<{ target: InquiryTarget; onClose: () => void }> = 
                         role="radio"
                         aria-checked={active}
                         onClick={() => setSelectedId(opt.id)}
-                        className={`relative text-left rounded-lg border px-3 py-2.5 lg:px-4 lg:py-3 transition-colors duration-200 cursor-pointer ${
-                          active ? 'border-[#A68BFF]' : 'border-[#232838] hover:border-[#3A4058]'
+                        className={`relative text-left rounded-lg border px-3 py-3 lg:px-4 lg:py-3 transition-colors duration-200 cursor-pointer ${
+                          active ? 'border-primary' : 'border-line hover:border-line-strong'
                         }`}
                       >
                         {active && (
                           <m.span
                             layoutId="tier-highlight"
-                            className="absolute inset-0 rounded-lg bg-gradient-to-br from-[#A68BFF]/20 to-[#A68BFF]/5"
+                            className="absolute inset-0 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5"
                             transition={{ type: 'spring', stiffness: 380, damping: 32 }}
                           />
                         )}
-                        <span className="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-0.5">
+                        <span className="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-1">
                           <span className="flex items-center gap-2">
                             <span
                               className={`hidden lg:flex w-4 h-4 rounded-full border items-center justify-center transition-colors ${
-                                active ? 'border-[#A68BFF] bg-[#A68BFF]' : 'border-[#3A4058]'
+                                active ? 'border-primary bg-primary' : 'border-line-strong'
                               }`}
                             >
-                              {active && <Check className="w-2.5 h-2.5 text-[#0A0A0C]" strokeWidth={3} />}
+                              {active && <Check className="w-2.5 h-2.5 text-on-primary" strokeWidth={3} />}
                             </span>
-                            <span className={`text-xs sm:text-sm font-semibold ${active ? 'text-[#FAF8F5]' : 'text-[#C7C9D1]'}`}>
+                            <span className={`text-xs sm:text-sm font-semibold ${active ? 'text-fg' : 'text-fg'}`}>
                               {opt.label}
                             </span>
                             {opt.badge && (
-                              <span className="hidden sm:inline text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded bg-[#A68BFF]/15 text-[#A68BFF]">
+                              <span className="hidden sm:inline text-[9px] font-mono uppercase tracking-wider px-2 py-1 rounded bg-primary/15 text-brand">
                                 {opt.badge}
                               </span>
                             )}
                           </span>
-                          <span className={`text-[11px] sm:text-xs font-mono ${active ? 'text-[#A68BFF]' : 'text-[#8E92A0]'}`}>
+                          <span className={`text-xs sm:text-xs font-mono ${active ? 'text-brand' : 'text-muted'}`}>
                             {format(opt.priceUSD)}
                           </span>
                         </span>
@@ -517,8 +517,8 @@ const InquiryDialog: React.FC<{ target: InquiryTarget; onClose: () => void }> = 
 
             {/* What's included */}
             {features.length > 0 && (
-              <div className="hidden sm:block space-y-2.5">
-                <div className="text-[10px] font-mono uppercase tracking-[0.18em] text-[#8E92A0]">What's included</div>
+              <div className="hidden sm:block space-y-3">
+                <div className="text-xs font-mono uppercase tracking-[0.18em] text-muted">What's included</div>
                 <AnimatePresence mode="wait" initial={false}>
                   <m.ul
                     key={activeTarget.title}
@@ -532,10 +532,10 @@ const InquiryDialog: React.FC<{ target: InquiryTarget; onClose: () => void }> = 
                       <m.li
                         key={f}
                         variants={{ hidden: { opacity: 0, x: -8 }, show: { opacity: 1, x: 0 } }}
-                        className="flex items-start gap-2.5 text-[13px] text-[#C7C9D1] leading-snug"
+                        className="flex items-start gap-3 text-[13px] text-fg leading-snug"
                       >
-                        <span className="mt-0.5 w-4 h-4 shrink-0 rounded-full bg-[#A68BFF]/15 flex items-center justify-center">
-                          <Check className="w-2.5 h-2.5 text-[#A68BFF]" strokeWidth={3} />
+                        <span className="mt-1 w-4 h-4 shrink-0 rounded-full bg-primary/15 flex items-center justify-center">
+                          <Check className="w-2.5 h-2.5 text-brand" strokeWidth={3} />
                         </span>
                         {f}
                       </m.li>
@@ -545,43 +545,43 @@ const InquiryDialog: React.FC<{ target: InquiryTarget; onClose: () => void }> = 
               </div>
             )}
 
-            <ul className="hidden lg:grid gap-2.5 pt-5 border-t border-[#1E2335] text-xs text-[#8E92A0]">
-              <li className="flex items-center gap-2.5">
-                <Clock className="w-3.5 h-3.5 text-[#A68BFF]" /> Founder reply within 24 hours
+            <ul className="hidden lg:grid gap-3 pt-6 border-t border-line text-xs text-muted">
+              <li className="flex items-center gap-3">
+                <Clock className="w-3.5 h-3.5 text-brand" /> Founder reply within 24 hours
               </li>
-              <li className="flex items-center gap-2.5">
-                <ShieldCheck className="w-3.5 h-3.5 text-[#A68BFF]" /> No-obligation scoping call
+              <li className="flex items-center gap-3">
+                <ShieldCheck className="w-3.5 h-3.5 text-brand" /> No-obligation scoping call
               </li>
-              <li className="flex items-center gap-2.5">
-                <Globe2 className="w-3.5 h-3.5 text-[#A68BFF]" /> USA · UAE · Canada · Worldwide
+              <li className="flex items-center gap-3">
+                <Globe2 className="w-3.5 h-3.5 text-brand" /> USA · UAE · Canada · Worldwide
               </li>
             </ul>
           </div>
         </aside>
 
         {/* ================= Steps panel ================= */}
-        <section className="relative p-6 sm:p-8 lg:p-10 flex flex-col">
+        <section className="relative p-6 sm:p-8 lg:p-12 flex flex-col">
           {/* Step indicator */}
-          <ol className="flex items-center gap-2 mb-8 pr-10 text-[10px] font-mono uppercase tracking-[0.16em]" aria-label="Progress">
+          <ol className="flex items-center gap-2 mb-8 pr-12 text-xs font-mono uppercase tracking-[0.16em]" aria-label="Progress">
             {['Your details', 'Send', 'Done'].map((label, i) => (
               <li key={label} className="flex items-center gap-2 flex-1 last:flex-none">
                 <span
                   className={`w-6 h-6 rounded-full flex items-center justify-center border transition-colors duration-300 ${
                     i < stepIndex
-                      ? 'bg-[#A68BFF] border-[#A68BFF] text-[#0A0A0C]'
+                      ? 'bg-primary border-primary text-on-primary'
                       : i === stepIndex
-                      ? 'border-[#A68BFF] text-[#A68BFF]'
-                      : 'border-[#2A3044] text-[#5B6070]'
+                      ? 'border-primary text-brand'
+                      : 'border-line-strong text-subtle'
                   }`}
                   aria-current={i === stepIndex ? 'step' : undefined}
                 >
                   {i < stepIndex ? <Check className="w-3 h-3" strokeWidth={3} /> : i + 1}
                 </span>
-                <span className={`hidden sm:inline ${i <= stepIndex ? 'text-[#FAF8F5]' : 'text-[#5B6070]'}`}>{label}</span>
+                <span className={`hidden sm:inline ${i <= stepIndex ? 'text-fg' : 'text-subtle'}`}>{label}</span>
                 {i < 2 && (
-                  <span className="relative flex-1 h-px bg-[#232838] overflow-hidden">
+                  <span className="relative flex-1 h-px bg-surface-2 overflow-hidden">
                     <m.span
-                      className="absolute inset-0 bg-[#A68BFF] origin-left"
+                      className="absolute inset-0 bg-primary origin-left"
                       initial={false}
                       animate={{ scaleX: i < stepIndex ? 1 : 0 }}
                       transition={{ duration: 0.5, ease: EASE }}
@@ -602,11 +602,11 @@ const InquiryDialog: React.FC<{ target: InquiryTarget; onClose: () => void }> = 
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -24 }}
                 transition={{ duration: 0.3, ease: EASE }}
-                className="space-y-5 flex-1"
+                className="space-y-6 flex-1"
               >
                 <div>
-                  <h3 className="font-serif text-2xl font-semibold">Tell us about you</h3>
-                  <p className="text-sm text-[#8E92A0] mt-1">Takes under a minute. Abdussamie & Mashhood read every brief personally.</p>
+                  <h3 className="type-h3">Tell us about you</h3>
+                  <p className="text-sm text-muted mt-1">Takes under a minute. Abdussamie & Mashhood read every brief personally.</p>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -667,15 +667,15 @@ const InquiryDialog: React.FC<{ target: InquiryTarget; onClose: () => void }> = 
                     className={`${inputClass} appearance-none cursor-pointer`}
                   >
                     {LOCATIONS.map((l) => (
-                      <option key={l.value} value={l.value} className="bg-[#0B0E17]">
+                      <option key={l.value} value={l.value} className="bg-surface">
                         {l.label}
                       </option>
                     ))}
                   </select>
                 </Field>
 
-                <div className="space-y-1.5">
-                  <div className="text-[11px] font-mono uppercase tracking-[0.14em] text-[#A1A1AA]" id="inq-timeline-label">
+                <div className="space-y-2">
+                  <div className="text-xs font-mono uppercase tracking-[0.14em] text-muted" id="inq-timeline-label">
                     Timeline
                   </div>
                   <div role="radiogroup" aria-labelledby="inq-timeline-label" className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -689,18 +689,18 @@ const InquiryDialog: React.FC<{ target: InquiryTarget; onClose: () => void }> = 
                           aria-checked={active}
                           onClick={() => setTimeline(t.value)}
                           className={`relative rounded-md border px-3 py-2 text-left transition-colors cursor-pointer ${
-                            active ? 'border-[#A68BFF] text-[#FAF8F5]' : 'border-[#232838] text-[#A1A1AA] hover:border-[#3A4058]'
+                            active ? 'border-primary text-fg' : 'border-line text-muted hover:border-line-strong'
                           }`}
                         >
                           {active && (
                             <m.span
                               layoutId="timeline-highlight"
-                              className="absolute inset-0 rounded-md bg-[#A68BFF]/12"
+                              className="absolute inset-0 rounded-md bg-primary/12"
                               transition={{ type: 'spring', stiffness: 400, damping: 34 }}
                             />
                           )}
                           <span className="relative block text-xs font-semibold">{t.label}</span>
-                          <span className="relative block text-[10px] font-mono text-[#8E92A0]">{t.hint}</span>
+                          <span className="relative block text-xs font-mono text-muted">{t.hint}</span>
                         </button>
                       );
                     })}
@@ -719,15 +719,15 @@ const InquiryDialog: React.FC<{ target: InquiryTarget; onClose: () => void }> = 
                 </Field>
 
                 <div className="pt-2 flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-4">
-                  <span className="flex items-center gap-2 text-xs text-[#8E92A0]">
-                    <ShieldCheck className="w-4 h-4 text-[#A68BFF]" />
+                  <span className="flex items-center gap-2 text-xs text-muted">
+                    <ShieldCheck className="w-4 h-4 text-brand" />
                     Private. Never shared or spammed.
                   </span>
                   <m.button
                     type="submit"
                     whileHover={{ y: -2 }}
                     whileTap={{ scale: 0.98 }}
-                    className="btn-shine inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-md bg-[#A68BFF] text-[#0A0A0C] text-xs font-bold uppercase tracking-[0.16em] shadow-[0_10px_30px_-10px_rgba(166,139,255,0.6)] cursor-pointer group"
+                    className="btn-shine inline-flex items-center justify-center gap-2 px-8 py-4 rounded-md bg-primary text-on-primary text-xs font-bold uppercase tracking-[0.16em] shadow-[0_10px_30px_-10px_rgba(166,139,255,0.6)] cursor-pointer group"
                   >
                     Continue
                     <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
@@ -743,11 +743,11 @@ const InquiryDialog: React.FC<{ target: InquiryTarget; onClose: () => void }> = 
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -24 }}
                 transition={{ duration: 0.3, ease: EASE }}
-                className="space-y-5 flex-1"
+                className="space-y-6 flex-1"
               >
                 <div>
-                  <h3 className="font-serif text-2xl font-semibold">How should we reach you?</h3>
-                  <p className="text-sm text-[#8E92A0] mt-1">
+                  <h3 className="type-h3">How should we reach you?</h3>
+                  <p className="text-sm text-muted mt-1">
                     Thanks, {clientName.trim().split(' ')[0]}. Pick the channel you prefer.
                   </p>
                 </div>
@@ -772,7 +772,7 @@ const InquiryDialog: React.FC<{ target: InquiryTarget; onClose: () => void }> = 
                       title: 'Email',
                       text: `Your itemized brief goes straight to ${CONTACT.email}`,
                       icon: Mail,
-                      tone: 'from-[#A68BFF]/15 border-[#A68BFF]/35 hover:border-[#A68BFF] text-[#A68BFF]',
+                      tone: 'from-primary/15 border-primary/35 hover:border-primary text-brand',
                       onClick: handleSendEmail
                     },
                     {
@@ -792,16 +792,16 @@ const InquiryDialog: React.FC<{ target: InquiryTarget; onClose: () => void }> = 
                       variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } }}
                       whileHover={{ y: -3 }}
                       whileTap={{ scale: 0.99 }}
-                      className={`w-full flex items-center gap-4 p-4 sm:p-5 rounded-lg border bg-gradient-to-r to-transparent text-left transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-wait group ${c.tone}`}
+                      className={`w-full flex items-center gap-4 p-4 sm:p-6 rounded-lg border bg-gradient-to-r to-transparent text-left transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-wait group ${c.tone}`}
                     >
                       <span className="w-11 h-11 shrink-0 rounded-full bg-current/10 border border-current/30 flex items-center justify-center">
                         {savingMethod === c.method ? <Loader2 className="w-5 h-5 animate-spin" /> : <c.icon className="w-5 h-5" />}
                       </span>
                       <span className="flex-1 min-w-0">
-                        <span className="block text-sm font-semibold text-[#FAF8F5]">
+                        <span className="block text-sm font-semibold text-fg">
                           {savingMethod === c.method ? 'Sending…' : c.title}
                         </span>
-                        <span className="block text-xs text-[#A1A1AA] mt-0.5">{c.text}</span>
+                        <span className="block text-xs text-muted mt-1">{c.text}</span>
                       </span>
                       <ArrowRight className="w-4 h-4 shrink-0 transition-transform group-hover:translate-x-1" />
                     </m.button>
@@ -826,7 +826,7 @@ const InquiryDialog: React.FC<{ target: InquiryTarget; onClose: () => void }> = 
                   type="button"
                   onClick={() => setStep('details')}
                   disabled={savingMethod !== null}
-                  className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-[#8E92A0] hover:text-[#FAF8F5] transition-colors cursor-pointer group"
+                  className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-muted hover:text-fg transition-colors cursor-pointer group"
                 >
                   <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-1" />
                   Edit details
@@ -845,47 +845,47 @@ const InquiryDialog: React.FC<{ target: InquiryTarget; onClose: () => void }> = 
               >
                 <SuccessMark />
                 <div className="space-y-2">
-                  <h3 className="font-serif text-3xl font-semibold">You're all set</h3>
-                  <p className="text-sm text-[#A1A1AA] max-w-md mx-auto leading-relaxed">
-                    Thank you, <span className="text-[#FAF8F5] font-medium">{clientName}</span>. Your brief for{' '}
-                    <span className="text-[#A68BFF] font-medium">{activeTarget.title}</span> has been recorded.
+                  <h3 className="type-h3">You're all set</h3>
+                  <p className="text-sm text-muted max-w-md mx-auto leading-relaxed">
+                    Thank you, <span className="text-fg font-medium">{clientName}</span>. Your brief for{' '}
+                    <span className="text-brand font-medium">{activeTarget.title}</span> has been recorded.
                   </p>
                 </div>
 
-                <div className="w-full max-w-md text-left text-xs rounded-lg border border-[#232838] bg-[#0A0C14] p-4 flex items-start gap-3 text-[#C7C9D1]">
+                <div className="w-full max-w-md text-left text-xs rounded-lg border border-line bg-surface p-4 flex items-start gap-3 text-fg">
                   {submittedMethod === 'whatsapp' && (
                     <>
-                      <Send className="w-4 h-4 text-[#25D366] shrink-0 mt-0.5" />
+                      <Send className="w-4 h-4 text-[#25D366] shrink-0 mt-1" />
                       <span>WhatsApp opened in a new tab with your brief. Press send to chat directly with Abdussamie & Mashhood.</span>
                     </>
                   )}
                   {submittedMethod === 'email' &&
                     (emailDelivered ? (
                       <>
-                        <Mail className="w-4 h-4 text-[#A68BFF] shrink-0 mt-0.5" />
+                        <Mail className="w-4 h-4 text-brand shrink-0 mt-1" />
                         <span>
-                          Your brief has been emailed to <strong className="text-[#FAF8F5]">{CONTACT.email}</strong>. We'll reply
-                          to <strong className="text-[#FAF8F5]">{clientEmail}</strong> within 24 hours.
+                          Your brief has been emailed to <strong className="text-fg">{CONTACT.email}</strong>. We'll reply
+                          to <strong className="text-fg">{clientEmail}</strong> within 24 hours.
                         </span>
                       </>
                     ) : (
                       <>
-                        <Mail className="w-4 h-4 text-[#A68BFF] shrink-0 mt-0.5" />
+                        <Mail className="w-4 h-4 text-brand shrink-0 mt-1" />
                         <span>
-                          Your email app opened with a pre-filled brief to <strong className="text-[#FAF8F5]">{CONTACT.email}</strong>.
+                          Your email app opened with a pre-filled brief to <strong className="text-fg">{CONTACT.email}</strong>.
                           Press send to finish. If nothing opened, email us directly at that address.
                         </span>
                       </>
                     ))}
                   {submittedMethod === 'form' && (
                     <>
-                      <Sparkles className="w-4 h-4 text-[#60A5FA] shrink-0 mt-0.5" />
+                      <Sparkles className="w-4 h-4 text-[#60A5FA] shrink-0 mt-1" />
                       <span>
                         Delivered to the founders' inbox
                         {lastSavedId && (
                           <>
                             {' '}
-                            (reference <code className="text-[#A68BFF] font-mono">{lastSavedId}</code>)
+                            (reference <code className="text-brand font-mono">{lastSavedId}</code>)
                           </>
                         )}
                         . We'll reply within 24 hours.
@@ -898,7 +898,7 @@ const InquiryDialog: React.FC<{ target: InquiryTarget; onClose: () => void }> = 
                   onClick={onClose}
                   whileHover={{ y: -2 }}
                   whileTap={{ scale: 0.98 }}
-                  className="btn-shine px-8 py-3 rounded-md bg-[#A68BFF] text-[#0A0A0C] text-xs font-bold uppercase tracking-[0.16em] cursor-pointer"
+                  className="btn-shine px-8 py-3 rounded-md bg-primary text-on-primary text-xs font-bold uppercase tracking-[0.16em] cursor-pointer"
                 >
                   Done
                 </m.button>

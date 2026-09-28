@@ -141,7 +141,7 @@ export const PageBackground: React.FC = () => {
         className={`absolute inset-0 transition-colors duration-700 ${
           isLight
             ? 'bg-gradient-to-b from-[#FFFFFF]/90 via-[#F8FAFC]/82 to-[#F1F5F9]/92'
-            : 'bg-gradient-to-b from-[#000000]/95 via-[#000000]/92 to-[#000000]/96'
+            : 'bg-gradient-to-b from-canvas/95 via-canvas/92 to-canvas/96'
         }`}
       />
 
@@ -150,7 +150,7 @@ export const PageBackground: React.FC = () => {
 
       {/* 3. Executive Gold/Bronze Ambient Radial Highlights */}
       <div
-        className={`absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[650px] transition-opacity duration-700 ${
+        className={`absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-site h-[650px] transition-opacity duration-700 ${
           isLight
             ? 'bg-[radial-gradient(ellipse_at_top,rgba(166,139,255,0.22)_0%,rgba(248,250,252,0)_70%)]'
             : 'bg-[radial-gradient(ellipse_at_top,rgba(166,139,255,0.07)_0%,rgba(14,17,28,0)_70%)]'

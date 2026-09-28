@@ -12,21 +12,21 @@ export const WhatsAppButton: React.FC = () => {
     <div className="fixed bottom-20 right-6 z-40 flex flex-col items-end">
       {/* Rich Founder WhatsApp Tooltip Card */}
       {showTooltip && (
-        <div className="mb-2 bg-[#0E0E12] border border-[#2A2A34] text-[#FAF8F5] p-3 rounded-sm shadow-2xl w-64 animate-pop-in">
-          <div className="flex items-center justify-between pb-1.5 border-b border-[#1E1E26] text-[10px] font-mono">
-            <span className="text-[#25D366] flex items-center gap-1.5 font-semibold">
+        <div className="mb-2 bg-surface border border-line text-fg p-3 rounded-sm shadow-2xl w-64 animate-pop-in">
+          <div className="flex items-center justify-between pb-2 border-b border-line text-xs font-mono">
+            <span className="text-[#25D366] flex items-center gap-2 font-semibold">
               <span className="w-1.5 h-1.5 rounded-full bg-[#25D366] animate-pulse"></span>
               FOUNDER DIRECT LINE
             </span>
-            <span className="text-[#71717A]">WhatsApp</span>
+            <span className="text-subtle">WhatsApp</span>
           </div>
-          <p className="text-xs font-medium text-[#FAF8F5] mt-1.5">
+          <p className="text-sm font-medium text-fg mt-2">
             Raja Muhammad Abdussamie & Mashhood
           </p>
-          <p className="text-[11px] font-mono text-[#A68BFF] mt-0.5">
+          <p className="text-sm font-mono text-brand mt-1">
             {CONTACT.whatsappDisplay}
           </p>
-          <div className="mt-2 pt-2 border-t border-[#1C1C24] flex items-center justify-between text-[10px] text-[#A1A1AA]">
+          <div className="mt-2 pt-2 border-t border-line flex items-center justify-between text-xs text-muted">
             <span>Typically replies in minutes</span>
             <ExternalLink className="w-3 h-3 text-[#25D366]" />
           </div>
@@ -40,7 +40,7 @@ export const WhatsAppButton: React.FC = () => {
         rel="noopener noreferrer"
         onMouseEnter={() => setShowTooltip(true)}
         onMouseLeave={() => setShowTooltip(false)}
-        className="h-11 px-3.5 sm:px-4 rounded-full bg-[#0E0E12]/95 backdrop-blur-md border border-[#272730] hover:border-[#25D366] text-[#FAF8F5] hover:text-[#25D366] flex items-center gap-2.5 shadow-2xl transition-all duration-300 hover:scale-105 group cursor-pointer"
+        className="h-11 px-4 sm:px-4 rounded-full bg-surface/95 backdrop-blur-md border border-line hover:border-[#25D366] text-fg hover:text-[#25D366] flex items-center gap-3 shadow-2xl transition-all duration-300 hover:scale-105 group cursor-pointer"
         aria-label="Direct WhatsApp line with RMAST Studio founders"
       >
         {/* Pulse indicator */}
@@ -55,10 +55,10 @@ export const WhatsAppButton: React.FC = () => {
         </div>
 
         <div className="flex flex-col text-left">
-          <span className="text-[11px] font-mono uppercase tracking-wider font-semibold group-hover:text-[#25D366] transition-colors leading-none">
+          <span className="text-xs font-mono uppercase tracking-wider font-semibold group-hover:text-[#25D366] transition-colors leading-none">
             Founder WhatsApp
           </span>
-          <span className="text-[9px] font-mono text-[#71717A] group-hover:text-[#A1A1AA] transition-colors leading-none mt-1 hidden sm:block">
+          <span className="text-[9px] font-mono text-subtle group-hover:text-muted transition-colors leading-none mt-1 hidden sm:block">
             {CONTACT.whatsappDisplay}
           </span>
         </div>

@@ -108,16 +108,16 @@ export const WorkflowInteractive: React.FC = () => {
   const currentNode = nodes[activeNodeIndex];
 
   return (
-    <div className="bg-[#0A0A0D] border border-[#1E1E24] p-6 md:p-10 relative overflow-hidden">
+    <div className="bg-surface border border-line p-6 md:p-12 relative overflow-hidden rounded-card">
       {/* Header Info */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-8 border-b border-[#1A1A20]">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-8 border-b border-line">
         <div>
-          <div className="text-xs font-mono uppercase tracking-[0.2em] text-[#A68BFF] mb-2 flex items-center gap-2">
+          <div className="text-xs font-mono uppercase tracking-[0.2em] text-brand mb-2 flex items-center gap-2">
             <span>Automated Architecture</span>
-            <span className="text-[#3F3F46]">·</span>
+            <span className="text-subtle">·</span>
             <span>Zero Lead Leakage</span>
           </div>
-          <h3 className="font-serif text-2xl md:text-3xl font-semibold text-[#FAF8F5]">
+          <h3 className="type-h3 text-fg">
             The Real Estate Systems Pipeline
           </h3>
         </div>
@@ -126,7 +126,7 @@ export const WorkflowInteractive: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsAutoPlaying(!isAutoPlaying)}
-            className="text-xs font-mono tracking-wider px-3 py-1.5 border border-[#27272A] text-[#A1A1AA] hover:text-[#FAF8F5] hover:border-[#A68BFF]/50 transition-colors cursor-pointer"
+            className="btn btn-secondary cursor-pointer"
           >
             {isAutoPlaying ? 'Pause Simulation' : 'Auto Play Simulation'}
           </button>
@@ -137,7 +137,7 @@ export const WorkflowInteractive: React.FC = () => {
       <div className="py-8 overflow-x-auto scrollbar-none">
         <div className="flex items-center min-w-[760px] justify-between relative">
           {/* Connector Line */}
-          <div className="absolute top-1/2 left-6 right-6 -translate-y-1/2 h-[1px] bg-[#1F1F26] -z-0" />
+          <div className="absolute top-1/2 left-6 right-6 -translate-y-1/2 h-[1px] bg-surface-2 -z-0" />
 
           {nodes.map((node, index) => {
             const isActive = index === activeNodeIndex;
@@ -155,10 +155,10 @@ export const WorkflowInteractive: React.FC = () => {
                 <div
                   className={`w-12 h-12 rounded-sm border flex items-center justify-center transition-all duration-300 ${
                     isActive
-                      ? 'bg-[#A68BFF] border-[#A68BFF] text-[#0A0A0C] scale-110 shadow-lg shadow-[#A68BFF]/20'
+                      ? 'bg-primary border-primary text-on-primary scale-110 shadow-lg shadow-primary/20'
                       : isCompleted
-                      ? 'bg-[#15151A] border-[#A68BFF]/60 text-[#A68BFF]'
-                      : 'bg-[#0E0E12] border-[#22222A] text-[#71717A] group-hover:border-[#3F3F46]'
+                      ? 'bg-surface-2 border-primary/60 text-brand'
+                      : 'bg-surface border-line text-subtle group-hover:border-line-strong'
                   }`}
                 >
                   <node.icon className="w-5 h-5" />
@@ -166,15 +166,15 @@ export const WorkflowInteractive: React.FC = () => {
 
                 <div className="mt-3 text-center">
                   <div
-                    className={`text-[10px] font-mono tracking-wider uppercase transition-colors ${
-                      isActive ? 'text-[#A68BFF] font-bold' : 'text-[#71717A]'
+                    className={`text-xs font-mono tracking-wider uppercase transition-colors ${
+                      isActive ? 'text-brand font-bold' : 'text-subtle'
                     }`}
                   >
                     {node.step}
                   </div>
                   <div
-                    className={`text-xs font-medium whitespace-nowrap mt-0.5 transition-colors ${
-                      isActive ? 'text-[#FAF8F5]' : 'text-[#A1A1AA]'
+                    className={`text-xs font-medium whitespace-nowrap mt-1 transition-colors ${
+                      isActive ? 'text-fg' : 'text-muted'
                     }`}
                   >
                     {node.label}
@@ -187,46 +187,46 @@ export const WorkflowInteractive: React.FC = () => {
       </div>
 
       {/* Selected Node Inspector Detail */}
-      <div className="mt-4 p-6 md:p-8 bg-[#121216] border border-[#22222A] rounded-sm grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+      <div className="mt-4 p-6 md:p-8 bg-surface border border-line rounded-sm grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
         <div className="lg:col-span-7 space-y-4">
           <div className="flex items-center gap-3">
-            <span className="text-xs font-mono px-2.5 py-1 bg-[#1A1A22] border border-[#A68BFF]/30 text-[#A68BFF]">
+            <span className="text-xs font-mono px-3 py-1 bg-surface-2 border border-primary/30 text-brand">
               Stage {currentNode.step} of 07
             </span>
-            <span className="text-xs font-mono text-[#71717A] uppercase tracking-wider">
+            <span className="text-xs font-mono text-subtle uppercase tracking-wider">
               Latency: {currentNode.latency}
             </span>
           </div>
 
           <div>
-            <h4 className="font-serif text-2xl text-[#FAF8F5] font-semibold">
+            <h4 className="type-h4 text-fg">
               {currentNode.label}
             </h4>
-            <p className="text-xs font-mono uppercase tracking-widest text-[#A1A1AA] mt-0.5">
+            <p className="text-sm font-mono uppercase tracking-widest text-muted mt-1">
               {currentNode.sublabel}
             </p>
           </div>
 
-          <p className="text-sm text-[#D4D4D8] leading-relaxed">
+          <p className="text-sm text-fg leading-relaxed">
             {currentNode.description}
           </p>
         </div>
 
-        <div className="lg:col-span-5 space-y-3 pt-4 lg:pt-0 lg:border-l lg:border-[#22222A] lg:pl-8 text-xs">
-          <div className="p-3 bg-[#0A0A0D] border border-[#1E1E24]">
-            <div className="text-[10px] font-mono uppercase tracking-wider text-[#71717A] mb-1">
+        <div className="lg:col-span-5 space-y-3 pt-4 lg:pt-0 lg:border-l lg:border-line lg:pl-8 text-xs">
+          <div className="p-3 bg-surface border border-line">
+            <div className="text-xs font-mono uppercase tracking-wider text-subtle mb-1">
               System Automation Action
             </div>
-            <p className="text-[#FAF8F5]">
+            <p className="text-fg">
               {currentNode.systemAction}
             </p>
           </div>
 
-          <div className="p-3 bg-[#0A0A0D] border border-[#1E1E24]">
-            <div className="text-[10px] font-mono uppercase tracking-wider text-[#A68BFF] mb-1">
+          <div className="p-3 bg-surface border border-line">
+            <div className="text-xs font-mono uppercase tracking-wider text-brand mb-1">
               Brokerage Financial Impact
             </div>
-            <p className="text-[#E4E4E7]">
+            <p className="text-fg">
               {currentNode.brokerBenefit}
             </p>
           </div>

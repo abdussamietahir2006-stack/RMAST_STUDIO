@@ -6,26 +6,26 @@ export const NotFoundPage: React.FC = () => {
   const { navigate } = useNavigation();
 
   return (
-    <div className="pt-40 pb-24 px-6 md:px-10 min-h-screen">
+    <div className="pt-30 pb-24 px-4 sm:px-6 min-h-screen">
       <div className="max-w-3xl mx-auto space-y-8 text-center">
-        <span className="text-xs font-mono uppercase tracking-[0.25em] text-[#A68BFF]">Error 404</span>
-        <h1 className="font-serif text-5xl sm:text-7xl font-bold text-[#FAF8F5] leading-[1.02] tracking-tight">
-          This page <span className="italic font-light text-[#A68BFF]">doesn't exist.</span>
+        <span className="text-xs font-mono uppercase tracking-[0.25em] text-brand">Error 404</span>
+        <h1 className="type-h1 text-fg">
+          This page <span className="italic font-light text-brand">doesn't exist.</span>
         </h1>
-        <p className="text-lg text-[#A1A1AA] leading-relaxed font-light">
+        <p className="text-lg text-muted leading-relaxed font-light">
           The link may be outdated or mistyped. Head back to the studio or browse our services.
         </p>
         <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
           <button
             onClick={() => navigate('/')}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-[#A68BFF] text-[#0A0A0C] text-xs font-semibold uppercase tracking-[0.18em] hover:bg-[#BBA6FF] transition-all cursor-pointer"
+            className="btn btn-primary w-full sm:w-auto inline-flex items-center justify-center gap-2 cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Back to Home</span>
           </button>
           <button
             onClick={() => navigate('/services')}
-            className="w-full sm:w-auto px-8 py-4 border border-[#27272A] text-[#FAF8F5] hover:border-[#A68BFF] text-xs font-semibold uppercase tracking-[0.18em] transition-all cursor-pointer"
+            className="btn btn-secondary w-full sm:w-auto cursor-pointer"
           >
             Browse Services
           </button>

@@ -12,15 +12,15 @@ export const CurrencyToggle: React.FC<CurrencyToggleProps> = ({ className = '' }
     <div
       role="group"
       aria-label="Currency selector"
-      className={`inline-flex items-center p-1 rounded-sm border border-[#27272a] bg-[#111114] text-xs font-mono tracking-wider ${className}`}
+      className={`inline-flex items-center p-1 rounded-sm border border-line bg-surface text-xs font-mono tracking-wider ${className}`}
     >
       <button
         type="button"
         onClick={() => setCurrency('USD')}
-        className={`px-2.5 py-1 transition-all duration-200 cursor-pointer ${
+        className={`px-3 py-1 transition-all duration-200 cursor-pointer ${
           currency === 'USD'
-            ? 'bg-[#A68BFF] text-[#0A0A0C] font-semibold'
-            : 'text-[#9A9892] hover:text-[#FAF8F5]'
+            ? 'bg-primary text-on-primary font-semibold'
+            : 'text-muted hover:text-fg'
         }`}
         aria-pressed={currency === 'USD'}
       >
@@ -29,10 +29,10 @@ export const CurrencyToggle: React.FC<CurrencyToggleProps> = ({ className = '' }
       <button
         type="button"
         onClick={() => setCurrency('AED')}
-        className={`px-2.5 py-1 transition-all duration-200 cursor-pointer ${
+        className={`px-3 py-1 transition-all duration-200 cursor-pointer ${
           currency === 'AED'
-            ? 'bg-[#A68BFF] text-[#0A0A0C] font-semibold'
-            : 'text-[#9A9892] hover:text-[#FAF8F5]'
+            ? 'bg-primary text-on-primary font-semibold'
+            : 'text-muted hover:text-fg'
         }`}
         aria-pressed={currency === 'AED'}
       >

@@ -131,18 +131,18 @@ export const HomeIntroVideo: React.FC = () => {
   // Still finding out which video to show: a quiet placeholder, never "coming soon"
   if (!url && !mediaLoaded) {
     return (
-      <div className="relative w-full aspect-video overflow-hidden rounded-sm border border-[#2A2F42] bg-gradient-to-br from-[#12162A] via-[#0B0E17] to-[#1A1030] shadow-2xl animate-pulse" />
+      <div className="relative w-full aspect-video overflow-hidden rounded-sm border border-line-strong bg-gradient-to-br from-surface-2 via-surface to-surface-2 shadow-2xl animate-pulse" />
     );
   }
 
   if (!url) {
     return (
-      <div className="relative w-full aspect-video overflow-hidden rounded-sm border border-[#2A2F42] bg-[#0B0E17] shadow-2xl">
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-[#12162A] via-[#0B0E17] to-[#1A1030]">
-          <span className="w-16 h-16 rounded-full border border-[#A68BFF]/50 text-[#A68BFF] flex items-center justify-center">
+      <div className="relative w-full aspect-video overflow-hidden rounded-sm border border-line-strong bg-surface shadow-2xl">
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-surface-2 via-surface to-surface-2">
+          <span className="w-16 h-16 rounded-full border border-primary/50 text-brand flex items-center justify-center">
             <Play className="w-6 h-6 ml-1" />
           </span>
-          <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#A1A1AA]">Studio introduction · Coming soon</span>
+          <span className="text-xs font-mono uppercase tracking-[0.2em] text-muted">Studio introduction · Coming soon</span>
         </div>
       </div>
     );
@@ -152,7 +152,7 @@ export const HomeIntroVideo: React.FC = () => {
     'w-10 h-10 rounded-full bg-black/55 text-white border border-white/15 backdrop-blur-sm flex items-center justify-center hover:bg-black/75 transition-colors cursor-pointer';
 
   return (
-    <div className="relative w-full aspect-video overflow-hidden rounded-sm border border-[#2A2F42] bg-gradient-to-br from-[#12162A] via-[#0B0E17] to-[#1A1030] shadow-2xl">
+    <div className="relative w-full aspect-video overflow-hidden rounded-sm border border-line-strong bg-gradient-to-br from-surface-2 via-surface to-surface-2 shadow-2xl">
       <video
         ref={ref}
         src={url}
@@ -175,10 +175,10 @@ export const HomeIntroVideo: React.FC = () => {
           className="absolute inset-0 flex flex-col items-center justify-center gap-4 cursor-pointer"
           aria-label="Play the RMAST Studio introduction video"
         >
-          <span className="w-16 h-16 rounded-full bg-[#A68BFF] text-[#0A0A0C] flex items-center justify-center shadow-lg">
+          <span className="w-16 h-16 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-lg">
             <Play className="w-6 h-6 ml-1 fill-current" />
           </span>
-          <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#E8E6E1]">Watch: What is RMAST</span>
+          <span className="text-xs font-mono uppercase tracking-[0.2em] text-fg">Watch: What is RMAST</span>
         </button>
       )}
 
@@ -189,7 +189,7 @@ export const HomeIntroVideo: React.FC = () => {
               type="button"
               data-intro-control
               onClick={toggleSound}
-              className="absolute left-3 bottom-3 inline-flex items-center gap-2 px-3 py-2 rounded-full bg-black/60 text-white text-xs font-mono uppercase tracking-[0.15em] border border-white/15 backdrop-blur-sm cursor-pointer hover:bg-black/80"
+              className="btn btn-secondary absolute left-3 bottom-3 inline-flex items-center gap-2 bg-black/60 text-white border-white/15 backdrop-blur-sm cursor-pointer hover:bg-black/80"
             >
               <Volume2 className="w-4 h-4" />
               Tap for sound
@@ -197,7 +197,7 @@ export const HomeIntroVideo: React.FC = () => {
           )}
           <div className="absolute right-3 bottom-3 flex gap-2" data-intro-control>
             <button type="button" onClick={togglePlay} className={buttonClass} aria-label={paused ? 'Play the video' : 'Pause the video'}>
-              {paused ? <Play className="w-4 h-4 ml-0.5 fill-current" /> : <Pause className="w-4 h-4 fill-current" />}
+              {paused ? <Play className="w-4 h-4 ml-1 fill-current" /> : <Pause className="w-4 h-4 fill-current" />}
             </button>
             <button type="button" onClick={toggleSound} className={buttonClass} aria-label={muted ? 'Turn the sound on' : 'Turn the sound off'}>
               {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
