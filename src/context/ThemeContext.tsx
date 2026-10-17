@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
 export type Theme = 'dark' | 'light';
 
@@ -16,29 +16,16 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Starts dark so the first render matches the prerendered HTML; the real theme is applied right after
   // (public/theme-init.js has already set it on <html> before the first paint)
   const [theme, setThemeState] = useState<Theme>('dark');
-  // A choice made with the toggle is remembered; until then the site follows the operating system
-  const chosen = useRef(false);
 
+  // Light by default; a choice made with the toggle is remembered
   useEffect(() => {
     let saved: string | null = null;
     try {
       saved = localStorage.getItem(STORAGE_KEY);
     } catch {
-      // Storage unavailable: follow the system
+      // Storage unavailable: use the default
     }
-    if (saved === 'light' || saved === 'dark') {
-      chosen.current = true;
-      setThemeState(saved);
-      return;
-    }
-    const system = window.matchMedia?.('(prefers-color-scheme: light)');
-    if (!system) return;
-    setThemeState(system.matches ? 'light' : 'dark');
-    const follow = (e: MediaQueryListEvent) => {
-      if (!chosen.current) setThemeState(e.matches ? 'light' : 'dark');
-    };
-    system.addEventListener('change', follow);
-    return () => system.removeEventListener('change', follow);
+    setThemeState(saved === 'dark' ? 'dark' : 'light');
   }, []);
 
   useEffect(() => {
@@ -53,7 +40,6 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [theme]);
 
   const setTheme = (next: Theme) => {
-    chosen.current = true;
     setThemeState(next);
     try {
       localStorage.setItem(STORAGE_KEY, next);

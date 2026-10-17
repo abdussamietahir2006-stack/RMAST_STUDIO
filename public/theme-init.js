@@ -1,17 +1,15 @@
-// Applies the visitor's colour theme before the first paint (their saved choice, otherwise the
-// operating-system setting), so the page never flashes the wrong theme. ThemeContext takes over after.
+// Applies the visitor's colour theme before the first paint (light, unless they chose dark with the
+// toggle), so the page never flashes the wrong theme. ThemeContext takes over after.
 (function () {
+  var saved = null;
   try {
-    var saved = localStorage.getItem('rmast_studio_theme_v2');
-    var light =
-      saved === 'light' ||
-      (saved !== 'dark' && window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches);
-    var c = document.documentElement.classList;
-    if (light) {
-      c.add('theme-light');
-      c.remove('theme-dark', 'dark');
-    }
+    saved = localStorage.getItem('rmast_studio_theme_v2');
   } catch (e) {
-    // Storage blocked: keep the default (dark)
+    // Storage blocked: use the default (light)
+  }
+  if (saved !== 'dark') {
+    var c = document.documentElement.classList;
+    c.add('theme-light');
+    c.remove('theme-dark', 'dark');
   }
 })();

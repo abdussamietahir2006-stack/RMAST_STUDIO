@@ -65,8 +65,8 @@ Commits: `Design audit` → `Design system` → `Dark mode` → `Hierarchy and p
   phones).
 - **Components.** Shared `.btn` (48 px, 10 px radius, primary / secondary, hover, active and focus states) used by
   every call-to-action; cards share a 12 px radius, a 1 px border and a soft shadow; one visible focus ring site-wide.
-- **Dark mode.** Deep navy canvas (`#0b0f19`) with softened text instead of pure black. The first visit follows the
-  operating-system setting, the header toggle remembers the visitor's choice, and `public/theme-init.js` applies the
+- **Dark mode.** Deep navy canvas (`#0b0f19`) with softened text instead of pure black. The site opens in light mode
+  for every visitor, the header toggle remembers the visitor's choice, and `public/theme-init.js` applies the
   theme before the first paint (no flash).
 - **Hierarchy and polish.** The hero has one headline, one supporting line, a primary action (Start a Project, same
   destination as the header) and a secondary one (View Pricing). The crossed, tilted marquee became a single calm
