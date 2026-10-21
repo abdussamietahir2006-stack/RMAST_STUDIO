@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import { Currency } from '../types';
 import { USD_TO_AED_RATE, formatPrice, formatHourlyRate } from '../data/pricingData';
 
@@ -14,14 +14,8 @@ interface CurrencyContextType {
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
 
 export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // Always USD: the site no longer has a currency switch, so an AED choice saved by an older version is ignored
   const [currency, setCurrencyState] = useState<Currency>('USD');
-
-  useEffect(() => {
-    const saved = localStorage.getItem('rmast_currency') as Currency;
-    if (saved === 'USD' || saved === 'AED') {
-      setCurrencyState(saved);
-    }
-  }, []);
 
   const setCurrency = (c: Currency) => {
     setCurrencyState(c);

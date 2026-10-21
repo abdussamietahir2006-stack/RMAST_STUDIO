@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigation } from '../../context/NavigationContext';
 import { useTheme } from '../../context/ThemeContext';
-import { CurrencyToggle } from '../common/CurrencyToggle';
 import { ThemeToggle } from '../common/ThemeToggle';
 import { CONTACT } from '../../config/contact';
 import { ASSISTANTS, BOOK_CALL_PATH, FREE_AUDIT_PATH, type AssistantId } from '../../data/assistantsData';
@@ -226,7 +225,6 @@ export const Navbar: React.FC = () => {
           <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
             <div className="hidden sm:flex items-center gap-3 md:gap-4">
               <ThemeToggle />
-              <CurrencyToggle />
               <a
                 href={BOOK_CALL_PATH}
                 onClick={(e) => {
@@ -272,12 +270,7 @@ export const Navbar: React.FC = () => {
           <div className="space-y-6">
             <div className={`flex items-center justify-between pb-2 border-b ${isLight ? 'border-line' : 'border-line'}`}>
               <div className="text-xs font-mono tracking-widest text-subtle uppercase">Navigation</div>
-              <div className="flex items-center gap-3">
-                <div className="sm:hidden">
-                  <CurrencyToggle />
-                </div>
-                <ThemeToggle />
-              </div>
+              <ThemeToggle />
             </div>
             <div className="flex flex-col space-y-4">
               {NAV_ITEMS.map((item) => {
