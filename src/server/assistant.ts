@@ -1,18 +1,7 @@
 import { GoogleGenAI } from '@google/genai';
 import type { ChatTurn } from '../types/index.js';
 import { CONTACT } from '../config/contact.js';
-import { servicesData } from '../data/servicesData.js';
-import {
-  realEstatePackages,
-  aiContentPackages,
-  completeBusinessPackages,
-  aiVideoSinglePricing,
-  videoMonthlyBundles,
-  aiPostSinglePricing,
-  postMonthlyBundles,
-  USD_TO_AED_RATE,
-  formatHourlyRate
-} from '../data/pricingData.js';
+import { ASSISTANTS, FAQ, HOW_IT_WORKS, LEAD_RESPONSE_STEPS, PLANS } from '../data/assistantsData.js';
 
 let client: GoogleGenAI | null | undefined;
 
@@ -25,65 +14,52 @@ function getClient(): GoogleGenAI | null {
 
 export const isAssistantConfigured = () => Boolean(getClient());
 
-// Knowledge is built from the same data the site renders, so answers stay in sync with the pages
-function buildSystemInstruction(currency: 'USD' | 'AED'): string {
-  const money = (usd: number) =>
-    currency === 'USD'
-      ? `$${usd.toLocaleString('en-US')}`
-      : `AED ${Math.round(usd * USD_TO_AED_RATE).toLocaleString('en-US')}`;
-
-  const services = servicesData
-    .map((s) => {
-      const route = s.division === 'real-estate' ? `/services/${s.slug}` : `/ai-content/${s.slug}`;
-      const tiers = s.tiers?.length ? `; tiers: ${s.tiers.map((t) => `${t.name} ${money(t.priceUSD)}`).join(', ')}` : '';
-      const hourly = s.hourlyRateUSD ? `; hourly rate ${formatHourlyRate(s.hourlyRateUSD, currency)}` : '';
-      const notes = s.scopeNotes ? ` Pricing note: ${s.scopeNotes}` : '';
-      return `- ${s.title} (${s.division}, from ${money(s.startingPriceUSD)} ${s.billingType}${tiers}${hourly}, page ${route}): ${s.summary}${notes}`;
-    })
-    .join('\n');
-
-  const packages = [...realEstatePackages, ...aiContentPackages, ...completeBusinessPackages]
-    .map((p) => `- ${p.title} [${p.division}, ${p.tier}] ${money(p.priceUSD)} ${p.billingFrequency}: ${p.included.join('; ')}`)
-    .join('\n');
-
-  const videos = aiVideoSinglePricing.map((v) => `${v.tier} ${money(v.priceUSD)}`).join(', ');
-  const posts = aiPostSinglePricing.map((p) => `${p.tier} ${money(p.priceUSD)}`).join(', ');
-  const postBundles = postMonthlyBundles
-    .map((b) => `${b.quantity} posts/month: Starter ${money(b.starter.usd)}, Standard ${money(b.standard.usd)}, Professional ${money(b.professional.usd)}`)
-    .join('\n');
-  const bundles = videoMonthlyBundles
-    .map(
-      (b) =>
-        `${b.quantity} videos/month: Starter ${money(b.starter.usd)}, Standard ${money(b.standard.usd)}, Professional ${money(b.professional.usd)}`
-    )
-    .join('\n');
-
-  return `You are the website assistant for RMAST Studio, a small founder-led studio run by Raja Muhammad Abdussamie Tahir (Systems Architect & Studio Principal) and Mashhood (Creative Technologist & AI Director).
-The studio has two divisions: (1) digital systems for real estate brokerages in the USA, UAE and Canada (websites, custom software, CRM, AI automation, chatbots, social media, virtual assistance, admin operations) and (2) cinematic AI video content for brands worldwide (real estate, fashion, food, products, advertising, social content).
-
-Rules:
-- Answer only questions about RMAST Studio, its services, pricing, process and how to get in touch. Politely decline anything unrelated.
-- Use only the facts below. If something is not covered (exact timelines, custom quotes, guarantees), say the founders will confirm it and suggest contacting them.
-- Quote prices in ${currency}. All prices are starting prices; final scope depends on requirements.
-- Every service also has an hourly rate (listed below) for work billed by the hour, such as changes, extra features and ongoing support.
-- Keep replies short: 2 to 5 sentences, plain text, no markdown headings or tables. Replies may be read aloud, so write naturally and avoid long lists.
-- Reply in the same language the visitor uses (for example English, Urdu or Hindi written in Roman script, or Arabic).
-- This chat can create PDFs: a full company profile & portfolio (everything RMAST does, services, portfolio, process, founders), and price lists (all services, Real Estate only, or Brands & Content only). If asked for a PDF, brochure, portfolio or price list, tell the visitor to ask "send me your company profile PDF" or "send me the price list PDF", or tap the PDF options in the suggestions.
-- Contact: WhatsApp ${CONTACT.whatsappDisplay}, email ${CONTACT.email}, or the /contact page.
-
+// Knowledge is built from the same data the site renders, so answers stay in sync with the pages.
+// No prices: like the website, plans are quoted after the free audit.
+function buildSystemInstruction(): string {
+  const assistants = ASSISTANTS.map((a) => {
+    const services = a.subServices
+      .map((s) => `  - ${s.title}${s.flagship ? ' (flagship)' : ''}: ${s.summary} Delivered: ${s.delivered.join('; ')}.`)
+      .join('\n');
+    return `${a.name} (page ${a.path}): ${a.tagline} ${a.intro}
+Problems it solves: ${a.problems.map((p) => `${p.title} (${p.text})`).join('; ')}
 Services:
 ${services}
+Each month: ${a.monthly.join('; ')}.
+How we start: ${a.process.map((p, i) => `${i + 1}. ${p.title}: ${p.text}`).join(' ')}`;
+  }).join('\n\n');
 
-Packages:
-${packages}
+  const plans = PLANS.map((p) => `- ${p.name}: ${p.summary} Includes: ${p.includes.join('; ')}. Price: ${p.price}, monthly retainer.`).join('\n');
+  const faq = FAQ.map((f) => `Q: ${f.q}\nA: ${f.a}`).join('\n');
 
-Individual AI videos: ${videos}.
-Monthly video bundles:
-${bundles}
+  return `You are the website assistant for RMAST Studio, a small founder-led team run by Raja Muhammad Abdussamie Tahir (Systems Architect & Studio Principal) and Mashhood (Creative Technologist & AI Director).
+RMAST Studio gives real estate agents, teams and brokerages in the USA and Canada (and some in Dubai) three "Assistants" on a monthly retainer: a Technical Assistant, a Creative Assistant and a Virtual Assistant. Clients hire one Assistant, or all three as the Full Team. The free audit is the best first step.
 
-AI static posts (designed single images for feeds and ads, with caption and hashtags; half the price of a video): ${posts} per post.
-Monthly post bundles:
-${postBundles}`;
+Rules:
+- Answer only questions about RMAST Studio, its Assistants, plans, the free audit and how to get in touch. Politely decline anything unrelated.
+- Use only the facts below. If something is not covered (exact timelines, guarantees, contract details), say the founders will confirm it and suggest booking a call.
+- Never quote prices, rates or numbers for cost. Plans are custom quotes, priced after a free audit; point people to the free audit (/free-audit) or a call.
+- Never invent results, client names, testimonials or statistics.
+- Keep replies short: 2 to 5 sentences, plain text, no markdown headings or tables. Replies may be read aloud, so write naturally and avoid long lists.
+- Reply in the same language the visitor uses (for example English, Urdu or Hindi written in Roman script, or Arabic).
+- This chat can create two PDFs: a detailed company profile (the three Assistants in detail, the Lead Response System, how we work, plans, FAQ and founders) and a short services & plans sheet. If asked for a PDF, brochure, portfolio or price list, tell the visitor to ask "send me your company profile PDF" or "send me the services and plans PDF", or tap the PDF options in the suggestions.
+- Pages: services overview /services, plans /plans, free audit /free-audit, work /work, about /about, book a call /contact.
+- Contact: WhatsApp ${CONTACT.whatsappDisplay}, email ${CONTACT.email}, or the /contact page.
+
+The three Assistants:
+${assistants}
+
+Lead Response System (flagship, part of the Technical Assistant), step by step:
+${LEAD_RESPONSE_STEPS.map((s, i) => `${i + 1}. ${s.title}: ${s.text}`).join('\n')}
+
+How working with us goes:
+${HOW_IT_WORKS.map((s, i) => `${i + 1}. ${s.title}: ${s.text}`).join('\n')}
+
+Plans:
+${plans}
+
+Common questions:
+${faq}`;
 }
 
 // Overload / rate-limit responses from Gemini are worth retrying, possibly on another model
@@ -92,7 +68,8 @@ function isTransient(err: unknown): boolean {
   return status === 429 || status === 500 || status === 503 || status === 504;
 }
 
-export async function generateReply(turns: ChatTurn[], currency: 'USD' | 'AED'): Promise<string> {
+// The visitor's currency is still sent by the chat, but answers no longer quote prices
+export async function generateReply(turns: ChatTurn[], _currency: 'USD' | 'AED'): Promise<string> {
   const genai = getClient();
   if (!genai) throw new Error('Assistant is not configured');
 
@@ -114,7 +91,7 @@ export async function generateReply(turns: ChatTurn[], currency: 'USD' | 'AED'):
           parts: [{ text: t.text }]
         })),
         config: {
-          systemInstruction: buildSystemInstruction(currency),
+          systemInstruction: buildSystemInstruction(),
           maxOutputTokens: 600,
           temperature: 0.4,
           // thinkingBudget is a Gemini 2.5 setting; newer models reject it

@@ -1,21 +1,25 @@
-// Shared building blocks for RMAST's branded PDFs (price lists, company profile).
+// Shared building blocks for RMAST's branded PDFs (company profile, services & plans).
 // Only imported by modules that the Studio Assistant loads on demand.
 import { jsPDF } from 'jspdf';
-import { formatHourlyRate, formatPrice, USD_TO_AED_RATE } from '../data/pricingData';
 import autoTable from 'jspdf-autotable';
 import { CONTACT } from '../config/contact';
 
 type RGB = [number, number, number];
 
-export const INK: RGB = [11, 10, 18];
-export const VIOLET: RGB = [166, 139, 255];
-export const PINK: RGB = [255, 92, 170];
-export const AMBER: RGB = [255, 181, 71];
-export const CYAN: RGB = [61, 220, 255];
-export const MUTED: RGB = [96, 92, 112];
-export const BODY: RGB = [40, 38, 52];
-const ROW_TINT: RGB = [246, 243, 255];
-const RULE: RGB = [226, 222, 240];
+// Mediterranean Villa palette (same as the website). Coral and ochre text use deeper shades so
+// small print stays readable on white paper.
+export const TEAL: RGB = [15, 76, 74];
+export const CORAL: RGB = [232, 106, 74];
+export const CORAL_TEXT: RGB = [173, 64, 37];
+export const SAND: RGB = [243, 231, 211];
+export const OCHRE: RGB = [200, 150, 62];
+export const OCHRE_TEXT: RGB = [128, 88, 15];
+export const LIGHT_TEAL: RGB = [92, 194, 181];
+export const INK: RGB = [26, 26, 26];
+export const MUTED: RGB = [101, 95, 87];
+export const BODY: RGB = [45, 42, 38];
+const ROW_TINT: RGB = [251, 245, 235];
+const RULE: RGB = [227, 211, 184];
 
 // The built-in PDF fonts only cover Latin-1, so typographic characters are swapped for plain ones
 export const plain = (text: string) =>
@@ -45,16 +49,16 @@ export interface BrandedDoc {
   heading(title: string, sub?: string): void;
   subheading(title: string): void;
   paragraph(text: string, opts?: { size?: number; color?: RGB; italic?: boolean; gap?: number }): void;
-  bullets(items: string[], opts?: { size?: number }): void;
-  label(text: string): void;
+  bullets(items: string[], opts?: { size?: number; color?: RGB }): void;
+  label(text: string, color?: RGB): void;
   table(head: string[], body: string[][], columnStyles?: Record<number, object>): void;
   /** Adds footers with contact details and page numbers (not on a cover page), then returns the document */
   finish(opts?: { skipCover?: boolean }): jsPDF;
 }
 
 // Coloured stripe used under headers and on the cover
-export function auroraStripe(doc: jsPDF, x: number, y: number, width: number, height: number) {
-  const colours = [VIOLET, PINK, AMBER, CYAN];
+export function paletteStripe(doc: jsPDF, x: number, y: number, width: number, height: number) {
+  const colours = [CORAL, OCHRE, SAND, LIGHT_TEAL];
   colours.forEach((c, i) => {
     doc.setFillColor(...c);
     doc.rect(x + (width / colours.length) * i, y, width / colours.length, height, 'F');
@@ -95,9 +99,9 @@ export function createBrandedDoc(): BrandedDoc {
       b.ensureSpace(55);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(15);
-      doc.setTextColor(...INK);
+      doc.setTextColor(...TEAL);
       doc.text(plain(title), margin, b.y);
-      doc.setDrawColor(...VIOLET);
+      doc.setDrawColor(...CORAL);
       doc.setLineWidth(0.7);
       doc.line(margin, b.y + 2.2, margin + 26, b.y + 2.2);
       b.y += 8;
@@ -107,16 +111,16 @@ export function createBrandedDoc(): BrandedDoc {
       b.ensureSpace(30);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(11.5);
-      doc.setTextColor(...INK);
+      doc.setTextColor(...TEAL);
       const lines = doc.splitTextToSize(plain(title), textW);
       doc.text(lines, margin, b.y);
       b.y += lines.length * 5 + 1;
     },
-    label(text) {
+    label(text, color = CORAL_TEXT) {
       b.ensureSpace(12);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(7.5);
-      doc.setTextColor(...VIOLET);
+      doc.setTextColor(...color);
       doc.text(plain(text).toUpperCase(), margin, b.y);
       b.y += 4.5;
     },
@@ -140,7 +144,7 @@ export function createBrandedDoc(): BrandedDoc {
       for (const item of items) {
         const lines = doc.splitTextToSize(plain(item), textW - 5) as string[];
         b.ensureSpace(lines.length * lineH + 2);
-        doc.setFillColor(...VIOLET);
+        doc.setFillColor(...(opts.color ?? CORAL));
         doc.circle(margin + 1.2, b.y - 1.1, 0.7, 'F');
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(...BODY);
@@ -158,7 +162,7 @@ export function createBrandedDoc(): BrandedDoc {
         theme: 'grid',
         rowPageBreak: 'avoid',
         styles: { font: 'helvetica', fontSize: 8.5, cellPadding: 1.7, textColor: INK, lineColor: RULE, lineWidth: 0.2, valign: 'middle' },
-        headStyles: { fillColor: INK, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8.5 },
+        headStyles: { fillColor: TEAL, textColor: SAND, fontStyle: 'bold', fontSize: 8.5 },
         alternateRowStyles: { fillColor: ROW_TINT },
         columnStyles
       });
@@ -183,41 +187,35 @@ export function createBrandedDoc(): BrandedDoc {
   return b;
 }
 
-// Dark header band used at the top of the first page of a document
-// Optional small print (terms) sits inside the band, so it never spills onto a page of its own
+// Deep teal header band at the top of the first page of a document
+// Optional small print sits inside the band, so it never spills onto a page of its own
 export function headerBand(b: BrandedDoc, title: string, subtitle: string, rightNote: string, terms?: string) {
   const { doc, pageW, margin } = b;
   doc.setFontSize(7.5);
   const termLines = terms ? (doc.splitTextToSize(plain(terms), pageW - margin * 2) as string[]) : [];
   const bandH = 46 + termLines.length * 3.6;
-  doc.setFillColor(...INK);
+  doc.setFillColor(...TEAL);
   doc.rect(0, 0, pageW, bandH, 'F');
-  auroraStripe(doc, 0, bandH, pageW, 1.6);
-  doc.setTextColor(255, 255, 255);
+  paletteStripe(doc, 0, bandH, pageW, 1.6);
+  doc.setTextColor(...SAND);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(24);
   doc.text('RMAST Studio', margin, 20);
   doc.setFontSize(13);
-  doc.setTextColor(...VIOLET);
+  doc.setTextColor(...CORAL);
   doc.text(plain(title), margin, 29);
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
-  doc.setTextColor(200, 196, 220);
+  doc.setTextColor(214, 226, 222);
   doc.text(plain(subtitle), margin, 37);
   // Top right, level with the studio name, so a long subtitle never runs into it
   doc.text(plain(rightNote), pageW - margin, 20, { align: 'right' });
   if (termLines.length) {
     doc.setFontSize(7.5);
-    doc.setTextColor(150, 146, 170);
+    doc.setTextColor(170, 196, 190);
     doc.text(termLines, margin, 43.5, { lineHeightFactor: 1.35 });
   }
   b.y = bandH + 12;
 }
 
 export const issuedDate = () => new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-
-// PDFs always show both currencies: US dollars and UAE dirhams
-export const bothPrices = (usd: number, sep = ' / ') => `${formatPrice(usd, 'USD')}${sep}${formatPrice(usd, 'AED')}`;
-export const bothHourly = (rate: { min: number; max: number }, sep = ' / ') =>
-  `${formatHourlyRate(rate, 'USD')}${sep}${formatHourlyRate(rate, 'AED')}`;
-export const CURRENCY_NOTE = `Prices in USD and AED (1 USD = ${USD_TO_AED_RATE} AED)`;

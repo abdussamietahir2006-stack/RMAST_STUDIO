@@ -3,9 +3,7 @@ import { useNavigation } from '../../context/NavigationContext';
 import { useCurrency } from '../../context/CurrencyContext';
 import { CONTACT } from '../../config/contact';
 import { askAssistant } from '../../lib/api';
-import type { PriceSheet } from '../../lib/pricePdf';
-import { servicesData } from '../../data/servicesData';
-import { realEstatePackages, completeBusinessPackages, aiVideoSinglePricing, aiPostSinglePricing } from '../../data/pricingData';
+import { ASSISTANTS, BOOK_CALL_PATH, FAQ, FREE_AUDIT_PATH, LEAD_RESPONSE_STEPS } from '../../data/assistantsData';
 import { AnimatePresence, m } from 'motion/react';
 import { Sparkles, X, Send, ArrowRight, Bot, Mic, Square, Volume2, VolumeX, FileDown } from 'lucide-react';
 
@@ -17,61 +15,42 @@ interface Message {
     label: string;
     path: string;
   };
-  // Show the price-list PDF download buttons under this message
+  // Show the PDF download buttons under this message
   pdf?: boolean;
 }
 
 type Reply = Pick<Message, 'text' | 'action' | 'pdf'>;
 
-const PDF_CHIP = 'Download price list (PDF)';
-const PROFILE_CHIP = 'Company profile & portfolio (PDF)';
+const PLANS_CHIP = 'Services & plans (PDF)';
+const PROFILE_CHIP = 'Company profile (PDF)';
 
 const quickQuestions = [
   PROFILE_CHIP,
-  PDF_CHIP,
+  PLANS_CHIP,
   'What does RMAST do?',
-  'What services are available?',
-  'How much does a website cost?',
-  'What is included in Real Estate systems?',
-  'What industries do you serve for AI content?',
-  'How can I book a consultation?',
-  'What AI video services are available?'
+  'What are the three Assistants?',
+  'How does the Lead Response System work?',
+  'How much does it cost?',
+  'How does the free audit work?',
+  'How can I book a call?'
 ];
 
-// The company profile, or one of the price lists
-type PdfKind = PriceSheet | 'profile';
+// The detailed company profile, or the short services & plans sheet
+type PdfKind = 'profile' | 'plans';
 
 const PDF_OPTIONS: { kind: PdfKind; label: string }[] = [
   { kind: 'profile', label: 'Company profile' },
-  { kind: 'all', label: 'All prices' },
-  { kind: 'real-estate', label: 'Real Estate prices' },
-  { kind: 'ai-content', label: 'Brands & Content prices' }
+  { kind: 'plans', label: 'Services & plans' }
 ];
-
-const SHEET_NAMES: Record<PriceSheet, string> = {
-  all: 'complete',
-  'real-estate': 'Real Estate',
-  'ai-content': 'Brands & Content'
-};
 
 // --- Document requests are answered in the browser (no AI call needed) ---
 const DOC_WORDS = /\b(pdf|brochure|document|file|download|rate ?card|price ?list|quotation)\b/i;
 const SHARE_WORDS = /\b(share|send|bhej|bhejo|de ?do|chahiye)\b/i;
 const PROFILE_WORDS = /(portfolio|profile|brochure|company|agency|studio|what (do )?(you|your|rmast)|about (you|your|rmast)|overview|everything|full details|all details|details|introduction|baare|bare mein|kya kart)/i;
-const PRICE_WORDS = /(price|pricing|rate|cost|package|budget|quote|quotation|fee|charges)/i;
+const PLANS_WORDS = /(price|pricing|rate|cost|package|budget|quote|quotation|fee|charges|plan|service)/i;
 
 function isDocumentRequest(text: string): boolean {
-  return DOC_WORDS.test(text) || (SHARE_WORDS.test(text) && /(portfolio|profile|details|price ?list)/i.test(text));
-}
-
-function requestedSheet(q: string): PriceSheet | null {
-  const text = q.toLowerCase();
-  const realEstate = /(real ?estate|property|broker|crm|website|web development)/.test(text);
-  const content = /(content|brand|video|fashion|food|product|film)/.test(text);
-  if (/\b(all|every|complete|both|full|whole)\b/.test(text) || (realEstate && content)) return 'all';
-  if (realEstate) return 'real-estate';
-  if (content) return 'ai-content';
-  return null;
+  return DOC_WORDS.test(text) || (SHARE_WORDS.test(text) && /(portfolio|profile|details|price ?list|plans?)/i.test(text));
 }
 
 // --- Browser speech APIs (typed locally: not every TypeScript DOM lib ships them) ---
@@ -111,74 +90,68 @@ const forSpeech = (text: string) =>
 // Suggest a relevant page link based on what the visitor asked
 function inferAction(question: string): Message['action'] {
   const q = question.toLowerCase();
-  if (/(price|pricing|cost|budget|package|how much|video)/.test(q)) return { label: 'View Pricing', path: '/pricing' };
-  if (/(contact|book|consult|call|meet|whatsapp|email|hire)/.test(q)) return { label: 'Go to Contact Page', path: '/contact' };
-  if (/(founder|team|who|about|linkedin|abdussamie|mashhood)/.test(q)) return { label: 'Meet the Founders', path: '/about' };
-  if (/(fashion|food|restaurant|product|content|film|cinematic|ai video)/.test(q)) return { label: 'Explore AI Content Studio', path: '/ai-content' };
-  if (/(real estate|broker|crm|website|automation|chatbot|software)/.test(q)) return { label: 'Explore Real Estate Systems', path: '/real-estate' };
-  if (/(process|timeline|how do you work|steps)/.test(q)) return { label: 'See Our Process', path: '/process' };
-  if (/(work|portfolio|case stud|project)/.test(q)) return { label: 'View Selected Work', path: '/work' };
-  return { label: 'Start a Project Conversation', path: '/contact' };
+  if (/(audit|free)/.test(q)) return { label: 'Get a free audit', path: FREE_AUDIT_PATH };
+  if (/(price|pricing|cost|budget|package|how much|plan|retainer)/.test(q)) return { label: 'See plans', path: '/plans' };
+  if (/(contact|book|consult|call|meet|whatsapp|email|hire)/.test(q)) return { label: 'Book a call', path: BOOK_CALL_PATH };
+  if (/(founder|team|who|about|linkedin|abdussamie|mashhood)/.test(q)) return { label: 'Meet the founders', path: '/about' };
+  if (/(lead|reply|respon|crm|website|automation|chatbot|software|technical|integration|dashboard)/.test(q))
+    return { label: 'See the Technical Assistant', path: '/services/technical-assistant' };
+  if (/(content|reel|video|social|instagram|brand|design|logo|film|creative|post)/.test(q))
+    return { label: 'See the Creative Assistant', path: '/services/creative-assistant' };
+  if (/(admin|transaction|paperwork|calendar|inbox|follow|virtual|assistant|data entry|listing upload)/.test(q))
+    return { label: 'See the Virtual Assistant', path: '/services/virtual-assistant' };
+  if (/(work|portfolio|case stud|project|sample)/.test(q)) return { label: 'See our work', path: '/work' };
+  return { label: 'See the three Assistants', path: '/services' };
 }
 
-// Offline answers used when the AI endpoint is unavailable (prices read from the same data as the pages)
-function scriptedReply(question: string, format: (usd: number) => string): Reply {
+// Offline answers used when the AI endpoint is unavailable (same content as the website)
+function scriptedReply(question: string): Reply {
   const q = question.toLowerCase();
 
   if (q.includes('linkedin') || q.includes('abdussamie') || q.includes('founder')) {
     return {
       text: `RMAST Studio is founded and led by Raja Muhammad Abdussamie Tahir (Systems Architect & Studio Principal) and Mashhood (Creative Technologist & AI Director). You can view Raja Muhammad Abdussamie Tahir's profile on LinkedIn: ${CONTACT.founderLinkedIn} or reach out directly via WhatsApp.`,
-      action: { label: 'View Leadership Page', path: '/about' }
+      action: { label: 'Meet the founders', path: '/about' }
     };
   }
 
   const matched =
     quickQuestions.find((qq) => qq.toLowerCase() === q) ??
     quickQuestions.find((qq) => qq.toLowerCase().includes(q) || q.includes(qq.toLowerCase().slice(0, 10)));
-
-  const web = servicesData.find((s) => s.slug === 'web-development');
-  const webTiers = web?.tiers?.map((t) => `${t.name} ${format(t.priceUSD)}`).join(', ');
+  const faq = (start: string) => FAQ.find((f) => f.q.startsWith(start))?.a ?? '';
 
   switch (matched) {
     case 'What does RMAST do?':
       return {
-        text: 'RMAST Studio is a premium digital systems & AI content studio founded by Raja Muhammad Abdussamie Tahir and Mashhood. We operate two divisions: 1) Digital Systems behind modern real estate brokerages (USA, UAE, Canada), and 2) Cinematic AI Content for brands worldwide.',
-        action: { label: 'Explore Studio Philosophy', path: '/about' }
+        text: 'RMAST Studio gives real estate agents, teams and brokerages a team of Assistants on a monthly retainer. Leads answered in 60 seconds, content that gets seen, and paperwork off your plate. We work with teams in the USA and Canada, and some in Dubai.',
+        action: { label: 'See the three Assistants', path: '/services' }
       };
-    case 'What services are available?':
+    case 'What are the three Assistants?':
       return {
-        text: 'Division One (Real Estate): Website development, custom software, CRM architecture, AI automation, AI chatbots, social media, virtual assistance, and admin support.\n\nDivision Two (AI Content Studio): Cinematic property tours, fashion campaigns, food & restaurant cinema, product films, and AI advertising.',
-        action: { label: 'Browse All Services', path: '/services' }
+        text: ASSISTANTS.map((a) => `${a.name}: ${a.tagline} ${a.highlights.join(', ')}.`).join('\n\n'),
+        action: { label: 'See the three Assistants', path: '/services' }
       };
-    case 'How much does a website cost?':
+    case 'How does the Lead Response System work?':
       return {
-        text: `Our custom Real Estate Websites come in three tiers: ${webTiers}. Every site includes a responsive multi-page design, WhatsApp lead capture, technical SEO, and 1 month of free maintenance. Hourly work is ${format(web?.hourlyRateUSD?.min ?? 10)}–${format(web?.hourlyRateUSD?.max ?? 15)} per hour.`,
-        action: { label: 'View Pricing & Add-ons', path: '/pricing' }
+        text: `${LEAD_RESPONSE_STEPS.map((s, i) => `${i + 1}. ${s.title}: ${s.text}`).join('\n')}\nIt is part of the Technical Assistant.`,
+        action: { label: 'See the Technical Assistant', path: '/services/technical-assistant' }
       };
-    case 'What is included in Real Estate systems?':
+    case 'How much does it cost?':
       return {
-        text: `We engineer the full deal cycle: Lead capture → Conversational AI qualification → Multi-stage CRM → Automated WhatsApp/email follow-up → Calendar booking → Deal closure. Packages range from Starter (${format(realEstatePackages[0].priceUSD)}) to complete Digital Operating Systems (${format(completeBusinessPackages[completeBusinessPackages.length - 1].priceUSD)}+).`,
-        action: { label: 'Explore Real Estate Systems', path: '/real-estate' }
+        text: 'We work on a monthly retainer: one Assistant, or the Full Team of all three. Your plan is priced after a free audit, so you only pay for what you need.',
+        action: { label: 'Get a free audit', path: FREE_AUDIT_PATH }
       };
-    case 'What industries do you serve for AI content?':
+    case 'How does the free audit work?':
+      return { text: faq('How does the free audit'), action: { label: 'Get a free audit', path: FREE_AUDIT_PATH } };
+    case 'How can I book a call?':
       return {
-        text: 'Our AI Content Studio serves Real Estate, Fashion & Apparel, Food & Restaurants, Consumer Products, Jewelry, Beauty, E-commerce, and Personal Brands worldwide.',
-        action: { label: 'Explore AI Content Studio', path: '/ai-content' }
-      };
-    case 'How can I book a consultation?':
-      return {
-        text: `You can contact the founders directly via WhatsApp (${CONTACT.whatsappDisplay}) or submit your project requirements on our contact page. Because we are a small founder-led team, you work directly with Abdussamie and Mashhood.`,
-        action: { label: 'Go to Contact Page', path: '/contact' }
-      };
-    case 'What AI video services are available?':
-      return {
-        text: `Individual AI videos: ${aiVideoSinglePricing.map((v) => `${v.tier} ${format(v.priceUSD)}`).join(', ')}. Monthly packages of 10, 20, or 30 videos offer up to 24% in savings. AI static posts: ${aiPostSinglePricing.map((p) => `${p.tier} ${format(p.priceUSD)}`).join(', ')} per post.`,
-        action: { label: 'View Video Pricing Matrix', path: '/pricing' }
+        text: `Book a call on our contact page or message the founders on WhatsApp (${CONTACT.whatsappDisplay}). As a small founder-led team, you work directly with Abdussamie and Mashhood.`,
+        action: { label: 'Book a call', path: BOOK_CALL_PATH }
       };
     default:
       return {
-        text: 'RMAST delivers custom digital systems for real estate and cinematic AI content for global brands. Final scoping and pricing depend on integrations and requirements. Connect directly with the founders via WhatsApp or submit a brief.',
-        action: { label: 'Start a Project Conversation', path: '/contact' }
+        text: 'RMAST Studio gives real estate teams a Technical, Creative and Virtual Assistant on a monthly retainer. The best place to start is a free audit, or message the founders on WhatsApp.',
+        action: { label: 'Get a free audit', path: FREE_AUDIT_PATH }
       };
   }
 }
@@ -188,7 +161,7 @@ const nextId = () => `msg-${Date.now()}-${messageCounter++}`;
 
 export const StudioAssistant: React.FC = () => {
   const { navigate } = useNavigation();
-  const { currency, format } = useCurrency();
+  const { currency } = useCurrency();
   const [isOpen, setIsOpen] = useState(false);
   const [inputText, setInputText] = useState('');
   const [isThinking, setIsThinking] = useState(false);
@@ -196,7 +169,7 @@ export const StudioAssistant: React.FC = () => {
     {
       id: 'welcome-1',
       sender: 'assistant',
-      text: 'Welcome to RMAST Studio. Ask me about our Real Estate Digital Systems, AI Content Studio, pricing, or booking a founder consultation. Tap the mic to talk to me, or ask for a price list PDF.'
+      text: 'Welcome to RMAST Studio. Ask me about our Technical, Creative and Virtual Assistants, plans, the free audit, or booking a call. Tap the mic to talk to me, or ask for our company profile PDF.'
     }
   ]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -276,13 +249,13 @@ export const StudioAssistant: React.FC = () => {
         const { downloadCompanyProfilePdf } = await import('../../lib/companyProfilePdf');
         downloadCompanyProfilePdf();
       } else {
-        const { downloadPriceListPdf } = await import('../../lib/pricePdf');
-        downloadPriceListPdf(kind);
+        const { downloadServicesPlansPdf } = await import('../../lib/servicesPlansPdf');
+        downloadServicesPlansPdf();
       }
     } catch {
       setMessages((prev) => [
         ...prev,
-        { id: nextId(), sender: 'assistant', text: 'Sorry, the PDF could not be created right now. You can see every price on the Pricing page.', action: { label: 'View Pricing', path: '/pricing' } }
+        { id: nextId(), sender: 'assistant', text: 'Sorry, the PDF could not be created right now. You can see our services and plans on the website.', action: { label: 'See the three Assistants', path: '/services' } }
       ]);
     } finally {
       setPdfBusy(null);
@@ -298,23 +271,22 @@ export const StudioAssistant: React.FC = () => {
     setMessages(history);
 
     let reply: Reply;
-    const wantsProfile = text === PROFILE_CHIP || (isDocumentRequest(text) && PROFILE_WORDS.test(text) && !PRICE_WORDS.test(text));
-    const wantsPrices = text === PDF_CHIP || (isDocumentRequest(text) && !wantsProfile);
+    const wantsProfile = text === PROFILE_CHIP || (isDocumentRequest(text) && PROFILE_WORDS.test(text) && !PLANS_WORDS.test(text));
+    const wantsPlans = text === PLANS_CHIP || (isDocumentRequest(text) && !wantsProfile && PLANS_WORDS.test(text));
     if (wantsProfile) {
       void downloadPdf('profile');
       reply = {
-        text: 'Your RMAST Studio company profile is downloading now. It covers who we are, both divisions, every service in detail, our portfolio, how we work, the founders, packages and how to get in touch. Price lists are here too:',
+        text: 'Your RMAST Studio company profile is downloading now. It covers the three Assistants in detail, the Lead Response System, how we work, our plans, common questions and the founders. The short services & plans sheet is here too:',
         pdf: true
       };
-    } else if (wantsPrices) {
-      const sheet = text === PDF_CHIP || !PRICE_WORDS.test(text) ? null : requestedSheet(text);
-      if (sheet) void downloadPdf(sheet);
+    } else if (wantsPlans) {
+      void downloadPdf('plans');
       reply = {
-        text: sheet
-          ? `Your ${SHEET_NAMES[sheet]} price list PDF is downloading now, with prices in USD and AED. You can also download these:`
-          : 'Here are our documents (prices in USD and AED). Tap one to download the PDF:',
+        text: 'Your services & plans PDF is downloading now. Plans are monthly retainers, priced after a free audit. The full company profile is here too:',
         pdf: true
       };
+    } else if (isDocumentRequest(text)) {
+      reply = { text: 'Here are our documents. Tap one to download the PDF:', pdf: true };
     } else {
       setIsThinking(true);
       try {
@@ -326,7 +298,7 @@ export const StudioAssistant: React.FC = () => {
         );
         reply = { text: aiText, action: inferAction(text) };
       } catch {
-        reply = scriptedReply(text, format);
+        reply = scriptedReply(text);
       }
       setIsThinking(false);
     }
@@ -483,7 +455,7 @@ export const StudioAssistant: React.FC = () => {
               <div>
                 <div className="text-xs font-semibold uppercase tracking-wider text-fg">RMAST Assistant</div>
                 <div className="text-xs font-mono text-subtle">
-                  {listening ? 'Listening… press Send when done' : speaking ? 'Speaking…' : 'Ask about systems, pricing & AI content'}
+                  {listening ? 'Listening… press Send when done' : speaking ? 'Speaking…' : 'Ask about our Assistants, plans & free audit'}
                 </div>
               </div>
             </div>
@@ -617,7 +589,7 @@ export const StudioAssistant: React.FC = () => {
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               maxLength={1000}
-              placeholder={listening ? 'Listening… press Send when you are done' : 'Ask about systems, pricing, video...'}
+              placeholder={listening ? 'Listening… press Send when you are done' : 'Ask about leads, content, admin...'}
               aria-label="Your question"
               className="flex-1 bg-canvas border border-line px-3 py-2 text-xs text-fg placeholder-subtle focus:outline-none focus:border-primary"
             />

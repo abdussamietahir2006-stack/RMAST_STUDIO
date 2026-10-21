@@ -1,57 +1,67 @@
-// RMAST company profile / portfolio PDF: everything the studio does, in one document.
+// RMAST company profile: the three Assistants in detail, how we work, plans, FAQ and founders.
 // Built in the browser from the same data the website renders, loaded on demand by the Studio Assistant.
+// No prices: like the website, plans are quoted after the free audit.
 import type { jsPDF } from 'jspdf';
-import { servicesData } from '../data/servicesData';
-import { projectsData } from '../data/projectsData';
+import { ASSISTANTS, FAQ, HOW_IT_WORKS, LEAD_RESPONSE_STEPS, PLANS, type Assistant, type AssistantId } from '../data/assistantsData';
 import { teamData, studioPhilosophy } from '../data/teamData';
-import { coreProcessSteps, realEstateWorkflowSteps, aiContentWorkflowSteps } from '../data/processData';
-import {
-  realEstatePackages,
-  aiContentPackages,
-  completeBusinessPackages,
-  aiVideoSinglePricing,
-  aiPostSinglePricing
-} from '../data/pricingData';
 import { CONTACT } from '../config/contact';
-import type { ServiceDetail } from '../types';
-import { auroraStripe, bothHourly, bothPrices, createBrandedDoc, CURRENCY_NOTE, issuedDate, plain, INK, MUTED, VIOLET, type BrandedDoc } from './pdfDoc';
-import { packageTable } from './pricePdf';
+import {
+  CORAL,
+  CORAL_TEXT,
+  MUTED,
+  OCHRE,
+  OCHRE_TEXT,
+  SAND,
+  TEAL,
+  createBrandedDoc,
+  issuedDate,
+  paletteStripe,
+  plain,
+  type BrandedDoc
+} from './pdfDoc';
 
-// Portfolio entries carry a "[CMS Placeholder]" marker for the admin; it is not for clients
-const clean = (text: string) => text.replace(/\s*\[CMS Placeholder\]/gi, '').trim();
+type RGB = [number, number, number];
+
+// Each Assistant's colour: `fill` for dots and bars, `text` for small print on white paper
+const ASSISTANT_COLOURS: Record<AssistantId, { fill: RGB; text: RGB }> = {
+  technical: { fill: TEAL, text: TEAL },
+  creative: { fill: CORAL, text: CORAL_TEXT },
+  virtual: { fill: OCHRE, text: OCHRE_TEXT }
+};
+
+const SITE = __SITE_URL__;
 
 function coverPage(b: BrandedDoc) {
   const { doc, pageW, pageH, margin } = b;
-  doc.setFillColor(...INK);
+  doc.setFillColor(...TEAL);
   doc.rect(0, 0, pageW, pageH, 'F');
-  auroraStripe(doc, 0, pageH * 0.62, pageW, 2.2);
+  paletteStripe(doc, 0, pageH * 0.62, pageW, 2.2);
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(10);
-  doc.setTextColor(...VIOLET);
-  doc.text('COMPANY PROFILE & PORTFOLIO', margin, 60);
+  doc.setTextColor(...CORAL);
+  doc.text('COMPANY PROFILE', margin, 60);
 
   doc.setFontSize(46);
-  doc.setTextColor(255, 255, 255);
+  doc.setTextColor(...SAND);
   doc.text('RMAST', margin, 84);
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(30);
-  doc.setTextColor(...VIOLET);
+  doc.setTextColor(...CORAL);
   doc.text('Studio', margin, 98);
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(15);
-  doc.setTextColor(255, 255, 255);
-  doc.text('Digital systems for real estate.', margin, 124);
-  doc.text('Cinematic AI content for brands.', margin, 132);
+  doc.setTextColor(...SAND);
+  doc.text('Virtual, Creative and Technical Assistants', margin, 124);
+  doc.text('for real estate teams.', margin, 132);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(10.5);
-  doc.setTextColor(200, 196, 220);
+  doc.setTextColor(214, 226, 222);
   const intro = doc.splitTextToSize(
     plain(
-      'A founder-led digital studio serving real estate brokerages and developers in the USA, UAE and Canada, and ambitious brands worldwide. ' +
-        studioPhilosophy.tagline
+      'Leads answered in 60 seconds, content that gets seen, and paperwork off your plate. For real estate agents, teams and brokerages in the USA and Canada, and some in Dubai, on a monthly retainer.'
     ),
     pageW - margin * 2
   );
@@ -61,199 +71,150 @@ function coverPage(b: BrandedDoc) {
   const y = pageH * 0.62 + 18;
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
-  doc.setTextColor(...VIOLET);
+  doc.setTextColor(...CORAL);
   doc.text('CONTACT', margin, y);
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);
-  doc.setTextColor(235, 231, 245);
-  doc.text(plain(`Email: ${CONTACT.email}`), margin, y + 8);
-  doc.text(plain(`WhatsApp: ${CONTACT.whatsappDisplay}`), margin, y + 15);
-  doc.text(plain(`Instagram: @${CONTACT.instagramHandle}`), margin, y + 22);
+  doc.setTextColor(...SAND);
+  doc.text(plain(`Free audit: ${SITE}/free-audit`), margin, y + 8);
+  doc.text(plain(`Email: ${CONTACT.email}`), margin, y + 15);
+  doc.text(plain(`WhatsApp: ${CONTACT.whatsappDisplay}`), margin, y + 22);
+  doc.text(plain(`Instagram: @${CONTACT.instagramHandle}`), margin, y + 29);
   doc.setFontSize(8.5);
-  doc.setTextColor(150, 146, 170);
-  doc.text(plain(`Issued ${issuedDate()}  |  ${CURRENCY_NOTE}`), margin, pageH - 20);
+  doc.setTextColor(170, 196, 190);
+  doc.text(plain(`Issued ${issuedDate()}`), margin, pageH - 20);
 
   b.newPage();
 }
 
-function serviceSection(b: BrandedDoc, s: ServiceDetail) {
-  const money = (usd: number) => bothPrices(usd);
-  // Keep each service together on one page
-  b.ensureSpace(
-    40 +
-      b.measure(s.headline) +
-      b.measure(s.summary) +
-      b.measure(s.targetAudience, 9) +
-      b.measure(s.keyFeatures, 9, true) +
-      b.measure(s.deliverables, 9, true)
+// One Assistant in full: what it is, the problems it solves, every sub-service, the month, the process
+function assistantSection(b: BrandedDoc, a: Assistant) {
+  const colour = ASSISTANT_COLOURS[a.id];
+  b.newPage();
+  // Colour bar across the top of the Assistant's first page
+  b.doc.setFillColor(...colour.fill);
+  b.doc.rect(0, 0, b.pageW, 3, 'F');
+
+  b.label(a.name, colour.text);
+  b.heading(a.tagline);
+  b.paragraph(a.intro);
+
+  b.label('Problems we solve', colour.text);
+  b.bullets(
+    a.problems.map((p) => `${p.title}. ${p.text}`),
+    { color: colour.fill }
   );
-  b.label(s.kicker);
-  b.subheading(s.title);
-  b.paragraph(s.headline, { italic: true, color: MUTED, size: 9.5, gap: 2.5 });
-  b.paragraph(s.summary);
-  b.label('Who it is for');
-  b.paragraph(s.targetAudience, { size: 9 });
-  b.label('What we do');
-  b.bullets(s.keyFeatures);
-  b.label('What you receive');
-  b.bullets(s.deliverables);
 
-  // Pricing line
-  const unit = s.billingType === 'monthly' ? ' per month' : s.billingType === 'per-video' ? ' per video' : ' one-time';
-  const parts = [`From ${money(s.startingPriceUSD)}${unit}`];
-  if (s.tiers?.length) parts.push(s.tiers.map((t) => `${t.name} ${money(t.priceUSD)}`).join(', '));
-  if (s.hourlyRateUSD) parts.push(`Hourly ${bothHourly(s.hourlyRateUSD)}`);
-  b.label('Investment');
-  b.paragraph(parts.join('\n'), { size: 9, color: INK });
+  b.label('What we do', colour.text);
+  for (const s of a.subServices) {
+    // Keep each sub-service together on one page
+    b.ensureSpace(14 + b.measure(s.summary) + b.measure(s.delivered, 9, true));
+    b.subheading(s.flagship ? `${s.title} (flagship)` : s.title);
+    b.paragraph(s.summary);
+    b.bullets(s.delivered, { color: colour.fill });
+  }
 
-  // Divider between services
-  b.doc.setDrawColor(226, 222, 240);
-  b.doc.setLineWidth(0.2);
-  b.doc.line(b.margin, b.y - 1, b.pageW - b.margin, b.y - 1);
-  b.y += 6;
+  b.ensureSpace(14 + b.measure(a.monthly, 9, true));
+  b.label('What you get each month', colour.text);
+  b.bullets(a.monthly, { color: colour.fill });
+
+  b.ensureSpace(50);
+  b.label('How we start', colour.text);
+  b.table(
+    ['Step', 'What happens'],
+    a.process.map((p, i) => [`${i + 1}. ${p.title}`, p.text]),
+    { 0: { cellWidth: 42, fontStyle: 'bold' } }
+  );
 }
 
 export function buildCompanyProfilePdf(): jsPDF {
   const b = createBrandedDoc();
-  const money = (usd: number) => bothPrices(usd);
-  const reServices = servicesData.filter((s) => s.division === 'real-estate');
-  const contentServices = servicesData.filter((s) => s.division === 'ai-content');
 
   coverPage(b);
 
   // --- About ---
   b.heading('About RMAST Studio');
   b.paragraph(
-    'RMAST Studio is a small, founder-led international digital practice. We build the digital systems that run modern real estate businesses, ' +
-      'and we produce cinematic AI video content for brands, without the cost and delays of traditional film production.'
+    'RMAST Studio gives real estate agents, teams and brokerages a team of Assistants on a monthly retainer. ' +
+      'Each Assistant takes one part of the business off your hands: answering and following up every lead, making and posting your content, ' +
+      'and handling admin and transactions. Hire one Assistant, or all three as your Full Team.'
   );
-  b.paragraph(studioPhilosophy.subtext);
-  b.label('Where we work');
-  b.paragraph('Remote studio serving the USA, UAE, Canada and clients worldwide.', { size: 9 });
+  b.paragraph(`${studioPhilosophy.tagline} ${studioPhilosophy.subtext}`);
+  b.label('Who we work with');
+  b.paragraph('Real estate agents, teams and brokerages in the USA and Canada, and some in Dubai. We work remotely, on your hours.', { size: 9 });
 
-  b.heading('Our Two Divisions');
-  b.subheading('Division 01 - Real Estate Digital Systems');
-  b.paragraph(
-    'Systems that run your business. We engineer the technical infrastructure behind high-producing brokerages: websites, custom software, CRMs, AI automation, AI assistants, social media, virtual assistance and back-office operations.'
-  );
-  b.bullets(reServices.map((s) => s.title));
-  b.subheading('Division 02 - Brands & AI Content Studio');
-  b.paragraph(
-    'Content that makes people stop scrolling. Cinematic AI commercial films, fashion campaigns, food cinema, product films and property tours - from idea to final frame in days, with no film sets, permits or location costs.'
-  );
-  b.bullets(contentServices.map((s) => s.title));
-
-  b.heading('What Makes Us Different');
-  for (const p of studioPhilosophy.principles) {
-    b.subheading(`${p.number}  ${p.title}`);
-    b.paragraph(p.description, { size: 9 });
-  }
-
-  // --- Services in detail ---
-  b.newPage();
-  b.heading('Real Estate Digital Systems', 'Every service in detail: what it does, who it is for, what you receive and what it costs.');
-  reServices.forEach((s) => serviceSection(b, s));
-
-  b.newPage();
-  b.heading('Brands & AI Content Studio', 'Cinematic AI video for property, fashion, food, products, advertising and social media.');
-  b.label('Per-video rates');
-  b.paragraph(aiVideoSinglePricing.map((v) => `${v.tier}: ${money(v.priceUSD)}`).join('\n') + '\n(monthly bundles save up to 24%)', { size: 9, color: INK });
-  b.label('Per-post rates (AI static posts)');
-  b.paragraph(aiPostSinglePricing.map((p) => `${p.tier}: ${money(p.priceUSD)}`).join('\n') + '\n(monthly post bundles save up to 24%)', { size: 9, color: INK });
-  contentServices.forEach((s) => serviceSection(b, s));
-
-  // --- Portfolio ---
-  b.newPage();
-  b.heading('Selected Work', 'A selection of systems and campaigns from both divisions.');
-  for (const p of projectsData) {
-    // Keep each project together on one page
-    b.ensureSpace(
-      45 +
-        b.measure(p.subtitle) +
-        b.measure(p.description) +
-        b.measure(p.challenges ?? [], 9, true) +
-        b.measure(p.solutions ?? [], 9, true) +
-        b.measure(p.deliverablesList ?? [], 9, true) +
-        b.measure(p.outcome)
-    );
-    b.label(`${p.category}  |  ${clean(p.clientLocation)}  |  ${p.year}`);
-    b.subheading(p.title);
-    b.paragraph(p.subtitle, { italic: true, color: MUTED, size: 9.5, gap: 2.5 });
-    b.paragraph(p.description);
-    if (p.challenges?.length) {
-      b.label('The challenge');
-      b.bullets(p.challenges);
-    }
-    if (p.solutions?.length) {
-      b.label('Our solution');
-      b.bullets(p.solutions);
-    }
-    if (p.deliverablesList?.length) {
-      b.label('Delivered');
-      b.bullets(p.deliverablesList);
-    }
-    b.label('Outcome');
-    b.paragraph(p.outcome, { color: INK });
-    b.label('Services');
-    b.paragraph(p.services.join('  |  '), { size: 9, color: MUTED });
-    b.y += 4;
-  }
-
-  // --- Process ---
-  b.newPage();
-  b.heading('How We Work', 'A clear six-step process, with the founders involved at every stage.');
-  for (const step of coreProcessSteps) {
-    b.subheading(`${step.step}  ${step.name} - ${step.title}`);
-    b.paragraph(step.summary, { size: 9 });
-    b.bullets(step.activities, { size: 8.5 });
-  }
-  b.ensureSpace(95);
-  b.heading('Division Workflows');
+  // --- The three Assistants at a glance ---
+  b.heading('Three Assistants. One team.', 'Every service we offer sits under one of three Assistants.');
   b.table(
-    ['Step', 'Real Estate Systems', 'AI Content Production'],
-    realEstateWorkflowSteps.map((r, i) => {
-      const c = aiContentWorkflowSteps[i];
-      return [r.step, `${r.title}: ${r.desc}`, c ? `${c.title}: ${c.desc}` : ''];
-    }),
-    { 0: { cellWidth: 14, fontStyle: 'bold' } }
+    ['Assistant', 'What it does', 'Services'],
+    ASSISTANTS.map((a) => [a.name, a.tagline, a.subServices.map((s) => s.title).join('\n')]),
+    { 0: { cellWidth: 38, fontStyle: 'bold' }, 1: { cellWidth: 52 } }
   );
+
+  // --- The flagship ---
+  b.ensureSpace(80);
+  b.heading('Lead Response System', 'Our flagship, part of the Technical Assistant. Every lead answered in 60 seconds, day or night.');
+  b.paragraph(
+    'Most leads go to the agent who replies first. The Lead Response System replies for you on WhatsApp, SMS, Instagram and your website, ' +
+      'asks a few short questions, and hands you the serious buyers and sellers with a viewing already booked.'
+  );
+  b.table(
+    ['Step', 'What happens'],
+    LEAD_RESPONSE_STEPS.map((s, i) => [`${i + 1}. ${s.title}`, s.text]),
+    { 0: { cellWidth: 42, fontStyle: 'bold' } }
+  );
+
+  // --- Each Assistant in detail ---
+  ASSISTANTS.forEach((a) => assistantSection(b, a));
+
+  // --- How it works and plans (continues on the Virtual Assistant's last page when there is room) ---
+  b.heading('How it works', 'From free audit to monthly report.');
+  b.table(
+    ['Step', 'What happens'],
+    HOW_IT_WORKS.map((s, i) => [`${i + 1}. ${s.title}`, s.text]),
+    { 0: { cellWidth: 52, fontStyle: 'bold' } }
+  );
+
+  b.heading('Plans', 'Both plans are monthly retainers, priced after your free audit so you only pay for what you need.');
+  b.table(
+    ['Plan', 'What it is', "What's included", 'Price'],
+    PLANS.map((p) => [p.name, p.summary, p.includes.join('\n'), `${p.price}\nmonthly retainer`]),
+    { 0: { cellWidth: 28, fontStyle: 'bold' }, 1: { cellWidth: 48 }, 3: { cellWidth: 28 } }
+  );
+
+  // --- FAQ ---
+  b.heading('Questions realtors ask us');
+  for (const { q, a } of FAQ) {
+    b.ensureSpace(12 + b.measure(a, 9));
+    b.subheading(q);
+    b.paragraph(a, { size: 9 });
+  }
 
   // --- Founders ---
-  b.heading('The People Behind RMAST', `${studioPhilosophy.tagline} You work directly with the founders.`);
+  b.heading('The people behind RMAST', `${studioPhilosophy.tagline} You work directly with the founders.`);
   for (const f of teamData) {
     b.ensureSpace(60);
     b.subheading(f.name);
     b.label(`${f.role}  |  ${f.title}`);
     b.paragraph(f.bio);
     b.paragraph(`"${f.quote}"`, { italic: true, color: MUTED, size: 9 });
-    b.label('Focus');
-    b.bullets(f.focus, { size: 8.5 });
     if (f.linkedin) b.paragraph(`LinkedIn: ${f.linkedin}`, { size: 8.5, color: MUTED });
   }
 
-  // --- Pricing overview ---
-  b.newPage();
-  b.heading('Packages at a Glance', 'Starting prices in USD and AED. Full price lists are available on request.');
-  // Each package table (about 70mm) stays on one page with its title
-  b.subheading('Real Estate Packages');
-  packageTable(b, realEstatePackages);
-  b.ensureSpace(80);
-  b.subheading('Content Packages');
-  packageTable(b, aiContentPackages);
-  b.ensureSpace(80);
-  b.subheading('Complete Business Packages');
-  packageTable(b, completeBusinessPackages);
-
   // --- Next steps ---
-  b.heading("Let's Build What's Next");
+  b.heading('See what’s costing you leads, free');
   b.paragraph(
-    'Tell us what you want to build, automate or create. We reply within 24 hours and start with a short scoping call with the founders - no obligation.'
+    'Start with a free audit. We look at how fast your leads get a reply, your website and social accounts, and where admin piles up. ' +
+      'Then we send you what we found and what we would fix first. No cost and no obligation.'
   );
-  b.bullets([`Email: ${CONTACT.email}`, `WhatsApp: ${CONTACT.whatsappDisplay}`, `Instagram: @${CONTACT.instagramHandle}`, 'Or use the contact form on our website']);
-  b.paragraph(
-    'All prices are starting rates; final pricing is confirmed after scoping. Third-party costs such as domains, hosting, paid APIs and ad spend are billed separately.',
-    { size: 8.5, color: MUTED }
-  );
+  b.bullets([
+    `Free audit: ${SITE}/free-audit`,
+    `Book a call: ${SITE}/contact`,
+    `Email: ${CONTACT.email}`,
+    `WhatsApp: ${CONTACT.whatsappDisplay}`,
+    `Instagram: @${CONTACT.instagramHandle}`
+  ]);
+  b.paragraph('We reply within 24 hours.', { size: 8.5, color: MUTED });
 
   return b.finish({ skipCover: true });
 }
