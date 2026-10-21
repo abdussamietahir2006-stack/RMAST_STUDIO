@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 import { useNavigation } from '../../context/NavigationContext';
 import { useTheme } from '../../context/ThemeContext';
-import { AuroraCanvas } from '../motion/AuroraCanvas';
 
 interface BackgroundConfig {
   imageUrl: string;
@@ -87,11 +86,7 @@ export const PageBackground: React.FC = () => {
 
   // Dark mode is the plain canvas colour across the whole site: no photo, tints, grid or vignette
   if (!isLight) {
-    return (
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden select-none bg-canvas">
-        {currentPath === '/' && <AuroraCanvas showOrb light={false} />}
-      </div>
-    );
+    return <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden select-none bg-canvas" />;
   }
 
   return (
@@ -118,9 +113,6 @@ export const PageBackground: React.FC = () => {
             : 'bg-gradient-to-b from-canvas/95 via-canvas/92 to-canvas/96'
         }`}
       />
-
-      {/* Live aurora + 3D orb (WebGL) */}
-      <AuroraCanvas showOrb={currentPath === '/'} light={isLight} />
 
       {/* 3. Executive Gold/Bronze Ambient Radial Highlights */}
       <div
