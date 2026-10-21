@@ -179,7 +179,7 @@ export const Navbar: React.FC = () => {
                   {/* Dropdown panel (pt-3 bridges the gap so hover isn't lost) */}
                   <div
                     id={menuId}
-                    className={`absolute left-1/2 -translate-x-1/2 top-full pt-3 w-72 transition-all duration-200 ${
+                    className={`absolute left-1/2 -translate-x-1/2 top-full pt-3 w-80 whitespace-normal transition-all duration-200 ${
                       open ? 'opacity-100 translate-y-0 visible' : 'opacity-0 -translate-y-1 invisible pointer-events-none'
                     }`}
                   >
