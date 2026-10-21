@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { redirectFor } from '../config/redirects';
 
 interface NavigationContextType {
   currentPath: string; // pathname only, e.g. "/pricing"
@@ -20,6 +21,14 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode; initialPa
 
   useEffect(() => {
     setSearch(window.location.search);
+    // An old URL opened directly (the dev server has no redirects): show its replacement
+    const moved = redirectFor(window.location.pathname);
+    if (moved) {
+      const url = new URL(moved, window.location.origin);
+      window.history.replaceState({}, '', url.pathname + url.hash);
+      setCurrentPath(url.pathname);
+      setSearch('');
+    }
   }, []);
 
   useEffect(() => {
@@ -35,10 +44,13 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode; initialPa
 
   const navigate = (path: string) => {
     if (typeof window === 'undefined') return;
-    const url = new URL(path, window.location.origin);
+    // Links to pages that have moved (e.g. from the chat assistant) go straight to the new page
+    const url = new URL(redirectFor(new URL(path, window.location.origin).pathname) ?? path, window.location.origin);
 
     if (url.pathname === currentPath && url.search === search) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      const target = url.hash ? document.getElementById(url.hash.slice(1)) : null;
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      else window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
 

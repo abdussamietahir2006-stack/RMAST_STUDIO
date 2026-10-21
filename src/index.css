@@ -31,6 +31,12 @@
   --color-brand: var(--c-brand);
   --color-accent: var(--c-accent);
 
+  /* Service colours: one per Assistant. `svc` is whichever Assistant the surrounding .svc-* class picks */
+  --color-technical: var(--c-technical);
+  --color-creative: var(--c-creative);
+  --color-virtual: var(--c-virtual);
+  --color-svc: var(--svc);
+
   /* Layout */
   --container-site: 75rem; /* 1200px */
   --radius-card: 12px;
@@ -66,6 +72,9 @@
   --c-on-primary: #0b0f19;
   --c-brand: #b8a4ff;
   --c-accent: #ff5caa;
+  --c-technical: #2dd4bf; /* teal */
+  --c-creative: #ff8a75; /* coral */
+  --c-virtual: #e8b44c; /* ochre */
   --c-focus: #b8a4ff;
   --c-scrim: rgba(5, 8, 15, 0.72);
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3);
@@ -89,10 +98,29 @@ html.theme-light {
   --c-on-primary: #ffffff;
   --c-brand: #5b35e0;
   --c-accent: #c81e74;
+  --c-technical: #0f766e;
+  --c-creative: #c2412d;
+  --c-virtual: #8a5c00;
   --c-focus: #5b35e0;
   --c-scrim: rgba(15, 23, 42, 0.45);
   --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.06);
   --shadow-card-hover: 0 12px 32px -12px rgba(15, 23, 42, 0.18);
+}
+
+/* Each Assistant's section sets its colour, so shared components use text-svc, bg-svc/10, border-svc/40.
+   --color-svc is set here too: a var() inside a custom property resolves where it is declared, so
+   the :root value from @theme would never see these classes. */
+.svc-technical {
+  --svc: var(--c-technical);
+  --color-svc: var(--c-technical);
+}
+.svc-creative {
+  --svc: var(--c-creative);
+  --color-svc: var(--c-creative);
+}
+.svc-virtual {
+  --svc: var(--c-virtual);
+  --color-svc: var(--c-virtual);
 }
 
 /* ---------- Type scale (public site): labels 14px, body never below 16px ---------- */

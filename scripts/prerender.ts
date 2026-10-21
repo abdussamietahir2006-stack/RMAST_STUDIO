@@ -7,6 +7,7 @@ import { pathToFileURL } from 'node:url';
 import { PUBLIC_ROUTES, getRouteMeta } from '../src/seo/meta.js';
 import { renderHeadTags } from '../src/seo/head.js';
 import { resolveSiteUrl } from '../src/config/siteUrl.js';
+import { REDIRECTS } from '../src/config/redirects.js';
 
 const DIST = path.resolve('dist');
 const SSR_ENTRY = path.resolve('dist-ssr/entry-server.js');
@@ -14,6 +15,20 @@ const site = resolveSiteUrl();
 // Google Search Console "HTML tag" verification (public by design). The env var overrides it.
 const GOOGLE_VERIFICATION_DEFAULT = '0ZcNu9Em-BJX9_lue0G5aW364IC4UK0VXcqPQtHLrgE';
 const verification = process.env.GOOGLE_SITE_VERIFICATION?.trim() || GOOGLE_VERIFICATION_DEFAULT;
+
+// Moved pages: vercel.json must send every old URL in src/config/redirects.ts to the same place
+const vercelRedirects = new Map(
+  ((JSON.parse(fs.readFileSync('vercel.json', 'utf8')).redirects ?? []) as { source: string; destination: string }[]).map((r) => [
+    r.source,
+    r.destination
+  ])
+);
+for (const [from, to] of Object.entries(REDIRECTS)) {
+  if (vercelRedirects.get(from) !== to) throw new Error(`vercel.json is missing the redirect ${from} -> ${to} (see src/config/redirects.ts)`);
+}
+for (const route of PUBLIC_ROUTES) {
+  if (REDIRECTS[route]) throw new Error(`${route} is both a page and a redirect`);
+}
 
 const template = fs.readFileSync(path.join(DIST, 'index.html'), 'utf8');
 const SEO_BLOCK = /<!--seo:start[\s\S]*?<!--seo:end-->/;
@@ -54,7 +69,7 @@ write('/admin', template.replace(SEO_BLOCK, renderHeadTags(getRouteMeta('/admin'
 
 const today = new Date().toISOString().slice(0, 10);
 const priority = (route: string) =>
-  route === '/' ? '1.0' : ['/real-estate', '/ai-content', '/services', '/pricing'].includes(route) ? '0.9' : route.split('/').length > 2 ? '0.7' : '0.8';
+  route === '/' ? '1.0' : route.startsWith('/services') || ['/plans', '/free-audit'].includes(route) ? '0.9' : '0.8';
 fs.writeFileSync(
   path.join(DIST, 'sitemap.xml'),
   `<?xml version="1.0" encoding="UTF-8"?>

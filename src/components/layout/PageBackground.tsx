@@ -25,15 +25,6 @@ export const PageBackground: React.FC = () => {
       };
     }
 
-    if (currentPath.startsWith('/ai-content/')) {
-      return {
-        imageUrl: 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?auto=format&fit=crop&w=1920&q=70',
-        sessionTitle: 'Cinematic AI Editing & Color Suite',
-        contextTag: 'CREATIVE PRODUCTION',
-        locationTag: 'Studio Media Lab · Room B'
-      };
-    }
-
     switch (currentPath) {
       case '/about':
         return {
@@ -51,23 +42,7 @@ export const PageBackground: React.FC = () => {
           locationTag: 'Engineering Central'
         };
 
-      case '/real-estate':
-        return {
-          imageUrl: 'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&w=1920&q=70',
-          sessionTitle: 'Real Estate Systems & Transaction Flow Meeting',
-          contextTag: 'BROKERAGE STRATEGY',
-          locationTag: 'Executive Meeting Room'
-        };
-
-      case '/ai-content':
-        return {
-          imageUrl: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1920&q=70',
-          sessionTitle: 'AI Creative Direction & Campaign Review',
-          contextTag: 'VISUAL ARTS COLLABORATION',
-          locationTag: 'AI Creative Suite'
-        };
-
-      case '/pricing':
+      case '/plans':
         return {
           imageUrl: 'https://images.unsplash.com/photo-1556761175-4b46a572b786?auto=format&fit=crop&w=1920&q=70',
           sessionTitle: 'Commercial Scoping & Proposal Architecture',
@@ -75,7 +50,7 @@ export const PageBackground: React.FC = () => {
           locationTag: 'Client Strategy Suite'
         };
 
-      case '/process':
+      case '/free-audit':
         return {
           imageUrl: 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=1920&q=70',
           sessionTitle: 'Sprint Architecture & Workflow Mapping Session',
@@ -84,7 +59,6 @@ export const PageBackground: React.FC = () => {
         };
 
       case '/work':
-      case '/case-studies':
         return {
           imageUrl: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=1920&q=70',
           sessionTitle: 'Deliverables Audit & Performance Review Meeting',

@@ -1,14 +1,17 @@
 // Single source of truth for per-page SEO: titles, descriptions, canonical URLs and structured data.
 // Used by the browser (to update the head on navigation) and by the build-time prerenderer.
-import { servicesData } from '../data/servicesData.js';
+import { ASSISTANTS, FAQ, type Assistant } from '../data/assistantsData.js';
 import { teamData } from '../data/teamData.js';
 import { CONTACT } from '../config/contact.js';
 
 export const SITE_NAME = 'RMAST Studio';
-export const DEFAULT_TITLE = 'RMAST Studio — Real Estate Digital Systems & Cinematic AI Content';
+export const DEFAULT_TITLE = 'RMAST Studio: Real Estate Virtual, Creative & Technical Assistants';
 export const DEFAULT_DESCRIPTION =
-  'RMAST Studio builds websites, CRMs and AI automation for real estate brokerages in the USA, UAE and Canada, and creates cinematic AI video for brands worldwide.';
-export const OG_IMAGE = { path: '/og-image.png', width: 1200, height: 630, alt: 'RMAST Studio: digital systems for real estate and cinematic AI content' };
+  'Virtual, Creative and Technical Assistants for real estate agents, teams and brokerages. Lead response for realtors in 60 seconds, real estate social media management and admin.';
+export const OG_IMAGE = { path: '/og-image.png', width: 1200, height: 630, alt: 'RMAST Studio: Assistants for real estate teams' };
+
+const AREA_SERVED = ['United States', 'Canada', 'United Arab Emirates'];
+const AUDIENCE = 'Real estate agents, teams and brokerages';
 
 export interface RouteMeta {
   title: string;
@@ -27,66 +30,45 @@ interface StaticPage {
 
 const STATIC_PAGES: Record<string, StaticPage> = {
   '/': { title: DEFAULT_TITLE, description: DEFAULT_DESCRIPTION },
-  '/real-estate': {
-    title: 'Real Estate Websites, CRM & AI Automation | RMAST Studio',
-    description:
-      'Custom websites, CRM systems, AI chatbots and lead automation for real estate brokerages and developers in the USA, UAE and Canada. Packages from $800.',
-    crumb: 'Real Estate'
-  },
-  '/ai-content': {
-    title: 'Cinematic AI Video for Brands: Real Estate, Fashion, Food | RMAST Studio',
-    description:
-      'Production without the production: cinematic AI property tours, fashion campaigns, food films and product commercials. AI videos from $45, monthly bundles available.',
-    crumb: 'AI Content'
-  },
   '/services': {
-    title: 'Services: Real Estate Systems & AI Content Production | RMAST Studio',
+    title: 'Services: Real Estate Virtual Assistant, Social Media & CRM Setup | RMAST Studio',
     description:
-      'Every RMAST Studio service in one place: websites, custom software, CRM, AI automation and assistants for real estate, plus cinematic AI video production.',
+      'Three Assistants for realtors: a Technical Assistant for lead response and real estate CRM setup, a Creative Assistant for social media, and a real estate virtual assistant.',
     crumb: 'Services'
   },
-  '/pricing': {
-    title: 'Pricing: Websites, CRM, AI Automation & AI Video | RMAST Studio',
+  '/plans': {
+    title: 'Plans: One Assistant or the Full Team, Monthly Retainer | RMAST Studio',
     description:
-      'Transparent starting prices for real estate digital systems, AI video (from $45), monthly content bundles, complete business packages and add-ons, in USD or AED.',
-    crumb: 'Pricing'
+      'Hire one Assistant or all three as your Full Team, on a monthly retainer. Your plan is priced after a free audit of your leads, content and admin.',
+    crumb: 'Plans'
+  },
+  '/free-audit': {
+    title: 'Free Audit for Real Estate Agents & Teams | RMAST Studio',
+    description:
+      'See what’s costing you leads, free. We check your lead response time, website, social media and admin, then tell you what to fix first. No obligation.',
+    crumb: 'Free Audit'
   },
   '/work': {
-    title: 'Selected Work: Real Estate Systems & AI Campaigns | RMAST Studio',
+    title: 'Our Work: Real Estate Content, Systems & Support | RMAST Studio',
     description:
-      'Selected projects: luxury real estate websites, deal pipelines, autonomous lead engines and cinematic AI campaigns for fashion, food and product brands.',
+      'Work from RMAST Studio’s Technical, Creative and Virtual Assistants for real estate agents, teams and brokerages in the USA, Canada and Dubai.',
     crumb: 'Work'
-  },
-  '/case-studies': {
-    title: 'Case Studies: Challenges, Solutions & Results | RMAST Studio',
-    description:
-      'How RMAST Studio solved real problems for brokerages and brands: the challenge, the system we built, and the business outcome for each project.',
-    crumb: 'Case Studies'
   },
   '/about': {
     title: 'About RMAST Studio: Founders Abdussamie Tahir & Mashhood',
     description:
-      'RMAST Studio is a founder-led studio run by Raja Muhammad Abdussamie Tahir and Mashhood. Small team, serious execution, direct founder access on every project.',
+      'RMAST Studio is a founder-led team run by Raja Muhammad Abdussamie Tahir and Mashhood, giving real estate agents and teams Virtual, Creative and Technical Assistants.',
     crumb: 'About'
   },
-  '/process': {
-    title: 'Our Process: Discover, Strategy, Design, Build, Launch, Optimize | RMAST Studio',
-    description:
-      'How RMAST Studio delivers: a six-stage process from audit and strategy through design, build, launch and ongoing optimization.',
-    crumb: 'Process'
-  },
   '/contact': {
-    title: 'Contact RMAST Studio: Start a Project',
-    description: `Tell us what you want to build, automate or create. Reply within 24 hours from the founders. WhatsApp ${CONTACT.whatsappDisplay} or ${CONTACT.email}.`,
+    title: 'Book a Call with RMAST Studio',
+    description: `Book a call or send us a message. The founders reply within 24 hours. WhatsApp ${CONTACT.whatsappDisplay} or ${CONTACT.email}.`,
     crumb: 'Contact'
   }
 };
 
-const serviceRoute = (s: (typeof servicesData)[number]) =>
-  s.division === 'real-estate' ? `/services/${s.slug}` : `/ai-content/${s.slug}`;
-
 // Every indexable page, for the sitemap and the prerenderer
-export const PUBLIC_ROUTES: string[] = [...Object.keys(STATIC_PAGES), ...servicesData.map(serviceRoute)];
+export const PUBLIC_ROUTES: string[] = [...Object.keys(STATIC_PAGES), ...ASSISTANTS.map((a) => a.path)];
 
 // Search results show roughly 155 characters of a description
 function clip(text: string, max = 158): string {
@@ -115,15 +97,20 @@ function organization(site: string) {
     telephone: `+${CONTACT.whatsappNumber}`,
     sameAs: [CONTACT.instagramUrl, CONTACT.founderLinkedIn],
     founder: teamData.map((f) => ({ '@type': 'Person', name: f.name, jobTitle: f.title })),
-    areaServed: ['United States', 'United Arab Emirates', 'Canada', 'Worldwide'],
+    areaServed: AREA_SERVED,
     knowsAbout: [
+      'Real estate virtual assistant',
+      'Real estate transaction coordination',
+      'Lead response for realtors',
+      'Real estate CRM setup',
       'Real estate websites',
-      'Real estate CRM',
-      'AI automation',
-      'AI chatbots',
-      'AI video production',
-      'Cinematic property tours'
+      'Real estate social media management',
+      'Real estate video content'
     ],
+    makesOffer: ASSISTANTS.map((a) => ({
+      '@type': 'Offer',
+      itemOffered: { '@type': 'Service', name: a.name, url: `${site}${a.path}` }
+    })),
     contactPoint: {
       '@type': 'ContactPoint',
       contactType: 'sales',
@@ -142,10 +129,40 @@ function website(site: string) {
     url: `${site}/`,
     // Google uses name/alternateName for the site name shown above search results
     name: SITE_NAME,
-    alternateName: ['RMAST', 'RMAST Studio Real Estate & AI Content'],
+    alternateName: ['RMAST', 'RMAST Studio Real Estate Assistants'],
     description: DEFAULT_DESCRIPTION,
     inLanguage: 'en',
     publisher: { '@id': orgId(site) }
+  };
+}
+
+function faqPage() {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: FAQ.map(({ q, a }) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } }))
+  };
+}
+
+function service(site: string, a: Assistant) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: a.name,
+    serviceType: a.seo.serviceType,
+    description: a.intro,
+    url: `${site}${a.path}`,
+    provider: { '@id': orgId(site) },
+    areaServed: AREA_SERVED,
+    audience: { '@type': 'BusinessAudience', audienceType: AUDIENCE },
+    hasOfferCatalog: {
+      '@type': 'OfferCatalog',
+      name: `${a.name} services`,
+      itemListElement: a.subServices.map((s) => ({
+        '@type': 'Offer',
+        itemOffered: { '@type': 'Service', name: s.title, description: s.summary }
+      }))
+    }
   };
 }
 
@@ -187,49 +204,27 @@ export function getRouteMeta(rawPath: string, site: string): RouteMeta {
   const page = STATIC_PAGES[path];
   if (page) {
     const jsonLd: Record<string, unknown>[] = [];
-    if (path === '/') jsonLd.push(organization(site), website(site));
+    if (path === '/') jsonLd.push(organization(site), website(site), faqPage());
     else jsonLd.push(breadcrumbs(site, [{ name: page.crumb ?? page.title, path }]));
+    if (path === '/plans') jsonLd.push(faqPage());
     if (path === '/about') jsonLd.push(...founders(site));
     return { title: page.title, description: clip(page.description), path, noindex: false, ogType: 'website', jsonLd };
   }
 
-  const match = path.match(/^\/(services|ai-content)\/([^/]+)$/);
-  const service = match
-    ? servicesData.find(
-        (s) => s.slug === match[2] && s.division === (match[1] === 'services' ? 'real-estate' : 'ai-content')
-      )
-    : undefined;
-
-  if (service) {
-    const isAi = service.division === 'ai-content';
-    const divisionCrumb = isAi ? { name: 'AI Content', path: '/ai-content' } : { name: 'Real Estate', path: '/real-estate' };
-    const unit = service.billingType === 'monthly' ? ' per month' : service.billingType === 'per-video' ? ' per video' : '';
+  const assistant = ASSISTANTS.find((a) => a.path === path);
+  if (assistant) {
     return {
-      title: isAi ? `${service.title}: Cinematic AI Video | RMAST Studio` : `${service.title} for Real Estate | RMAST Studio`,
-      description: clip(`${service.summary} From $${service.startingPriceUSD.toLocaleString('en-US')}${unit}.`),
+      title: assistant.seo.title,
+      description: clip(assistant.seo.description),
       path,
       noindex: false,
       ogType: 'website',
       jsonLd: [
-        {
-          '@context': 'https://schema.org',
-          '@type': 'Service',
-          name: service.title,
-          serviceType: service.title,
-          description: service.summary,
-          url: `${site}${path}`,
-          image: service.image,
-          provider: { '@id': orgId(site) },
-          areaServed: isAi ? 'Worldwide' : ['United States', 'United Arab Emirates', 'Canada'],
-          audience: { '@type': 'Audience', audienceType: service.targetAudience },
-          offers: {
-            '@type': 'Offer',
-            price: service.startingPriceUSD,
-            priceCurrency: 'USD',
-            description: `Starting price${unit}`
-          }
-        },
-        breadcrumbs(site, [divisionCrumb, { name: service.title, path }])
+        service(site, assistant),
+        breadcrumbs(site, [
+          { name: 'Services', path: '/services' },
+          { name: assistant.name, path }
+        ])
       ]
     };
   }

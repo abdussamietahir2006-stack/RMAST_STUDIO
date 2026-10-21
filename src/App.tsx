@@ -14,6 +14,7 @@ import { applyHeadTags } from './seo/head';
 import { MotionProvider } from './components/motion/MotionProvider';
 import { PageTransition } from './components/motion/PageTransition';
 import { useSiteMotion } from './components/motion/useSiteMotion';
+import { assistantBySlug, type Assistant } from './data/assistantsData';
 
 // Pages are code-split so each route only downloads what it renders. Each page can also be
 // preloaded: once loaded it renders synchronously, which lets the prerenderer emit complete HTML
@@ -32,15 +33,12 @@ const named = <K extends string>(loader: () => Promise<Record<K, React.Component
 };
 
 const HomePage = named(() => import('./pages/HomePage'), 'HomePage');
-const RealEstatePage = named(() => import('./pages/RealEstatePage'), 'RealEstatePage');
-const AiContentPage = named(() => import('./pages/AiContentPage'), 'AiContentPage');
 const ServicesPage = named(() => import('./pages/ServicesPage'), 'ServicesPage');
-const ServiceDetailPage = named(() => import('./pages/ServiceDetailPage'), 'ServiceDetailPage');
-const PricingPage = named(() => import('./pages/PricingPage'), 'PricingPage');
+const AssistantPage = named(() => import('./pages/AssistantPage'), 'AssistantPage');
+const PlansPage = named(() => import('./pages/PlansPage'), 'PlansPage');
+const FreeAuditPage = named(() => import('./pages/FreeAuditPage'), 'FreeAuditPage');
 const WorkPage = named(() => import('./pages/WorkPage'), 'WorkPage');
-const CaseStudiesPage = named(() => import('./pages/CaseStudiesPage'), 'CaseStudiesPage');
 const AboutPage = named(() => import('./pages/AboutPage'), 'AboutPage');
-const ProcessPage = named(() => import('./pages/ProcessPage'), 'ProcessPage');
 const ContactPage = named(() => import('./pages/ContactPage'), 'ContactPage');
 const AdminApp = named(() => import('./admin/AdminApp'), 'AdminApp');
 const NotFoundPage = named(() => import('./pages/NotFoundPage'), 'NotFoundPage');
@@ -67,15 +65,21 @@ const InquiryHost: React.FC = () => {
   ) : null;
 };
 
-// Pages that exist outside the service detail routes
-const STATIC_PATHS = new Set([
-  '/', '/real-estate', '/ai-content', '/services', '/pricing', '/work', '/case-studies', '/about', '/process', '/contact'
-]);
+// Pages other than the Assistant pages (/services/technical-assistant etc.)
+const STATIC_PAGES: Record<string, PageComponent> = {
+  '/': HomePage,
+  '/services': ServicesPage,
+  '/plans': PlansPage,
+  '/free-audit': FreeAuditPage,
+  '/work': WorkPage,
+  '/about': AboutPage,
+  '/contact': ContactPage
+};
 
 type Route =
   | { kind: 'admin' }
   | { kind: 'static'; path: string }
-  | { kind: 'service'; slug: string; division: 'real-estate' | 'ai-content' }
+  | { kind: 'assistant'; assistant: Assistant }
   | { kind: 'not-found' };
 
 function resolveRoute(rawPath: string): Route {
@@ -83,32 +87,17 @@ function resolveRoute(rawPath: string): Route {
 
   if (path === '/admin' || path.startsWith('/admin/')) return { kind: 'admin' };
 
-  const serviceMatch = path.match(/^\/(services|ai-content)\/([^/]+)$/);
-  if (serviceMatch) {
-    const division = serviceMatch[1] === 'services' ? 'real-estate' : 'ai-content';
-    return { kind: 'service', slug: serviceMatch[2], division };
-  }
+  const assistantMatch = path.match(/^\/services\/([^/]+)$/);
+  const assistant = assistantMatch ? assistantBySlug(assistantMatch[1]) : undefined;
+  if (assistant) return { kind: 'assistant', assistant };
 
-  if (STATIC_PATHS.has(path)) return { kind: 'static', path };
+  if (STATIC_PAGES[path]) return { kind: 'static', path };
   return { kind: 'not-found' };
 }
 
-const STATIC_PAGES: Record<string, PageComponent> = {
-  '/': HomePage,
-  '/real-estate': RealEstatePage,
-  '/ai-content': AiContentPage,
-  '/services': ServicesPage,
-  '/pricing': PricingPage,
-  '/work': WorkPage,
-  '/case-studies': CaseStudiesPage,
-  '/about': AboutPage,
-  '/process': ProcessPage,
-  '/contact': ContactPage
-};
-
 function pageFor(route: Route): PageComponent {
   if (route.kind === 'admin') return AdminApp;
-  if (route.kind === 'service') return ServiceDetailPage;
+  if (route.kind === 'assistant') return AssistantPage;
   if (route.kind === 'static') return STATIC_PAGES[route.path];
   return NotFoundPage;
 }
@@ -118,7 +107,7 @@ export const preloadRoute = (path: string) => pageFor(resolveRoute(path)).preloa
 
 // Loads every public page (used by the build-time prerenderer)
 export const preloadAllPages = () =>
-  Promise.all([...Object.values(STATIC_PAGES), ServiceDetailPage, NotFoundPage].map((p) => p.preload()));
+  Promise.all([...Object.values(STATIC_PAGES), AssistantPage, NotFoundPage].map((p) => p.preload()));
 
 const AppRouter: React.FC = () => {
   const { currentPath } = useNavigation();
@@ -132,37 +121,14 @@ const AppRouter: React.FC = () => {
   }, [currentPath]);
 
   const renderRoute = () => {
-    if (route.kind === 'service') {
-      return <ServiceDetailPage key={currentPath} slug={route.slug} division={route.division} />;
+    if (route.kind === 'assistant') {
+      return <AssistantPage key={currentPath} assistant={route.assistant} />;
     }
     if (route.kind !== 'static') {
       return <NotFoundPage />;
     }
-
-    switch (route.path) {
-      case '/':
-        return <HomePage />;
-      case '/real-estate':
-        return <RealEstatePage />;
-      case '/ai-content':
-        return <AiContentPage />;
-      case '/services':
-        return <ServicesPage />;
-      case '/pricing':
-        return <PricingPage />;
-      case '/work':
-        return <WorkPage />;
-      case '/case-studies':
-        return <CaseStudiesPage />;
-      case '/about':
-        return <AboutPage />;
-      case '/process':
-        return <ProcessPage />;
-      case '/contact':
-        return <ContactPage />;
-      default:
-        return <NotFoundPage />;
-    }
+    const Page = STATIC_PAGES[route.path];
+    return <Page />;
   };
 
   const { theme } = useTheme();

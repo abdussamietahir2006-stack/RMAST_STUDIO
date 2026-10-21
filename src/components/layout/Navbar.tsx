@@ -4,64 +4,41 @@ import { useTheme } from '../../context/ThemeContext';
 import { CurrencyToggle } from '../common/CurrencyToggle';
 import { ThemeToggle } from '../common/ThemeToggle';
 import { CONTACT } from '../../config/contact';
-import { servicesData } from '../../data/servicesData';
+import { ASSISTANTS, BOOK_CALL_PATH, FREE_AUDIT_PATH, type AssistantId } from '../../data/assistantsData';
 import { AnimatePresence, m } from 'motion/react';
-import { Menu, X, ArrowUpRight, ChevronDown, Compass, LayoutGrid, Tag } from 'lucide-react';
-
-type DivisionId = 'real-estate' | 'ai-content';
+import { Menu, X, ArrowUpRight, ChevronDown } from 'lucide-react';
 
 interface MenuItem {
   label: string;
   description: string;
   path: string;
-  icon: React.ElementType;
+  svc: AssistantId; // colour dot
 }
 
 interface NavItem {
   label: string;
   path: string;
-  division?: DivisionId;
   menu?: MenuItem[];
 }
 
-const divisionMenu = (division: DivisionId, overviewText: string, servicesText: string, pricingText: string): MenuItem[] => [
-  { label: 'Overview', description: overviewText, path: `/${division}`, icon: Compass },
-  { label: 'Services', description: servicesText, path: `/services?division=${division}`, icon: LayoutGrid },
-  { label: 'Pricing', description: pricingText, path: `/pricing?division=${division}`, icon: Tag }
-];
-
 const NAV_ITEMS: NavItem[] = [
+  {
+    label: 'Services',
+    path: '/services',
+    menu: ASSISTANTS.map((a) => ({ label: a.name, description: a.tagline, path: a.path, svc: a.id }))
+  },
+  { label: 'Free Audit', path: FREE_AUDIT_PATH },
   { label: 'Work', path: '/work' },
-  {
-    label: 'Real Estate',
-    path: '/real-estate',
-    division: 'real-estate',
-    menu: divisionMenu(
-      'real-estate',
-      'Digital systems for brokerages',
-      'Websites, CRM, automation & more',
-      'Packages and starting rates'
-    )
-  },
-  {
-    label: 'AI Content',
-    path: '/ai-content',
-    division: 'ai-content',
-    menu: divisionMenu(
-      'ai-content',
-      'Cinematic AI video for brands',
-      'Property, fashion, food & product films',
-      'Per-video rates and monthly bundles'
-    )
-  },
-  { label: 'About', path: '/about' },
-  { label: 'Process', path: '/process' }
+  { label: 'Plans', path: '/plans' },
+  { label: 'About', path: '/about' }
 ];
 
-const realEstateServiceSlugs = new Set(servicesData.filter((s) => s.division === 'real-estate').map((s) => s.slug));
+const Dot: React.FC<{ svc: AssistantId }> = ({ svc }) => (
+  <span aria-hidden="true" className={`svc-${svc} inline-block w-2.5 h-2.5 rounded-full bg-svc shrink-0`} />
+);
 
 export const Navbar: React.FC = () => {
-  const { currentPath, search, navigate } = useNavigation();
+  const { currentPath, navigate } = useNavigation();
   const { theme } = useTheme();
   const isLight = theme === 'light';
   const [isScrolled, setIsScrolled] = useState(false);
@@ -93,23 +70,9 @@ export const Navbar: React.FC = () => {
 
   useEffect(() => () => window.clearTimeout(closeTimer.current), []);
 
-  const divisionParam = new URLSearchParams(search).get('division');
-
-  // A division tab stays highlighted across its overview, service pages, and filtered services/pricing
-  const isActive = (item: NavItem) => {
-    if (!item.division) return currentPath === item.path || currentPath.startsWith(`${item.path}/`);
-    if (currentPath === item.path || currentPath.startsWith(`${item.path}/`)) return true;
-    if ((currentPath === '/services' || currentPath === '/pricing') && divisionParam === item.division) return true;
-    if (item.division === 'real-estate' && currentPath.startsWith('/services/')) {
-      return realEstateServiceSlugs.has(currentPath.replace('/services/', ''));
-    }
-    return false;
-  };
-
-  const isActiveMenuItem = (path: string) => {
-    const url = new URL(path, 'http://x');
-    return url.pathname === currentPath && url.search === search;
-  };
+  // Services stays highlighted on every Assistant page
+  const isActive = (item: NavItem) => currentPath === item.path || currentPath.startsWith(`${item.path}/`);
+  const isActiveMenuItem = (path: string) => currentPath === path;
 
   const go = (path: string) => {
     navigate(path);
@@ -186,7 +149,7 @@ export const Navbar: React.FC = () => {
               }
 
               const open = openMenu === item.label;
-              const menuId = `nav-menu-${item.division}`;
+              const menuId = `nav-menu-${item.label.toLowerCase()}`;
               return (
                 <div
                   key={item.path}
@@ -221,7 +184,7 @@ export const Navbar: React.FC = () => {
                     }`}
                   >
                     <ul className={`rounded-md border p-2 normal-case tracking-normal ${panelClasses}`} role="list">
-                      {item.menu.map(({ label, description, path, icon: Icon }) => {
+                      {item.menu.map(({ label, description, path, svc }) => {
                         const current = isActiveMenuItem(path);
                         return (
                           <li key={path}>
@@ -233,12 +196,8 @@ export const Navbar: React.FC = () => {
                                 isLight ? 'hover:bg-slate-50' : 'hover:bg-surface-2'
                               } ${current ? (isLight ? 'bg-slate-50' : 'bg-surface-2') : ''}`}
                             >
-                              <span
-                                className={`mt-1 w-8 h-8 shrink-0 rounded flex items-center justify-center border ${
-                                  isLight ? 'border-slate-200 text-brand' : 'border-line-strong text-brand'
-                                }`}
-                              >
-                                <Icon className="w-4 h-4" />
+                              <span className="mt-1.5">
+                                <Dot svc={svc} />
                               </span>
                               <span className="min-w-0">
                                 <span
@@ -268,13 +227,17 @@ export const Navbar: React.FC = () => {
             <div className="hidden sm:flex items-center gap-3 md:gap-4">
               <ThemeToggle />
               <CurrencyToggle />
-              <button
-                onClick={() => go('/contact')}
+              <a
+                href={BOOK_CALL_PATH}
+                onClick={(e) => {
+                  e.preventDefault();
+                  go(BOOK_CALL_PATH);
+                }}
                 className="btn btn-primary inline-flex items-center gap-2 cursor-pointer whitespace-nowrap"
               >
-                <span>Start a Project</span>
-                <ArrowUpRight className="w-3.5 h-3.5" />
-              </button>
+                <span>Book a call</span>
+                <ArrowUpRight aria-hidden="true" className="w-3.5 h-3.5" />
+              </a>
             </div>
             <div className="flex sm:hidden items-center gap-2">
               <ThemeToggle showLabel={false} />
@@ -331,19 +294,19 @@ export const Navbar: React.FC = () => {
                     </button>
                     {item.menu && (
                       <div className={`mt-1 ml-1 pl-4 border-l flex flex-col ${isLight ? 'border-slate-200' : 'border-line-strong'}`}>
-                        {item.menu
-                          .filter((m) => m.label !== 'Overview')
-                          .map((m) => (
-                            <button
-                              key={m.path}
-                              onClick={() => go(m.path)}
-                              className={`text-left text-sm font-mono uppercase tracking-wider py-2 transition-colors ${linkClasses(
-                                isActiveMenuItem(m.path)
-                              )}`}
-                            >
-                              {m.label}
-                            </button>
-                          ))}
+                        {item.menu.map((m) => (
+                          <button
+                            key={m.path}
+                            onClick={() => go(m.path)}
+                            aria-current={isActiveMenuItem(m.path) ? 'page' : undefined}
+                            className={`flex items-center gap-3 text-left text-base py-2 transition-colors ${linkClasses(
+                              isActiveMenuItem(m.path)
+                            )}`}
+                          >
+                            <Dot svc={m.svc} />
+                            {m.label}
+                          </button>
+                        ))}
                       </div>
                     )}
                   </div>
@@ -360,11 +323,11 @@ export const Navbar: React.FC = () => {
 
           <div className="pt-6">
             <button
-              onClick={() => go('/contact')}
+              onClick={() => go(BOOK_CALL_PATH)}
               className="btn btn-primary w-full flex items-center justify-center gap-2"
             >
-              <span>Start a Project</span>
-              <ArrowUpRight className="w-4 h-4" />
+              <span>Book a call</span>
+              <ArrowUpRight aria-hidden="true" className="w-4 h-4" />
             </button>
           </div>
         </m.div>

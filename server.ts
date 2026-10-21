@@ -10,6 +10,7 @@ import { isMailConfigured } from './src/server/mail.js';
 import { isAssistantConfigured } from './src/server/assistant.js';
 import { isBlobConfigured } from './src/server/media.js';
 import { SECURITY_HEADERS } from './src/server/headers.js';
+import { redirectFor } from './src/config/redirects.js';
 
 const isProd = process.env.NODE_ENV === 'production';
 const PORT = Number(process.env.PORT) || 3000;
@@ -35,11 +36,16 @@ async function main() {
         }
       })
     );
-    // Prerendered pages with clean URLs (mirrors vercel.json): /pricing -> pricing.html,
-    // /admin/* -> admin.html, anything else -> 404.html with a real 404 status
+    // Prerendered pages with clean URLs (mirrors vercel.json): moved pages -> 301 to their new URL,
+    // /plans -> plans.html, /admin/* -> admin.html, anything else -> 404.html with a real 404 status
     app.get('*', (req, res) => {
       res.setHeader('Cache-Control', 'no-cache');
       const clean = req.path.replace(/\/+$/, '') || '/';
+      const moved = redirectFor(clean);
+      if (moved) {
+        res.redirect(301, moved);
+        return;
+      }
       if (clean === '/admin' || clean.startsWith('/admin/')) {
         res.sendFile(path.join(distDir, 'admin.html'));
         return;
