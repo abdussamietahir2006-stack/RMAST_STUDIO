@@ -108,7 +108,7 @@ const Field: React.FC<{
       key={error ? `err-${error}` : 'ok'}
       animate={error ? { x: [0, -6, 6, -4, 4, 0] } : { x: 0 }}
       transition={{ duration: 0.35 }}
-      className={`group/field relative flex items-center rounded-md border bg-surface transition-all duration-200 focus-within:border-primary focus-within:shadow-[0_0_0_3px_rgba(166,139,255,0.15),0_8px_30px_-12px_rgba(166,139,255,0.35)] ${
+      className={`group/field relative flex items-center rounded-md border bg-surface transition-all duration-200 focus-within:border-primary focus-within:shadow-[0_0_0_3px_rgba(232,106,74,0.15),0_8px_30px_-12px_rgba(232,106,74,0.35)] ${
         error ? 'border-[#7F1D1D]' : 'border-line hover:border-line-strong'
       }`}
     >
@@ -139,11 +139,11 @@ const SuccessMark: React.FC = () => (
       transition={{ duration: 1.2, repeat: 2, ease: 'easeOut' }}
     />
     <svg viewBox="0 0 80 80" className="relative w-20 h-20">
-      <circle cx="40" cy="40" r="38" fill="rgba(166,139,255,0.12)" stroke="#A68BFF" strokeWidth="2" />
+      <circle cx="40" cy="40" r="38" fill="rgba(232,106,74,0.12)" stroke="#E86A4A" strokeWidth="2" />
       <m.path
         d="M25 41 L35 51 L56 30"
         fill="none"
-        stroke="#A68BFF"
+        stroke="#E86A4A"
         strokeWidth="4"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -391,7 +391,7 @@ const InquiryDialog: React.FC<{ target: InquiryTarget; onClose: () => void }> = 
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 24, scale: 0.97 }}
         transition={{ duration: 0.45, ease: EASE }}
-        className="relative z-10 w-full max-w-5xl min-h-screen sm:min-h-0 sm:my-8 outline-none grid grid-cols-1 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] overflow-hidden sm:rounded-xl border border-line-strong bg-surface text-fg shadow-[0_40px_120px_-20px_rgba(0,0,0,0.8),0_0_0_1px_rgba(166,139,255,0.08)]"
+        className="relative z-10 w-full max-w-5xl min-h-screen sm:min-h-0 sm:my-8 outline-none grid grid-cols-1 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] overflow-hidden sm:rounded-xl border border-line-strong bg-surface text-fg shadow-[0_40px_120px_-20px_rgba(0,0,0,0.8),0_0_0_1px_rgba(232,106,74,0.08)]"
       >
         {/* Animated gold edge */}
         <m.div
@@ -413,7 +413,7 @@ const InquiryDialog: React.FC<{ target: InquiryTarget; onClose: () => void }> = 
         <aside className="relative overflow-hidden p-6 sm:p-8 lg:p-8 border-b lg:border-b-0 lg:border-r border-line bg-surface">
           <div
             aria-hidden="true"
-            className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-[radial-gradient(circle,rgba(166,139,255,0.20)_0%,transparent_65%)] pointer-events-none"
+            className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-[radial-gradient(circle,rgba(232,106,74,0.20)_0%,transparent_65%)] pointer-events-none"
           />
           <div
             aria-hidden="true"

@@ -22,7 +22,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
       title={`Switch to ${isLight ? 'Dark' : 'Light'} Mode`}
       className={`group relative inline-flex items-center gap-2 px-3 py-2 rounded-full border transition-all duration-300 cursor-pointer select-none text-xs font-mono tracking-wider ${
         isLight
-          ? 'bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-800 shadow-sm'
+          ? 'bg-surface hover:bg-surface-2 border-line-strong text-fg shadow-sm'
           : 'bg-surface-2/90 hover:bg-surface-2 border-line-strong text-fg hover:text-fg hover:border-primary/50'
       } ${className}`}
     >

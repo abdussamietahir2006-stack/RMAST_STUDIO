@@ -472,7 +472,7 @@ export const StudioAssistant: React.FC = () => {
           exit={{ opacity: 0, y: 16, scale: 0.96 }}
           transition={{ type: 'spring', stiffness: 320, damping: 28 }}
           style={{ transformOrigin: 'bottom right' }}
-          className="fixed bottom-20 right-6 z-50 w-[92vw] max-w-md bg-surface/95 backdrop-blur-xl border border-line shadow-[0_30px_80px_-20px_rgba(0,0,0,0.8),0_0_0_1px_rgba(166,139,255,0.1)] rounded-xl flex flex-col max-h-[75vh] overflow-hidden"
+          className="fixed bottom-20 right-6 z-50 w-[92vw] max-w-md bg-surface/95 backdrop-blur-xl border border-line shadow-[0_30px_80px_-20px_rgba(0,0,0,0.8),0_0_0_1px_rgba(232,106,74,0.1)] rounded-xl flex flex-col max-h-[75vh] overflow-hidden"
         >
           {/* Header */}
           <div className="p-4 bg-surface border-b border-line flex items-center justify-between">

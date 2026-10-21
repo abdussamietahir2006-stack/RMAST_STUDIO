@@ -91,7 +91,7 @@ export const Navbar: React.FC = () => {
   };
 
   const panelClasses = isLight
-    ? 'bg-white border-slate-200 shadow-xl shadow-slate-900/10'
+    ? 'bg-surface border-line shadow-xl shadow-black/10'
     : 'bg-surface border-line-strong shadow-2xl shadow-black/50';
 
   return (
@@ -100,8 +100,8 @@ export const Navbar: React.FC = () => {
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           isScrolled
             ? isLight
-              ? 'bg-white/85 backdrop-blur-md border-b border-slate-200/90 py-4 shadow-sm'
-              : 'bg-black/85 backdrop-blur-md border-b border-line py-4'
+              ? 'bg-canvas/90 backdrop-blur-md border-b border-line py-4 shadow-sm'
+              : 'bg-canvas/90 backdrop-blur-md border-b border-line py-4'
             : 'bg-transparent py-6'
         }`}
       >
@@ -114,7 +114,7 @@ export const Navbar: React.FC = () => {
           >
             <span
               className={`font-serif text-[26px] leading-none font-bold tracking-[0.16em] transition-colors duration-300 ${
-                isLight ? 'text-slate-900' : 'text-fg'
+                isLight ? 'text-fg' : 'text-fg'
               } group-hover:text-brand`}
             >
               RMAST
@@ -129,13 +129,13 @@ export const Navbar: React.FC = () => {
             ref={navRef}
             aria-label="Main"
             className={`hidden xl:flex items-center gap-7 text-[15px] font-medium whitespace-nowrap ${
-              isLight ? 'text-slate-600' : 'text-muted'
+              isLight ? 'text-muted' : 'text-muted'
             }`}
           >
             {NAV_ITEMS.map((item) => {
               const active = isActive(item);
               const itemClasses = `transition-colors duration-200 cursor-pointer relative py-1 focus:outline-none focus-visible:text-brand ${
-                isLight ? 'hover:text-slate-950' : 'hover:text-fg'
+                isLight ? 'hover:text-fg' : 'hover:text-fg'
               } ${active ? 'text-brand font-semibold' : ''}`;
               const underline = active && <span className="absolute -bottom-0.5 left-0 right-0 h-[1.5px] bg-primary" />;
 
@@ -193,8 +193,8 @@ export const Navbar: React.FC = () => {
                               tabIndex={open ? 0 : -1}
                               aria-current={current ? 'page' : undefined}
                               className={`w-full flex items-start gap-3 p-3 rounded text-left transition-colors cursor-pointer group ${
-                                isLight ? 'hover:bg-slate-50' : 'hover:bg-surface-2'
-                              } ${current ? (isLight ? 'bg-slate-50' : 'bg-surface-2') : ''}`}
+                                isLight ? 'hover:bg-surface-2' : 'hover:bg-surface-2'
+                              } ${current ? (isLight ? 'bg-surface-2' : 'bg-surface-2') : ''}`}
                             >
                               <span className="mt-1.5">
                                 <Dot svc={svc} />
@@ -202,12 +202,12 @@ export const Navbar: React.FC = () => {
                               <span className="min-w-0">
                                 <span
                                   className={`block text-sm font-semibold ${
-                                    current ? 'text-brand' : isLight ? 'text-slate-900' : 'text-fg'
+                                    current ? 'text-brand' : isLight ? 'text-fg' : 'text-fg'
                                   }`}
                                 >
                                   {label}
                                 </span>
-                                <span className={`block text-xs mt-1 ${isLight ? 'text-slate-500' : 'text-muted'}`}>
+                                <span className={`block text-xs mt-1 ${isLight ? 'text-muted' : 'text-muted'}`}>
                                   {description}
                                 </span>
                               </span>
@@ -246,7 +246,7 @@ export const Navbar: React.FC = () => {
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className={`xl:hidden p-2 -mr-2 focus:outline-none cursor-pointer ${
-                isLight ? 'text-slate-800 hover:text-brand' : 'text-fg hover:text-brand'
+                isLight ? 'text-fg hover:text-brand' : 'text-fg hover:text-brand'
               }`}
               aria-label="Toggle menu"
               aria-expanded={mobileMenuOpen}
@@ -266,11 +266,11 @@ export const Navbar: React.FC = () => {
           exit={{ opacity: 0, y: -12 }}
           transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
           className={`fixed inset-0 z-40 backdrop-blur-xl flex flex-col pt-24 px-8 pb-12 justify-between xl:hidden overflow-y-auto ${
-            isLight ? 'bg-white/95 text-slate-900' : 'bg-black/95 text-fg'
+            isLight ? 'bg-canvas/95 text-fg' : 'bg-canvas/95 text-fg'
           }`}
         >
           <div className="space-y-6">
-            <div className={`flex items-center justify-between pb-2 border-b ${isLight ? 'border-slate-200' : 'border-line'}`}>
+            <div className={`flex items-center justify-between pb-2 border-b ${isLight ? 'border-line' : 'border-line'}`}>
               <div className="text-xs font-mono tracking-widest text-subtle uppercase">Navigation</div>
               <div className="flex items-center gap-3">
                 <div className="sm:hidden">
@@ -283,7 +283,7 @@ export const Navbar: React.FC = () => {
               {NAV_ITEMS.map((item) => {
                 const active = isActive(item);
                 const linkClasses = (isCurrent: boolean) =>
-                  isCurrent ? 'text-brand' : isLight ? 'text-slate-800 hover:text-brand' : 'text-fg hover:text-brand';
+                  isCurrent ? 'text-brand' : isLight ? 'text-fg hover:text-brand' : 'text-fg hover:text-brand';
                 return (
                   <div key={item.path}>
                     <button
@@ -293,7 +293,7 @@ export const Navbar: React.FC = () => {
                       {item.label}
                     </button>
                     {item.menu && (
-                      <div className={`mt-1 ml-1 pl-4 border-l flex flex-col ${isLight ? 'border-slate-200' : 'border-line-strong'}`}>
+                      <div className={`mt-1 ml-1 pl-4 border-l flex flex-col ${isLight ? 'border-line' : 'border-line-strong'}`}>
                         {item.menu.map((m) => (
                           <button
                             key={m.path}
@@ -314,9 +314,9 @@ export const Navbar: React.FC = () => {
               })}
             </div>
 
-            <div className={`pt-4 border-t space-y-3 ${isLight ? 'border-slate-200' : 'border-line'}`}>
+            <div className={`pt-4 border-t space-y-3 ${isLight ? 'border-line' : 'border-line'}`}>
               <div className="text-xs text-subtle font-mono uppercase tracking-wider">Direct Inquiries</div>
-              <p className={`text-sm ${isLight ? 'text-slate-600' : 'text-muted'}`}>{CONTACT.email}</p>
+              <p className={`text-sm ${isLight ? 'text-muted' : 'text-muted'}`}>{CONTACT.email}</p>
               <p className="text-sm text-brand">{CONTACT.whatsappDisplay} (WhatsApp)</p>
             </div>
           </div>

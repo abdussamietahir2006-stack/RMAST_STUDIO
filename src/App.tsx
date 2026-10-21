@@ -146,7 +146,7 @@ const AppRouter: React.FC = () => {
   return (
     <div
       className={`min-h-screen ${
-        isLight ? 'bg-[#F8FAFC] text-fg' : 'bg-canvas text-fg'
+        isLight ? 'bg-canvas text-fg' : 'bg-canvas text-fg'
       } flex flex-col justify-between selection:bg-primary/20 selection:text-fg relative transition-colors duration-500`}
     >
       {/* Route-aware studio background image (both themes) */}

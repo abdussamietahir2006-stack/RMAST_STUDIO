@@ -114,7 +114,7 @@ export const PageBackground: React.FC = () => {
       <div
         className={`absolute inset-0 transition-colors duration-700 ${
           isLight
-            ? 'bg-gradient-to-b from-[#FFFFFF]/90 via-[#F8FAFC]/82 to-[#F1F5F9]/92'
+            ? 'bg-gradient-to-b from-canvas/90 via-canvas/85 to-canvas/92'
             : 'bg-gradient-to-b from-canvas/95 via-canvas/92 to-canvas/96'
         }`}
       />
@@ -126,15 +126,15 @@ export const PageBackground: React.FC = () => {
       <div
         className={`absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-site h-[650px] transition-opacity duration-700 ${
           isLight
-            ? 'bg-[radial-gradient(ellipse_at_top,rgba(166,139,255,0.22)_0%,rgba(248,250,252,0)_70%)]'
-            : 'bg-[radial-gradient(ellipse_at_top,rgba(166,139,255,0.07)_0%,rgba(14,17,28,0)_70%)]'
+            ? 'bg-[radial-gradient(ellipse_at_top,rgba(232,106,74,0.12)_0%,transparent_70%)]'
+            : 'bg-[radial-gradient(ellipse_at_top,rgba(232,106,74,0.06)_0%,transparent_70%)]'
         }`}
       />
       <div
         className={`absolute bottom-0 right-0 w-[500px] h-[500px] transition-opacity duration-700 ${
           isLight
-            ? 'bg-[radial-gradient(circle,rgba(255,77,170,0.07)_0%,transparent_70%)]'
-            : 'bg-[radial-gradient(circle,rgba(255,77,170,0.05)_0%,transparent_70%)]'
+            ? 'bg-[radial-gradient(circle,rgba(200,150,62,0.10)_0%,transparent_70%)]'
+            : 'bg-[radial-gradient(circle,rgba(200,150,62,0.06)_0%,transparent_70%)]'
         }`}
       />
 
@@ -151,8 +151,8 @@ export const PageBackground: React.FC = () => {
       <div
         className={`absolute inset-0 transition-all duration-700 ${
           isLight
-            ? 'bg-[radial-gradient(circle_at_center,transparent_50%,rgba(226,232,240,0.65)_100%)]'
-            : 'bg-[radial-gradient(circle_at_center,transparent_45%,rgba(8,10,16,0.65)_100%)]'
+            ? 'bg-[radial-gradient(circle_at_center,transparent_50%,rgba(227,211,184,0.6)_100%)]'
+            : 'bg-[radial-gradient(circle_at_center,transparent_45%,rgba(6,22,21,0.6)_100%)]'
         }`}
       />
     </div>

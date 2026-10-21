@@ -56,55 +56,59 @@
 }
 
 /* ---------- Colour tokens ---------- */
-/* Dark (default, and the operating-system choice until the visitor picks one) */
+/* Mediterranean Villa palette: deep teal #0F4C4A, coral #E86A4A, sand #F3E7D3, ochre #C8963E, ink #1A1A1A.
+   Coral and ochre are too light for small text on sand, so text uses deeper shades (brand, creative,
+   virtual); buttons, dots and fills use the palette colours as they are. */
+/* Dark: deep teal canvas */
 :root {
   color-scheme: dark;
-  --c-canvas: #0b0f19;
-  --c-surface: #111726;
-  --c-surface-2: #182033;
-  --c-line: #222b3e;
-  --c-line-strong: #33405a;
-  --c-fg: #e8ebf3;
-  --c-muted: #a9b1c4;
-  --c-subtle: #8791a8;
-  --c-primary: #a68bff;
-  --c-primary-hover: #b9a4ff;
-  --c-on-primary: #0b0f19;
-  --c-brand: #b8a4ff;
-  --c-accent: #ff5caa;
-  --c-technical: #2dd4bf; /* teal */
-  --c-creative: #ff8a75; /* coral */
-  --c-virtual: #e8b44c; /* ochre */
-  --c-focus: #b8a4ff;
-  --c-scrim: rgba(5, 8, 15, 0.72);
+  --c-canvas: #0c2f2e;
+  --c-surface: #123b39;
+  --c-surface-2: #174643;
+  --c-line: #1f4d4a;
+  --c-line-strong: #2e605c;
+  --c-fg: #f3e7d3;
+  --c-muted: #b5c9c4;
+  --c-subtle: #9db7b1;
+  --c-primary: #f07a5a;
+  --c-primary-hover: #f48c70;
+  --c-on-primary: #1a1a1a;
+  --c-brand: #f6957a;
+  --c-accent: #d9a653;
+  --c-technical: #5cc2b5; /* teal, lifted to read on the teal canvas */
+  --c-creative: #f6957a; /* coral */
+  --c-virtual: #d9a653; /* ochre */
+  --c-focus: #f6957a;
+  --c-scrim: rgba(6, 22, 21, 0.72);
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-card-hover: 0 12px 32px -12px rgba(0, 0, 0, 0.6);
+  --shadow-card-hover: 0 12px 32px -12px rgba(0, 0, 0, 0.55);
 }
-/* Light */
+/* Light: sand canvas */
 html.theme-light:not(.admin-mode) {
   color-scheme: light;
 }
 html.theme-light {
-  --c-canvas: #f8fafc;
-  --c-surface: #ffffff;
-  --c-surface-2: #f1f5f9;
-  --c-line: #e2e8f0;
-  --c-line-strong: #cbd5e1;
-  --c-fg: #0f172a;
-  --c-muted: #475569;
-  --c-subtle: #5b6679;
-  --c-primary: #6d4aff;
-  --c-primary-hover: #5a36f0;
+  --c-canvas: #f3e7d3;
+  --c-surface: #fbf5eb;
+  --c-surface-2: #efe1c8;
+  --c-line: #e3d3b8;
+  --c-line-strong: #cdb894;
+  --c-fg: #0f4c4a;
+  --c-muted: #4d4a45;
+  --c-subtle: #655f57;
+  --c-primary: #e86a4a;
+  --c-primary-hover: #d85c3d;
+  /* Matches the mockup. White on coral is 3.2:1 (below AA for button text); #1a1a1a would be 5.5:1 */
   --c-on-primary: #ffffff;
-  --c-brand: #5b35e0;
-  --c-accent: #c81e74;
-  --c-technical: #0f766e;
-  --c-creative: #c2412d;
-  --c-virtual: #8a5c00;
-  --c-focus: #5b35e0;
-  --c-scrim: rgba(15, 23, 42, 0.45);
-  --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.06);
-  --shadow-card-hover: 0 12px 32px -12px rgba(15, 23, 42, 0.18);
+  --c-brand: #ad4025;
+  --c-accent: #c8963e;
+  --c-technical: #0f4c4a;
+  --c-creative: #ad4025;
+  --c-virtual: #80580f;
+  --c-focus: #0f4c4a;
+  --c-scrim: rgba(15, 76, 74, 0.45);
+  --shadow-card: 0 1px 2px rgba(15, 76, 74, 0.06);
+  --shadow-card-hover: 0 12px 32px -12px rgba(15, 76, 74, 0.2);
 }
 
 /* Each Assistant's section sets its colour, so shared components use text-svc, bg-svc/10, border-svc/40.
