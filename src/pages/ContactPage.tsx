@@ -2,36 +2,8 @@ import React, { useState } from 'react';
 import { useCurrency } from '../context/CurrencyContext';
 import { CONTACT, mailtoLink, whatsappLink } from '../config/contact';
 import { submitLead } from '../lib/api';
-import { LeadDivision } from '../types';
+import { AssistantServicePicker, EMPTY_CHOICE, routingFor } from '../components/forms/AssistantServicePicker';
 import { Mail, MessageSquare, Instagram, CheckCircle2, ArrowRight, Linkedin, ExternalLink } from 'lucide-react';
-
-// Maps the contact form's choices to a service folder in the dashboard
-const REAL_ESTATE_SERVICE_SLUGS: Record<string, string> = {
-  'Website Development': 'web-development',
-  'Custom Software': 'custom-software',
-  'CRM Development': 'crm-development',
-  'AI Automation': 'ai-automation',
-  'AI Assistant / Chatbot': 'ai-assistants',
-  'Social Media Management': 'social-media',
-  'Virtual Assistance': 'virtual-assistance',
-  'Admin & Operations Support': 'admin-support'
-};
-
-const AI_CONTENT_INDUSTRY_SLUGS: [prefix: string, slug: string][] = [
-  ['Real Estate', 'real-estate'],
-  ['Fashion', 'fashion'],
-  ['Food', 'food'],
-  ['Consumer Goods', 'products'],
-  ['Luxury', 'products'],
-  ['Beauty', 'products']
-];
-
-function contactServiceSlug(service: string, industry: string): string | undefined {
-  if (service === 'AI Video Production') {
-    return AI_CONTENT_INDUSTRY_SLUGS.find(([prefix]) => industry.startsWith(prefix))?.[1];
-  }
-  return REAL_ESTATE_SERVICE_SLUGS[service];
-}
 
 export const ContactPage: React.FC = () => {
   const { currency } = useCurrency();
@@ -40,7 +12,7 @@ export const ContactPage: React.FC = () => {
     email: '',
     company: '',
     industry: 'Real Estate & Property Development',
-    service: 'Website Development',
+    choice: EMPTY_CHOICE,
     budgetIndex: 1,
     message: ''
   });
@@ -48,19 +20,6 @@ export const ContactPage: React.FC = () => {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-
-  const servicesList = [
-    'Website Development',
-    'Custom Software',
-    'CRM Development',
-    'AI Automation',
-    'AI Assistant / Chatbot',
-    'Social Media Management',
-    'Virtual Assistance',
-    'Admin & Operations Support',
-    'AI Video Production',
-    'Other / Complete System'
-  ];
 
   const industriesList = [
     'Real Estate & Property Development',
@@ -88,22 +47,15 @@ export const ContactPage: React.FC = () => {
     setSubmitError(null);
 
     const industry = formData.industry;
-    const serviceId = contactServiceSlug(formData.service, industry);
-    const divisionKey: LeadDivision =
-      formData.service === 'AI Video Production' ? 'ai-content' : serviceId ? 'real-estate' : 'general';
-    const division =
-      divisionKey === 'real-estate'
-        ? 'Real Estate Digital Systems'
-        : divisionKey === 'ai-content'
-        ? 'AI Content Studio'
-        : 'Studio Architecture';
+    // Filed in the dashboard under the chosen Assistant > service
+    const routing = routingFor(formData.choice);
 
     try {
       await submitLead({
-        targetTitle: formData.service,
-        division,
-        serviceId,
-        divisionKey,
+        targetTitle: routing.title,
+        division: routing.divisionLabel,
+        serviceId: routing.serviceId,
+        divisionKey: routing.divisionKey,
         estimatedPrice: budgetRanges[formData.budgetIndex],
         clientName: formData.name,
         clientEmail: formData.email,
@@ -241,23 +193,14 @@ export const ContactPage: React.FC = () => {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  {/* Primary Service Desired */}
-                  <div className="space-y-2">
-                    <label className="text-xs font-mono uppercase tracking-wider text-muted block">
-                      Primary Service Focus
-                    </label>
-                    <select
-                      value={formData.service}
-                      onChange={(e) => setFormData({ ...formData, service: e.target.value })}
-                      className="w-full bg-canvas border border-line px-4 py-3 text-sm text-fg focus:outline-none focus:border-primary transition-colors"
-                    >
-                      {servicesList.map((srv, i) => (
-                        <option key={i} value={srv} className="bg-surface text-fg">
-                          {srv}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  {/* Assistant, then (for one Assistant) which of its services */}
+                  <AssistantServicePicker
+                    idPrefix="contact"
+                    value={formData.choice}
+                    onChange={(choice) => setFormData({ ...formData, choice })}
+                    labelClass="text-xs font-mono uppercase tracking-wider text-muted block"
+                    fieldClass="w-full bg-canvas border border-line px-4 py-3 text-sm text-fg focus:outline-none focus:border-primary transition-colors"
+                  />
 
                   {/* Budget */}
                   <div className="space-y-2">

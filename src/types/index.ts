@@ -115,20 +115,24 @@ export interface InquiryTarget {
 
 export type DispatchMethod = 'whatsapp' | 'email' | 'form' | 'contact-form';
 export type InquiryStatus = 'new' | 'reviewed' | 'contacted';
-export type LeadDivision = 'real-estate' | 'ai-content' | 'general';
+// Dashboard lead folders: one per Assistant, plus Full Team and General
+export type LeadDivision = 'technical' | 'creative' | 'virtual' | 'full-team' | 'general';
+// Divisions of leads saved before the three Assistants (still in the database; mapped when read)
+export type LegacyLeadDivision = 'real-estate' | 'ai-content';
 
 // Where a lead is filed in the dashboard: division folder + sub-folder
-// (a service slug, 'packages' for priced packages/bundles/add-ons, or 'general')
+// (an Assistant's sub-service id, 'packages' for older package inquiries, or 'general')
 export interface LeadCategory {
   division: LeadDivision;
   group: string;
 }
 
-// Hints the browser sends so the server can file the lead in the right folder
+// Hints the browser sends so the server can file the lead in the right folder.
+// Older pages (and the package popup) still send the legacy divisions and service slugs.
 export interface LeadRouting {
   serviceId?: string;
   packageId?: string;
-  divisionKey?: LeadDivision;
+  divisionKey?: LeadDivision | LegacyLeadDivision;
   isPriced?: boolean;
 }
 

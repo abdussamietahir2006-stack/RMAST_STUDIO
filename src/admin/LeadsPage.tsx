@@ -12,7 +12,7 @@ const DIVISIONS = Object.keys(LEAD_FOLDERS) as LeadDivision[];
 const DISPATCH: Record<StoredInquiry['dispatchMethod'], { label: string; icon: React.ReactNode }> = {
   whatsapp: { label: 'WhatsApp', icon: <Send className="w-3 h-3" /> },
   email: { label: 'Email', icon: <Mail className="w-3 h-3" /> },
-  form: { label: 'Package form', icon: <Database className="w-3 h-3" /> },
+  form: { label: 'Website form', icon: <Database className="w-3 h-3" /> },
   'contact-form': { label: 'Contact page', icon: <FileText className="w-3 h-3" /> }
 };
 
@@ -271,7 +271,7 @@ export const LeadsPage: React.FC<{ path: string }> = ({ path }) => {
             ? group
               ? `${DIVISION_LABELS[division]} › ${folderLabel(division, group)}`
               : `Every ${DIVISION_LABELS[division]} inquiry`
-            : 'Every inquiry from the website, filed by division and service.'
+            : 'Every inquiry from the website, filed by Assistant and service.'
         }
       />
       <ErrorNote message={error} />

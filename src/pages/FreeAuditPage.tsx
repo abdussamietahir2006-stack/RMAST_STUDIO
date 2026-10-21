@@ -2,9 +2,7 @@ import React, { useState } from 'react';
 import { CheckCircle2, Check, ArrowRight } from 'lucide-react';
 import { submitLead } from '../lib/api';
 import { CONTACT, whatsappLink } from '../config/contact';
-import { ASSISTANTS } from '../data/assistantsData';
-
-const FOCUS_OPTIONS = ['Not sure yet', ...ASSISTANTS.map((a) => `${a.name}: ${a.tagline}`), 'Full Team (all three)'];
+import { AssistantServicePicker, EMPTY_CHOICE, routingFor } from '../components/forms/AssistantServicePicker';
 
 const AUDIT_CHECKS = [
   'How fast your leads get a first reply',
@@ -17,9 +15,11 @@ const fieldClass =
   'w-full bg-canvas border border-line px-4 py-3 text-base text-fg placeholder-subtle focus:outline-none focus:border-primary transition-colors';
 const labelClass = 'text-sm font-medium text-fg block';
 
-// Free audit request: sent through the same lead API as the contact form (filed under General in the dashboard)
+// Free audit request: sent through the same lead API as the contact form, filed in the dashboard under
+// the Assistant (and service) the visitor picked
 export const FreeAuditPage: React.FC = () => {
-  const [form, setForm] = useState({ name: '', email: '', phone: '', company: '', website: '', focus: FOCUS_OPTIONS[0], message: '' });
+  const [form, setForm] = useState({ name: '', email: '', phone: '', company: '', website: '', message: '' });
+  const [choice, setChoice] = useState(EMPTY_CHOICE);
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,11 +31,13 @@ export const FreeAuditPage: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    const routing = routingFor(choice);
     try {
       await submitLead({
-        targetTitle: 'Free Audit',
-        division: 'Free Audit Request',
-        divisionKey: 'general',
+        targetTitle: `Free Audit: ${routing.title}`,
+        division: `Free Audit Request (${routing.divisionLabel})`,
+        divisionKey: routing.divisionKey,
+        serviceId: routing.serviceId,
         estimatedPrice: 'Free audit',
         clientName: form.name,
         clientEmail: form.email,
@@ -43,7 +45,7 @@ export const FreeAuditPage: React.FC = () => {
         clientCompany: form.company,
         clientLocation: '',
         timeline: '',
-        notes: `Website / Instagram: ${form.website || 'not given'}\nInterested in: ${form.focus}\n\n${form.message}`,
+        notes: `Website / Instagram: ${form.website || 'not given'}\nInterested in: ${routing.title}\n\n${form.message}`,
         dispatchMethod: 'form'
       });
       setSubmitted(true);
@@ -121,14 +123,7 @@ export const FreeAuditPage: React.FC = () => {
                 <label htmlFor="audit-website" className={labelClass}>Website or Instagram</label>
                 <input id="audit-website" placeholder="yourwebsite.com or @yourhandle" value={form.website} onChange={set('website')} className={fieldClass} />
               </div>
-              <div className="space-y-2">
-                <label htmlFor="audit-focus" className={labelClass}>What do you need most?</label>
-                <select id="audit-focus" value={form.focus} onChange={set('focus')} className={fieldClass}>
-                  {FOCUS_OPTIONS.map((o) => (
-                    <option key={o} value={o} className="bg-surface text-fg">{o}</option>
-                  ))}
-                </select>
-              </div>
+              <AssistantServicePicker idPrefix="audit" value={choice} onChange={setChoice} fieldClass={fieldClass} labelClass={labelClass} />
               <div className="space-y-2">
                 <label htmlFor="audit-message" className={labelClass}>Anything we should know?</label>
                 <textarea

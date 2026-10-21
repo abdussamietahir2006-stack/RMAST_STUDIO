@@ -1,5 +1,5 @@
 import { MongoClient, type Db } from 'mongodb';
-import type { InquiryStatus, LeadCategory, MediaKind, AdminUser, PostSize, SocialPost, SocialVideo, VideoStyle } from '../types/index.js';
+import type { InquiryStatus, LeadCategory, LegacyLeadDivision, MediaKind, AdminUser, PostSize, SocialPost, SocialVideo, VideoStyle } from '../types/index.js';
 
 // ---------------------------------------------------------------------------
 // Document shapes
@@ -9,7 +9,8 @@ export interface LeadDoc {
   _id: string;
   createdAt: Date;
   status: InquiryStatus;
-  category: LeadCategory;
+  // Leads saved before the three Assistants keep their legacy division ('real-estate' / 'ai-content')
+  category: { division: LeadCategory['division'] | LegacyLeadDivision; group: string };
   targetTitle: string;
   division: string;
   estimatedPrice: string;

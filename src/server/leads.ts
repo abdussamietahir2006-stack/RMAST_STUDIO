@@ -6,16 +6,20 @@ import type {
   LeadCategory,
   LeadDivision,
   LeadInput,
+  LeadRouting,
   LeadStats,
   StoredInquiry
 } from '../types/index.js';
 import { servicesData } from '../data/servicesData.js';
+import { ASSISTANTS } from '../data/assistantsData.js';
+import { LEAD_DIVISIONS, normalizeCategory, storedCategoriesFor } from '../data/leadFolders.js';
 import { collections, type LeadDoc } from './db.js';
 import { EMAIL_RE, str } from './security.js';
 
 export const DISPATCH_METHODS: DispatchMethod[] = ['whatsapp', 'email', 'form', 'contact-form'];
 export const STATUSES: InquiryStatus[] = ['new', 'reviewed', 'contacted'];
-const DIVISIONS: LeadDivision[] = ['real-estate', 'ai-content', 'general'];
+// Divisions a form may send: the current ones, and the legacy ones older pages still send
+const ROUTING_DIVISIONS: NonNullable<LeadRouting['divisionKey']>[] = [...LEAD_DIVISIONS, 'real-estate', 'ai-content'];
 
 export function parseLead(body: unknown): LeadInput | string {
   const b = (body ?? {}) as Record<string, unknown>;
@@ -33,7 +37,7 @@ export function parseLead(body: unknown): LeadInput | string {
     dispatchMethod: b.dispatchMethod as DispatchMethod,
     serviceId: str(b.serviceId, 100) || undefined,
     packageId: str(b.packageId, 100) || undefined,
-    divisionKey: DIVISIONS.includes(b.divisionKey as LeadDivision) ? (b.divisionKey as LeadDivision) : undefined,
+    divisionKey: ROUTING_DIVISIONS.find((d) => d === b.divisionKey),
     isPriced: b.isPriced === true
   };
   if (!lead.clientName) return 'Name is required';
@@ -42,16 +46,24 @@ export function parseLead(body: unknown): LeadInput | string {
   return lead;
 }
 
-// Files a lead under Division > Service / Industry. Unknown or unpriced requests go to "general".
+// Files a lead under Assistant > sub-service. "Full Team" and "not sure yet" have folders of their own.
 export function categorize(input: LeadInput): LeadCategory {
+  const assistant = ASSISTANTS.find((a) => a.id === input.divisionKey);
+  if (assistant) {
+    const service = assistant.subServices.find((s) => s.id === input.serviceId);
+    return { division: assistant.id, group: service ? service.id : 'general' };
+  }
+  if (input.divisionKey === 'full-team') return { division: 'full-team', group: 'general' };
+
+  // Older pages (and the package popup) send an old service slug or division: file it where it belongs now
   const service = input.serviceId
     ? servicesData.find((s) => s.id === input.serviceId || s.slug === input.serviceId)
     : undefined;
-  if (service) return { division: service.division, group: service.slug };
+  if (service) return normalizeCategory({ division: service.division, group: service.slug });
 
   const division = input.divisionKey ?? 'general';
   const group = input.packageId || input.isPriced ? 'packages' : 'general';
-  return { division, group };
+  return normalizeCategory({ division, group });
 }
 
 export function newLead(input: LeadInput): StoredInquiry {
@@ -71,8 +83,8 @@ export function toDoc(lead: StoredInquiry): LeadDoc {
 }
 
 function fromDoc(doc: LeadDoc): StoredInquiry {
-  const { _id, createdAt, ...rest } = doc;
-  return { ...rest, id: _id, timestamp: createdAt.toISOString() };
+  const { _id, createdAt, category, ...rest } = doc;
+  return { ...rest, category: normalizeCategory(category), id: _id, timestamp: createdAt.toISOString() };
 }
 
 const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -84,17 +96,40 @@ export async function listLeads(query: Record<string, unknown>): Promise<StoredI
   const status = str(query.status, 20);
   const q = str(query.q, 100);
 
-  if (DIVISIONS.includes(division as LeadDivision)) filter['category.division'] = division as LeadDivision;
-  if (group && /^[a-z0-9-]+$/.test(group)) filter['category.group'] = group;
+  const and: Filter<LeadDoc>[] = [];
+  if (LEAD_DIVISIONS.includes(division as LeadDivision)) {
+    // A folder holds new leads filed there and older leads whose legacy category maps to it
+    const folderGroup = group && /^[a-z0-9-]+$/.test(group) ? group : undefined;
+    and.push({
+      $or: storedCategoriesFor(division as LeadDivision, folderGroup).map((c) =>
+        c.group ? { 'category.division': c.division, 'category.group': c.group } : { 'category.division': c.division }
+      ) as Filter<LeadDoc>[]
+    });
+  }
   if (STATUSES.includes(status as InquiryStatus)) filter.status = status as InquiryStatus;
   if (q) {
     const re = new RegExp(escapeRegex(q), 'i');
-    filter.$or = [{ clientName: re }, { clientEmail: re }, { clientCompany: re }, { targetTitle: re }];
+    and.push({ $or: [{ clientName: re }, { clientEmail: re }, { clientCompany: re }, { targetTitle: re }] });
   }
+  if (and.length) filter.$and = and;
 
   const limit = Math.min(500, Math.max(1, Number(query.limit) || 500));
   const docs = await (await collections.leads()).find(filter).sort({ createdAt: -1 }).limit(limit).toArray();
   return docs.map(fromDoc);
+}
+
+// Counts per stored category, regrouped into today's folders (older categories merge into their new folder)
+function mergeFolders(rows: { _id: { division?: string; group?: string }; count: number; newCount: number }[]): LeadStats['byFolder'] {
+  const merged = new Map<string, LeadStats['byFolder'][number]>();
+  for (const row of rows) {
+    const { division, group } = normalizeCategory(row._id);
+    const key = `${division}/${group}`;
+    const entry = merged.get(key) ?? { division, group, count: 0, newCount: 0 };
+    entry.count += row.count;
+    entry.newCount += row.newCount;
+    merged.set(key, entry);
+  }
+  return [...merged.values()].sort((a, b) => b.count - a.count);
 }
 
 function safeTimeZone(tz: unknown): string {
@@ -121,7 +156,7 @@ export async function leadStats(tzInput: unknown): Promise<LeadStats> {
     .aggregate<{
       total: { n: number }[];
       byStatus: { _id: InquiryStatus; n: number }[];
-      byFolder: { _id: { division: LeadDivision; group: string }; count: number; newCount: number }[];
+      byFolder: { _id: { division?: string; group?: string }; count: number; newCount: number }[];
       last7: { n: number }[];
       daily: { _id: string; n: number }[];
     }>([
@@ -171,14 +206,7 @@ export async function leadStats(tzInput: unknown): Promise<LeadStats> {
     last7Days: result.last7[0]?.n ?? 0,
     last30Days: daily.reduce((sum, d) => sum + d.count, 0),
     byStatus,
-    byFolder: result.byFolder
-      .map((f) => ({
-        division: f._id.division ?? 'general',
-        group: f._id.group ?? 'general',
-        count: f.count,
-        newCount: f.newCount
-      }))
-      .sort((a, b) => b.count - a.count),
+    byFolder: mergeFolders(result.byFolder),
     daily
   };
 }
