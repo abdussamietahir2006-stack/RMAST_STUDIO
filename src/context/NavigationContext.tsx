@@ -1,0 +1,83 @@
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { redirectFor } from '../config/redirects';
+
+interface NavigationContextType {
+  currentPath: string; // pathname only, e.g. "/pricing"
+  search: string; // query string including "?", e.g. "?division=ai-content", or ""
+  navigate: (path: string) => void;
+}
+
+const NavigationContext = createContext<NavigationContextType | undefined>(undefined);
+
+export const NavigationProvider: React.FC<{ children: React.ReactNode; initialPath?: string }> = ({
+  children,
+  initialPath
+}) => {
+  const [currentPath, setCurrentPath] = useState<string>(() =>
+    initialPath ?? (typeof window !== 'undefined' ? window.location.pathname || '/' : '/')
+  );
+  // Starts empty so the first render matches the prerendered HTML; the real query is read right after
+  const [search, setSearch] = useState<string>('');
+
+  useEffect(() => {
+    setSearch(window.location.search);
+    // An old URL opened directly (the dev server has no redirects): show its replacement
+    const moved = redirectFor(window.location.pathname);
+    if (moved) {
+      const url = new URL(moved, window.location.origin);
+      window.history.replaceState({}, '', url.pathname + url.hash);
+      setCurrentPath(url.pathname);
+      setSearch('');
+    }
+  }, []);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      // Scrolling to the top happens in PageTransition, between the old page leaving and the new one entering
+      setCurrentPath(window.location.pathname || '/');
+      setSearch(window.location.search);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const navigate = (path: string) => {
+    if (typeof window === 'undefined') return;
+    // Links to pages that have moved (e.g. from the chat assistant) go straight to the new page
+    const url = new URL(redirectFor(new URL(path, window.location.origin).pathname) ?? path, window.location.origin);
+
+    if (url.pathname === currentPath && url.search === search) {
+      const target = url.hash ? document.getElementById(url.hash.slice(1)) : null;
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      else window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    window.history.pushState({}, '', url.pathname + url.search + url.hash);
+    // Same page with a different query (e.g. a pricing tab): no transition runs, so scroll here
+    if (url.pathname === currentPath) window.scrollTo({ top: 0, behavior: 'smooth' });
+    setCurrentPath(url.pathname);
+    setSearch(url.search);
+  };
+
+  return (
+    <NavigationContext.Provider value={{ currentPath, search, navigate }}>
+      {children}
+    </NavigationContext.Provider>
+  );
+};
+
+export function useNavigation(): NavigationContextType {
+  const context = useContext(NavigationContext);
+  if (!context) {
+    throw new Error('useNavigation must be used within a NavigationProvider');
+  }
+  return context;
+}
+
+// Reads a single query parameter from the current URL, e.g. useQueryParam('division')
+export function useQueryParam(name: string): string | null {
+  const { search } = useNavigation();
+  return new URLSearchParams(search).get(name);
+}
