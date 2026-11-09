@@ -40,6 +40,8 @@ const FreeAuditPage = named(() => import('./pages/FreeAuditPage'), 'FreeAuditPag
 const WorkPage = named(() => import('./pages/WorkPage'), 'WorkPage');
 const AboutPage = named(() => import('./pages/AboutPage'), 'AboutPage');
 const ContactPage = named(() => import('./pages/ContactPage'), 'ContactPage');
+const BookCallPage = named(() => import('./pages/BookCallPage'), 'BookCallPage');
+const ManageBookingPage = named(() => import('./pages/ManageBookingPage'), 'ManageBookingPage');
 const AdminApp = named(() => import('./admin/AdminApp'), 'AdminApp');
 const NotFoundPage = named(() => import('./pages/NotFoundPage'), 'NotFoundPage');
 
@@ -73,11 +75,13 @@ const STATIC_PAGES: Record<string, PageComponent> = {
   '/free-audit': FreeAuditPage,
   '/work': WorkPage,
   '/about': AboutPage,
-  '/contact': ContactPage
+  '/contact': ContactPage,
+  '/book-a-call': BookCallPage
 };
 
 type Route =
   | { kind: 'admin' }
+  | { kind: 'manage-booking' }
   | { kind: 'static'; path: string }
   | { kind: 'assistant'; assistant: Assistant }
   | { kind: 'not-found' };
@@ -86,6 +90,8 @@ function resolveRoute(rawPath: string): Route {
   const path = rawPath.length > 1 ? rawPath.replace(/\/+$/, '') : rawPath;
 
   if (path === '/admin' || path.startsWith('/admin/')) return { kind: 'admin' };
+  // A visitor's reschedule / cancel link from their booking email
+  if (/^\/booking\/[^/]+$/.test(path)) return { kind: 'manage-booking' };
 
   const assistantMatch = path.match(/^\/services\/([^/]+)$/);
   const assistant = assistantMatch ? assistantBySlug(assistantMatch[1]) : undefined;
@@ -97,6 +103,7 @@ function resolveRoute(rawPath: string): Route {
 
 function pageFor(route: Route): PageComponent {
   if (route.kind === 'admin') return AdminApp;
+  if (route.kind === 'manage-booking') return ManageBookingPage;
   if (route.kind === 'assistant') return AssistantPage;
   if (route.kind === 'static') return STATIC_PAGES[route.path];
   return NotFoundPage;
@@ -124,6 +131,7 @@ const AppRouter: React.FC = () => {
     if (route.kind === 'assistant') {
       return <AssistantPage key={currentPath} assistant={route.assistant} />;
     }
+    if (route.kind === 'manage-booking') return <ManageBookingPage />;
     if (route.kind !== 'static') {
       return <NotFoundPage />;
     }

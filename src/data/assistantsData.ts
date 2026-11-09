@@ -318,5 +318,5 @@ export const FAQ = [
 
 // Pages for the free audit and the call booking
 export const FREE_AUDIT_PATH = '/free-audit';
-// TODO(owner): replace with a booking link (e.g. Calendly) when you have one
-export const BOOK_CALL_PATH = '/contact';
+// The in-site booking page (popup with open times from the dashboard's Availability settings)
+export const BOOK_CALL_PATH = '/book-a-call';

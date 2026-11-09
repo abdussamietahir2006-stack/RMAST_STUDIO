@@ -24,6 +24,44 @@ function getTransporter(): Transporter | null {
 
 export const isMailConfigured = () => Boolean(getTransporter());
 
+// Where founder notifications go (same address as inquiry emails)
+export const notifyAddress = () => process.env.NOTIFY_EMAIL?.trim() || CONTACT.email;
+
+export interface EmailAttachment {
+  filename: string;
+  content: Buffer | string;
+  contentType: string;
+}
+
+// Sends any email through the site's SMTP account. Returns true when the SMTP server accepted it;
+// never throws, so a mail problem can't break the visitor's request.
+export async function sendEmail(opts: {
+  to: string;
+  subject: string;
+  html: string;
+  text: string;
+  replyTo?: string;
+  attachments?: EmailAttachment[];
+}): Promise<boolean> {
+  const mailer = getTransporter();
+  if (!mailer) return false;
+  try {
+    await mailer.sendMail({
+      from: `"RMAST Studio" <${process.env.SMTP_USER?.trim()}>`,
+      to: opts.to,
+      replyTo: opts.replyTo,
+      subject: opts.subject.replace(/[\r\n]+/g, ' ').slice(0, 250),
+      html: opts.html,
+      text: opts.text,
+      attachments: opts.attachments
+    });
+    return true;
+  } catch (err) {
+    console.error(`Failed to send email "${opts.subject}"`, err);
+    return false;
+  }
+}
+
 const DISPATCH_LABELS: Record<DispatchMethod, string> = {
   whatsapp: 'WhatsApp (also sent via WhatsApp)',
   email: 'Email option',

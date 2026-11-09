@@ -1,5 +1,5 @@
 import React, { Suspense, lazy, useCallback, useEffect, useState } from 'react';
-import { BarChart3, Inbox, Image as ImageIcon, Settings, LogOut, Menu, X, ExternalLink, Megaphone, Clapperboard } from 'lucide-react';
+import { BarChart3, Inbox, Image as ImageIcon, Settings, LogOut, Menu, X, ExternalLink, Megaphone, Clapperboard, ClipboardCheck, CalendarClock } from 'lucide-react';
 import { useNavigation } from '../context/NavigationContext';
 import { AdminUser } from '../types';
 import { adminApi, ApiError } from './api';
@@ -8,6 +8,8 @@ import { Spinner } from './ui';
 
 const OverviewPage = lazy(() => import('./OverviewPage').then((m) => ({ default: m.OverviewPage })));
 const LeadsPage = lazy(() => import('./LeadsPage').then((m) => ({ default: m.LeadsPage })));
+const AuditsPage = lazy(() => import('./AuditsPage').then((m) => ({ default: m.AuditsPage })));
+const BookingsPage = lazy(() => import('./BookingsPage').then((m) => ({ default: m.BookingsPage })));
 const MediaPage = lazy(() => import('./MediaPage').then((m) => ({ default: m.MediaPage })));
 const SocialPage = lazy(() => import('./SocialPage').then((m) => ({ default: m.SocialPage })));
 const VideosPage = lazy(() => import('./VideosPage').then((m) => ({ default: m.VideosPage })));
@@ -30,6 +32,8 @@ export function useAdmin(): AdminContextValue {
 const NAV = [
   { path: '/admin', label: 'Overview', icon: BarChart3 },
   { path: '/admin/leads', label: 'Leads', icon: Inbox },
+  { path: '/admin/audits', label: 'Free Audits', icon: ClipboardCheck },
+  { path: '/admin/bookings', label: 'Bookings', icon: CalendarClock },
   { path: '/admin/social', label: 'Social posts', icon: Megaphone },
   { path: '/admin/videos', label: 'Social videos', icon: Clapperboard },
   { path: '/admin/media', label: 'Website media', icon: ImageIcon },
@@ -86,7 +90,11 @@ export const AdminApp: React.FC = () => {
   }
 
   const path = currentPath.replace(/\/+$/, '') || '/admin';
-  const section = path.startsWith('/admin/leads')
+  const section = path.startsWith('/admin/audits')
+    ? 'audits'
+    : path.startsWith('/admin/bookings')
+    ? 'bookings'
+    : path.startsWith('/admin/leads')
     ? 'leads'
     : path.startsWith('/admin/social')
     ? 'social'
@@ -183,6 +191,8 @@ export const AdminApp: React.FC = () => {
             <Suspense fallback={<Spinner />}>
               {section === 'overview' && <OverviewPage />}
               {section === 'leads' && <LeadsPage path={path} />}
+              {section === 'audits' && <AuditsPage path={path} />}
+              {section === 'bookings' && <BookingsPage path={path} />}
               {section === 'social' && <SocialPage />}
               {section === 'videos' && <VideosPage />}
               {section === 'media' && <MediaPage />}

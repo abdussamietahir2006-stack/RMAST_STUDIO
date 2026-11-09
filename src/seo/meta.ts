@@ -60,6 +60,12 @@ const STATIC_PAGES: Record<string, StaticPage> = {
       'RMAST Studio is a founder-led team run by Raja Muhammad Abdussamie Tahir and Mashhood, giving real estate agents and teams Virtual, Creative and Technical Assistants.',
     crumb: 'About'
   },
+  '/book-a-call': {
+    title: 'Book a Free 15-Minute Call | RMAST Studio',
+    description:
+      'Book a free 15-minute call with the RMAST Studio founders. Pick a time in your own time zone, on Google Meet, Zoom, WhatsApp or phone.',
+    crumb: 'Book a call'
+  },
   '/contact': {
     title: 'Book a Call with RMAST Studio',
     description: `Book a call or send us a message. The founders reply within 24 hours. WhatsApp ${CONTACT.whatsappDisplay} or ${CONTACT.email}.`,
@@ -199,6 +205,10 @@ export function getRouteMeta(rawPath: string, site: string): RouteMeta {
 
   if (path === '/admin' || path.startsWith('/admin/')) {
     return { title: 'Founder Dashboard | RMAST Studio', description: DEFAULT_DESCRIPTION, path: null, noindex: true, ogType: 'website', jsonLd: [] };
+  }
+  // Private reschedule / cancel links from booking emails
+  if (path === '/booking' || path.startsWith('/booking/')) {
+    return { title: 'Your Booking | RMAST Studio', description: DEFAULT_DESCRIPTION, path: null, noindex: true, ogType: 'website', jsonLd: [] };
   }
 
   const page = STATIC_PAGES[path];
