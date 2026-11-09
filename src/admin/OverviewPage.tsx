@@ -7,6 +7,7 @@ import { useAdmin } from './AdminApp';
 import { DIVISION_LABELS, folderLabel, LEAD_FOLDERS } from './folders';
 import { DailyLeadsChart, ServiceRow, ServiceScoreboard } from './charts';
 import { Button, Card, CardHeader, ErrorNote, PageHeader, Spinner, STATUS_META, relativeTime } from './ui';
+import { UpcomingCalls } from './BookingsPage';
 
 const StatTile: React.FC<{ label: string; value: React.ReactNode; note?: string; hero?: boolean }> = ({
   label,
@@ -95,6 +96,7 @@ export const OverviewPage: React.FC = () => {
         }
       />
       <ErrorNote message={error} />
+      <UpcomingCalls />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <StatTile hero label="Total leads" value={stats.total.toLocaleString()} note="All time" />

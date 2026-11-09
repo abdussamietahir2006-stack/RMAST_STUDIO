@@ -46,6 +46,10 @@ async function main() {
         res.redirect(301, moved);
         return;
       }
+      if (clean.startsWith('/booking/')) {
+        res.sendFile(path.join(distDir, 'booking.html'));
+        return;
+      }
       if (clean === '/admin' || clean.startsWith('/admin/')) {
         res.sendFile(path.join(distDir, 'admin.html'));
         return;

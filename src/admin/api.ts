@@ -1,5 +1,7 @@
 import { request } from '../lib/api';
 import { AdminUser, InquiryStatus, LeadStats, MediaAsset, PostSize, SocialPost, SocialVideo, StoredInquiry, VideoStyle, MusicMood } from '../types';
+import type { AuditLead, AuditListResponse, AuditStatus, CallBooking } from '../data/records';
+import type { Availability, BookingStatus } from '../data/booking/calendar';
 
 export { ApiError } from '../lib/api';
 
@@ -86,5 +88,34 @@ export const adminApi = {
       method: 'PUT',
       body: JSON.stringify({ url: blob.url, contentType: file.type, size: file.size, poster })
     });
-  }
+  },
+
+  // --- Free Audits ---
+  audits: (params: Record<string, string | number | undefined>) => {
+    const qs = new URLSearchParams(
+      Object.entries(params)
+        .filter(([, v]) => v !== undefined && v !== '')
+        .map(([k, v]) => [k, String(v)])
+    );
+    return request<AuditListResponse>(`/api/admin/audits?${qs}`);
+  },
+  audit: (id: string) => request<{ audit: AuditLead; bookings: CallBooking[] }>(`/api/admin/audits/${encodeURIComponent(id)}`),
+  updateAudit: (id: string, patch: { status?: AuditStatus; notes?: string }) =>
+    request<void>(`/api/admin/audits/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify(patch) }),
+  deleteAudit: (id: string) => request<void>(`/api/admin/audits/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+
+  // --- Call bookings ---
+  bookings: (params: Record<string, string | undefined>) => {
+    const qs = new URLSearchParams(Object.entries(params).filter(([, v]) => v) as [string, string][]);
+    return request<CallBooking[]>(`/api/admin/bookings?${qs}`);
+  },
+  booking: (id: string) => request<{ booking: CallBooking; audit: AuditLead | null }>(`/api/admin/bookings/${encodeURIComponent(id)}`),
+  updateBooking: (id: string, patch: { status?: BookingStatus; adminNotes?: string; meetingLink?: string }) =>
+    request<void>(`/api/admin/bookings/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify(patch) }),
+  sendMeetingLink: (id: string, meetingLink: string) =>
+    request<void>(`/api/admin/bookings/${encodeURIComponent(id)}/send-link`, { method: 'POST', body: JSON.stringify({ meetingLink }) }),
+  bookingSummary: () =>
+    request<{ today: number; week: number }>(`/api/admin/bookings/summary?tz=${encodeURIComponent(Intl.DateTimeFormat().resolvedOptions().timeZone)}`),
+  availability: () => request<Availability>('/api/admin/availability'),
+  saveAvailability: (a: Availability) => request<Availability>('/api/admin/availability', { method: 'PUT', body: JSON.stringify(a) })
 };

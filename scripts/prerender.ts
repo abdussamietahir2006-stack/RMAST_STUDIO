@@ -67,6 +67,9 @@ write('/404', page('/__not-found__', await render('/__not-found__')));
 // The dashboard is private and rendered in the browser only
 write('/admin', template.replace(SEO_BLOCK, renderHeadTags(getRouteMeta('/admin', site), site)));
 
+// Booking reschedule / cancel links (/booking/<token>) are private and rendered in the browser only
+write('/booking', template.replace(SEO_BLOCK, renderHeadTags(getRouteMeta('/booking', site), site)));
+
 const today = new Date().toISOString().slice(0, 10);
 const priority = (route: string) =>
   route === '/' ? '1.0' : route.startsWith('/services') || ['/plans', '/free-audit'].includes(route) ? '0.9' : '0.8';

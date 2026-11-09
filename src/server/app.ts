@@ -47,6 +47,24 @@ import {
   MIN_SLIDES,
   SOCIAL_STATUSES
 } from './social.js';
+import { auditPrefill, deleteAudit, getAudit, listAudits, submitAudit, updateAudit } from './audits.js';
+import {
+  bookingSummary,
+  bookingsForAudit,
+  cancelByVisitor,
+  createBooking,
+  getAvailability,
+  getBooking,
+  listBookings,
+  openSlots,
+  publicBooking,
+  rescheduleByVisitor,
+  saveAvailability,
+  sendDueReminders,
+  sendMeetingLink,
+  slotsForReschedule,
+  updateBooking
+} from './bookings.js';
 import { createVideo, listVideos, MAX_VIDEO_BRIEF, MAX_VIDEO_SECONDS, MIN_VIDEO_SECONDS, MUSIC_MOODS, VIDEO_STYLES } from './socialVideo.js';
 
 const LOGIN_WINDOW_MS = 15 * 60 * 1000;
@@ -60,7 +78,10 @@ export function createApp(): Express {
   app.use('/api', apiHeaders);
 
   // Blob upload-token requests carry their own JSON body; everything else is small JSON
-  app.use('/api', express.json({ limit: '64kb' }));
+  // A Free Audit carries its PNG (about 1 MB) so it gets a larger limit; everything else stays small
+  const smallJson = express.json({ limit: '64kb' });
+  const auditJson = express.json({ limit: '4mb' });
+  app.use('/api', (req, res, next) => (req.method === 'POST' && req.path === '/audits' ? auditJson : smallJson)(req, res, next));
 
   // -------------------------------------------------------------------------
   // Public
@@ -175,6 +196,103 @@ export function createApp(): Express {
       }
       const post = await ensureTodayPost();
       res.json({ id: post.id, day: post.day, title: post.title });
+    })
+  );
+
+  // -------------------------------------------------------------------------
+  // Free Audit and call booking (public)
+  // -------------------------------------------------------------------------
+
+  // Saving or emailing can fail without the visitor noticing: their audit is already on screen
+  app.post(
+    '/api/audits',
+    rateLimit('audits', 6, 60 * 60 * 1000),
+    ah(async (req, res) => {
+      const { status, body } = await submitAudit(req);
+      res.status(status).json(body);
+    })
+  );
+
+  app.get(
+    '/api/audits/prefill/:token',
+    noStore,
+    rateLimit('prefill', 30, 10 * 60 * 1000),
+    requireDb,
+    ah(async (req, res) => {
+      const prefill = await auditPrefill(String(req.params.token));
+      if (!prefill) return void res.status(404).json({ error: 'Not found' });
+      res.json(prefill);
+    })
+  );
+
+  app.get(
+    '/api/booking/slots',
+    noStore,
+    rateLimit('slots', 60, 10 * 60 * 1000),
+    requireDb,
+    ah(async (_req, res) => {
+      res.json(await openSlots());
+    })
+  );
+
+  app.post(
+    '/api/bookings',
+    rateLimit('bookings', 5, 60 * 60 * 1000),
+    requireDb,
+    ah(async (req, res) => {
+      const { status, body } = await createBooking(req);
+      res.status(status).json(body);
+    })
+  );
+
+  // The visitor's emailed reschedule / cancel link
+  const manage = express.Router();
+  manage.use(noStore, rateLimit('manage', 40, 10 * 60 * 1000), requireDb);
+  manage.get(
+    '/:token',
+    ah(async (req, res) => {
+      const booking = await publicBooking(String(req.params.token));
+      if (!booking) return void res.status(404).json({ error: 'This booking link is not valid.' });
+      res.json(booking);
+    })
+  );
+  manage.get(
+    '/:token/slots',
+    ah(async (req, res) => {
+      const slots = await slotsForReschedule(String(req.params.token));
+      if (!slots) return void res.status(404).json({ error: 'This booking can no longer be changed.' });
+      res.json(slots);
+    })
+  );
+  manage.post(
+    '/:token/cancel',
+    ah(async (req, res) => {
+      const result = await cancelByVisitor(String(req.params.token));
+      if (!result) return void res.status(404).json({ error: 'This booking link is not valid.' });
+      if (typeof result === 'string') return void res.status(409).json({ error: result });
+      res.json(result);
+    })
+  );
+  manage.post(
+    '/:token/reschedule',
+    ah(async (req, res) => {
+      const result = await rescheduleByVisitor(String(req.params.token), req.body?.slotStart);
+      if (!result) return void res.status(404).json({ error: 'This booking link is not valid.' });
+      if (typeof result === 'string') return void res.status(409).json({ error: result });
+      res.json(result);
+    })
+  );
+  app.use('/api/bookings/manage', manage);
+
+  // Call reminders, triggered by Vercel Cron (see "crons" in vercel.json) with the same CRON_SECRET
+  app.get(
+    '/api/cron/booking-reminders',
+    noStore,
+    requireDb,
+    ah(async (req, res) => {
+      const secret = process.env.CRON_SECRET?.trim();
+      if (!secret || req.headers.authorization !== `Bearer ${secret}`) return void res.status(401).json({ error: 'Unauthorized' });
+      res.json(await sendDueReminders());
     })
   );
 
@@ -537,6 +655,88 @@ export function createApp(): Express {
     ah(async (req, res) => {
       const result = await (await collections.socialVideos()).deleteOne({ _id: String(req.params.id) });
       res.status(result.deletedCount ? 204 : 404).end();
+    })
+  );
+
+  // --- Free Audits ---
+  admin.get(
+    '/audits',
+    ah(async (req, res) => {
+      res.json(await listAudits(req.query as Record<string, unknown>));
+    })
+  );
+  admin.get(
+    '/audits/:id',
+    ah(async (req, res) => {
+      const audit = await getAudit(String(req.params.id));
+      if (!audit) return void res.status(404).json({ error: 'Not found' });
+      res.json({ audit, bookings: await bookingsForAudit(audit.id) });
+    })
+  );
+  admin.patch(
+    '/audits/:id',
+    ah(async (req, res) => {
+      const result = await updateAudit(String(req.params.id), req.body ?? {});
+      if (result === 'ok') return void res.status(204).end();
+      res.status(result === 'not-found' ? 404 : 400).json({ error: result === 'not-found' ? 'Not found' : result });
+    })
+  );
+  admin.delete(
+    '/audits/:id',
+    ah(async (req, res) => {
+      res.status((await deleteAudit(String(req.params.id))) ? 204 : 404).end();
+    })
+  );
+
+  // --- Call bookings ---
+  admin.get(
+    '/bookings',
+    ah(async (req, res) => {
+      res.json(await listBookings(req.query as Record<string, unknown>));
+    })
+  );
+  admin.get(
+    '/bookings/summary',
+    ah(async (req, res) => {
+      res.json(await bookingSummary(req.query.tz));
+    })
+  );
+  admin.get(
+    '/bookings/:id',
+    ah(async (req, res) => {
+      const booking = await getBooking(String(req.params.id));
+      if (!booking) return void res.status(404).json({ error: 'Not found' });
+      res.json({ booking, audit: booking.auditLeadId ? await getAudit(booking.auditLeadId) : null });
+    })
+  );
+  admin.patch(
+    '/bookings/:id',
+    ah(async (req, res) => {
+      const result = await updateBooking(String(req.params.id), req.body ?? {});
+      if (result === 'ok') return void res.status(204).end();
+      res.status(result === 'not-found' ? 404 : 400).json({ error: result === 'not-found' ? 'Not found' : result });
+    })
+  );
+  admin.post(
+    '/bookings/:id/send-link',
+    ah(async (req, res) => {
+      const result = await sendMeetingLink(String(req.params.id), req.body?.meetingLink);
+      if (result === 'ok') return void res.status(204).end();
+      res.status(result === 'not-found' ? 404 : 400).json({ error: result === 'not-found' ? 'Not found' : result });
+    })
+  );
+  admin.get(
+    '/availability',
+    ah(async (_req, res) => {
+      res.json(await getAvailability());
+    })
+  );
+  admin.put(
+    '/availability',
+    ah(async (req, res) => {
+      const result = await saveAvailability(req.body, currentUser(res));
+      if (typeof result === 'string') return void res.status(400).json({ error: result });
+      res.json(result);
     })
   );
 

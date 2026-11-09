@@ -450,3 +450,22 @@ html:not(.admin-mode) main [class*='backdrop-blur'] {
     scroll-behavior: auto !important;
   }
 }
+
+/* Free Audit: "Analysing your business…" bar (purely visual, about 1.6 s) */
+@keyframes audit-progress {
+  from {
+    width: 4%;
+  }
+  to {
+    width: 100%;
+  }
+}
+.audit-progress {
+  animation: audit-progress 1.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .audit-progress {
+    animation: none;
+    width: 100%;
+  }
+}

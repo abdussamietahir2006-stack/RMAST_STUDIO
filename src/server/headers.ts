@@ -7,7 +7,7 @@ export const CONTENT_SECURITY_POLICY = [
   "font-src 'self' https://fonts.gstatic.com",
   "img-src 'self' data: blob: https://images.unsplash.com https://*.public.blob.vercel-storage.com",
   "media-src 'self' blob: https://*.public.blob.vercel-storage.com",
-  "connect-src 'self' https://vercel.com https://*.blob.vercel-storage.com",
+  "connect-src 'self' https://vercel.com https://*.blob.vercel-storage.com https://fonts.googleapis.com https://fonts.gstatic.com",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
